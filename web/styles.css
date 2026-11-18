@@ -953,7 +953,10 @@ input[type="range"]::-webkit-slider-thumb {
 /* 这套界面的字号全是写死的 px，改 body 的 font-size 几乎看不出来。
    与其把几百处 px 改成 rem，直接用 zoom 整体放大——所见即所得，
    而且折行、表格宽度这些都会跟着一起变。 */
-html[data-scale="lg"] body { zoom: 1.14; }
+/* zoom 只缩放绘制，不改变布局视口——所以还要把宽度按比例收回来，
+   否则 100% 的容器在缩放后会超出屏幕（窄窗口下最明显）。 */
+html[data-scale="lg"] { zoom: 1.14; }
+html[data-scale="lg"] body { width: calc(100% / 1.14); }
 html[data-scale="lg"] .grain { display: none; }   /* 纹理层放大后会糊 */
 
 /* 顶栏那两个图标按钮不跟着放大，否则会顶出边界 */
