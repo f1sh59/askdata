@@ -1,0 +1,24 @@
+services:
+  askdata:
+    build: .
+    image: askdata:latest
+    container_name: askdata
+    ports:
+      - "8777:8777"
+    environment:
+      # 不填也能跑：所有页面和评测报告都读仓库里的静态产物，
+      # 只有「问数」会真的调用模型。填了就能在界面上直接提问。
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      # 可选：开启鉴权（设了之后浏览器会弹令牌输入框）
+      - ASKDATA_TOKEN=${ASKDATA_TOKEN:-}
+      # 可选：强制行级权限（只看得到部分渠道的数据）
+      - ASKDATA_ROW_POLICY=${ASKDATA_ROW_POLICY:-}
+    volumes:
+      # 数据库单独挂卷：导入的表会写进这个文件，重建容器不丢
+      - askdata-data:/app/data
+      # 导入的数据想留在宿主机上，把上面那行换成这行：
+      # - ./data:/app/data
+    restart: unless-stopped
+
+volumes:
+  askdata-data:
