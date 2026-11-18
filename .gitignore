@@ -41,8 +41,6 @@ docs/shots/*
 /plog.txt
 /s8799.log
 /s8799.err
-# ---- 个人笔记：不进公开仓库 ----
-# 给自己留的讲法整理与分寸提醒，属于工作笔记，没必要跟着项目一起发布。
-# 生成脚本同理（它只是为了本地重新生成）。
-docs/*自用版*
+# 本地草稿：不随仓库发布
+docs/draft-*
 scripts/make_docs_personal.py
