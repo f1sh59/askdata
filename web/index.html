@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>askdata · 中文问数 Agent</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <aside class="rail">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div class="brand-text">
+        <div class="brand-name">askdata</div>
+        <div class="brand-sub">中文问数 Agent</div>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item is-active" data-page="ask"><span class="idx">01</span><span class="nav-label">问数<em>Ask</em></span></button>
+      <button class="nav-item" data-page="dict"><span class="idx">02</span><span class="nav-label">数据字典<em>Schema</em></span></button>
+      <button class="nav-item" data-page="eval"><span class="idx">03</span><span class="nav-label">评测<em>Eval</em></span></button>
+      <button class="nav-item" data-page="guard"><span class="idx">04</span><span class="nav-label">安全闸<em>Guard</em></span></button>
+      <button class="nav-item" data-page="clarify"><span class="idx">05</span><span class="nav-label">澄清<em>Clarify</em></span></button>
+      <button class="nav-item" data-page="about"><span class="idx">06</span><span class="nav-label">说明<em>About</em></span></button>
+    </nav>
+
+    <div class="rail-foot">
+      <div class="stat"><span class="stat-k">表</span><span class="stat-v num" id="foot-tables">—</span></div>
+      <div class="stat"><span class="stat-k">题</span><span class="stat-v num" id="foot-questions">—</span></div>
+      <div class="stat"><span class="stat-k">模型</span><span class="stat-v" id="foot-model">—</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="auth-bar" id="auth-bar" hidden>
+      <span class="auth-title">需要访问令牌</span>
+      <input type="password" id="auth-input" placeholder="粘贴服务启动时设置的 ASKDATA_TOKEN" autocomplete="off" />
+      <button class="btn btn-primary" id="auth-save">保存</button>
+      <span class="auth-msg" id="auth-msg">令牌只存在本机浏览器里</span>
+    </div>
+    <header class="topbar">
+      <div class="topbar-title">
+        <div class="eyebrow" id="page-eyebrow">01 / ASK</div>
+        <h1 id="page-title">问数</h1>
+        <p id="page-desc">用一句中文问数据。系统会先判断信息够不够，不够就先反问你。</p>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-chips" id="topbar-chips"></div>
+        <button class="theme-toggle" id="scale-toggle" title="字号">A</button>
+        <button class="theme-toggle" id="theme-toggle" title="切换深浅色">
+          <span class="t-sun">☀</span><span class="t-moon">☾</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ 01 ASK ============ -->
+    <section class="page is-active" id="page-ask">
+      <div class="ask-grid">
+        <div class="col-main">
+          <div class="composer panel">
+            <label class="field-label" for="q">你的问题</label>
+            <textarea id="q" rows="2" placeholder="例：各渠道的销售额分别是多少？"></textarea>
+            <div class="composer-foot">
+              <span class="composer-meta">
+                <span class="dim small">回车发送 · Shift+回车换行</span>
+                <span class="session-chip" id="session-chip" title="上下文保存在服务端，刷新页面不会丢">新会话</span>
+                <button class="btn btn-ghost" id="clear-session" title="清空服务端记住的对话上下文">清空对话</button>
+              </span>
+              <button class="btn btn-primary" id="send"><span>发送</span><span class="kbd">↵</span></button>
+            </div>
+          </div>
+
+          <div class="panel quick" id="quick">
+            <div class="quick-head">
+              <span class="eyebrow">快捷提问</span>
+              <span class="panel-hint" id="quick-range"></span>
+            </div>
+            <div class="quick-row">
+              <span class="quick-k">年份：</span>
+              <div class="chips" id="quick-years"></div>
+            </div>
+            <div class="quick-row">
+              <span class="quick-k">维度：</span>
+              <div class="chips" id="quick-dims"></div>
+            </div>
+            <div class="quick-row">
+              <span class="quick-k">指标：</span>
+              <div class="chips" id="quick-metrics"></div>
+            </div>
+            <div class="quick-row">
+              <span class="quick-k">问题：</span>
+              <div class="chips" id="quick-presets"></div>
+            </div>
+          </div>
+          <div class="thread" id="thread">
+            <div class="empty" id="thread-empty">
+              <div class="empty-mark">⌁</div>
+              <p>还没有对话。上面随便问一句试试。</p>
+              <p class="dim">它可能会反问你，也可能会给你一张表。</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="col-side">
+          <div class="panel side-panel">
+            <div class="panel-head">
+              <span class="eyebrow">RETRIEVAL</span>
+              <span class="panel-hint" id="retrieval-hint">等待提问</span>
+            </div>
+            <div class="retrieval" id="retrieval">
+              <p class="dim small">提问后显示：从 <span id="retrieval-total">—</span> 张表里召回了哪几张，以及相关度。</p>
+            </div>
+          </div>
+
+          <div class="panel side-panel">
+            <div class="panel-head"><span class="eyebrow">最近提问</span><span class="panel-hint" id="history-count"></span></div>
+            <div class="history" id="history"><p class="dim small">问过的题会存在本地，点一下可以重问。</p></div>
+          </div>
+
+          <div class="panel side-panel">
+            <div class="panel-head"><span class="eyebrow">CONFIG</span></div>
+            <label class="slider-row">
+              <span>召回表数量 <b class="num" id="topk-val">8</b></span>
+              <input type="range" id="topk" min="3" max="20" value="8" step="1" />
+            </label>
+            <p class="dim small">表越少越省钱；太少可能漏掉要用的表。</p>
+          </div>
+
+          <div class="panel side-panel explain">
+            <div class="panel-head"><span class="eyebrow">这一页在干什么</span></div>
+            <ol class="steps">
+              <li><b>召回</b>：从 <span id="explain-total">—</span> 张表里挑出相关的几张</li>
+              <li><b>判定</b>：信息够不够？不够就反问</li>
+              <li><b>安全闸</b>：SQL 先过 AST 白名单</li>
+              <li><b>执行</b>：只读沙箱，最多 8 秒</li>
+            </ol>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ 02 SCHEMA ============ -->
+    <section class="page" id="page-dict">
+      <div class="panel import-panel">
+        <div class="panel-head">
+          <span class="eyebrow">导入数据</span>
+          <span class="panel-hint">CSV / TSV / JSON · 导入后可以直接提问</span>
+        </div>
+
+        <div class="import-grid">
+          <div class="import-left">
+            <div class="dropzone" id="dropzone">
+              <input type="file" id="file-input" accept=".csv,.tsv,.txt,.json" hidden />
+              <p class="drop-main">把文件拖到这里</p>
+              <p class="dim small">或 <button class="link-btn" id="pick-file">选择文件</button> · 也可以直接粘贴到下面</p>
+            </div>
+            <textarea id="import-text" rows="6" placeholder="粘贴 CSV / TSV / JSON 数组，例如：&#10;城市,年份,销售额&#10;杭州,2025,&quot;1,234.50&quot;"></textarea>
+          </div>
+          <div class="import-right">
+            <div class="eyebrow" style="margin-bottom:8px">整理选项</div>
+            <div class="opt-list" id="import-opts"></div>
+            <div class="eyebrow" style="margin:14px 0 8px">导入为</div>
+            <input type="text" id="import-name" placeholder="表名（可留空自动生成）" />
+          </div>
+        </div>
+
+        <div class="import-actions">
+          <span class="dim small" id="import-status">粘贴或选择一份数据，先预览再导入。</span>
+          <div class="row-gap">
+            <button class="btn" id="do-preview">预览与整理</button>
+            <button class="btn btn-primary" id="do-commit" disabled>导入</button>
+          </div>
+        </div>
+
+        <div class="import-preview" id="import-preview"></div>
+      </div>
+
+      <div class="dict-grid">
+        <div class="panel dict-list">
+          <div class="panel-head"><span class="eyebrow">表清单</span><span class="panel-hint" id="dict-count"></span></div>
+          <input type="text" id="dict-search" placeholder="搜索表名 / 注释…" />
+          <div class="dict-items" id="dict-items"></div>
+        </div>
+        <div class="panel dict-detail" id="dict-detail">
+          <p class="dim small">左边选一张表。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 EVAL ============ -->
+    <section class="page" id="page-eval">
+      <div class="panel trend-panel">
+        <div class="panel-head">
+          <span class="eyebrow">评测历史</span>
+          <span class="panel-hint" id="trend-hint"></span>
+        </div>
+        <div class="trend" id="trend"></div>
+      </div>
+
+      <div class="eval-head">
+        <div class="panel report-picker">
+          <span class="eyebrow">选择一份评测报告</span>
+          <select id="report-select"></select>
+          <p class="dim small" id="report-meta"></p>
+        </div>
+        <div class="metric-row" id="eval-metrics"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="eyebrow" id="heatmap-title">题目一览</span><span class="panel-hint">点格子看题目</span></div>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="legend">
+          <span><i class="dot good"></i>正确</span>
+          <span><i class="dot bad"></i>错误</span>
+          <span><i class="dot warn"></i>不稳定 / 列序不同</span>
+        </div>
+      </div>
+
+      <div class="panel" id="attrib-panel">
+        <div class="panel-head"><span class="eyebrow">失败归因</span><span class="panel-hint" id="attrib-hint"></span></div>
+        <div class="attrib-bars" id="attrib-bars"></div>
+        <div class="attrib-list" id="attrib-list"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="eyebrow">两次评测对比</span><span class="panel-hint">看改动到底动了哪几题</span></div>
+        <div class="compare-pick">
+          <select id="cmp-a"></select>
+          <span class="arch-arrow">→</span>
+          <select id="cmp-b"></select>
+          <button class="btn" id="cmp-run">对比</button>
+        </div>
+        <div id="cmp-result"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span class="eyebrow">逐题明细</span><span class="panel-hint" id="q-detail-hint"></span></div>
+        <div class="qtable" id="qtable"></div>
+      </div>
+
+      <div class="panel" id="mt-panel">
+        <div class="panel-head"><span class="eyebrow">多轮对话</span><span class="panel-hint" id="mt-hint"></span></div>
+        <div class="compare-pick">
+          <select id="mt-select"></select>
+        </div>
+        <div id="mt-body"></div>
+      </div>
+    </section>
+
+    <!-- ============ 04 GUARD ============ -->
+    <section class="page" id="page-guard">
+      <div class="guard-grid">
+        <div class="col-main">
+          <div class="panel composer">
+            <label class="field-label" for="sql">一段 SQL</label>
+            <textarea id="sql" rows="5" spellcheck="false" placeholder="SELECT * FROM orders LIMIT 5"></textarea>
+            <div class="composer-foot">
+              <div class="row-gap">
+                <select id="preset" class="select-inline"></select>
+                <label class="switch">
+                  <input type="checkbox" id="policy" />
+                  <span>行级权限</span>
+                </label>
+              </div>
+              <button class="btn btn-primary" id="check">过闸</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="eyebrow">注入用例</span><span class="panel-hint" id="attack-hint"></span></div>
+            <div class="attack-grid" id="attack-grid"></div>
+          </div>
+        </div>
+
+        <aside class="col-side">
+          <div class="panel side-panel">
+            <div class="panel-head"><span class="eyebrow">判定</span></div>
+            <div class="verdict" id="verdict"><p class="dim small">输入一段 SQL，看它过不过得了四道闸。</p></div>
+          </div>
+          <div class="panel side-panel explain">
+            <div class="panel-head"><span class="eyebrow">四道闸</span></div>
+            <ol class="steps">
+              <li><b>AST 白名单</b>：单条 + 查询 + 普通表名</li>
+              <li><b>强制 LIMIT</b>：没写就补 1000</li>
+              <li><b>超时熔断</b>：8 秒打断</li>
+              <li><b>行级权限</b>：把受限表改写成带谓词的子查询</li>
+            </ol>
+            <p class="dim small">只读连接 ≠ 安全：<code>read_csv</code>、<code>ATTACH</code>、<code>COPY</code> 在只读连接上照样能跑。</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ============ 05 CLARIFY ============ -->
+    <section class="page" id="page-clarify">
+      <div class="metric-row" id="clarify-metrics"></div>
+      <div class="clarify-grid">
+        <div class="panel">
+          <div class="panel-head"><span class="eyebrow">15 道含糊题</span><span class="panel-hint">点一行看它怎么问</span></div>
+          <div class="vague-list" id="vague-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="eyebrow">它实际会怎么反问</span></div>
+          <div class="clarify-detail" id="clarify-detail"><p class="dim small">左边点一行。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 06 ABOUT ============ -->
+    <section class="page" id="page-about">
+      <div class="about-grid" id="about"></div>
+    </section>
+
+    <footer class="page-foot">
+      <span>askdata · 中文问数 Agent · 本地运行</span>
+      <span id="foot-meta">—</span>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
