@@ -1,0 +1,27 @@
+# ---- 版本控制与本地环境 ----
+.git/
+.github/
+.venv/
+.wheels/
+.tmp/
+tmp_pip/
+tmp_acceptance/
+.cache/
+.edge-profile*/
+__pycache__/
+*.pyc
+
+# ---- 密钥 ----
+.env
+
+# ---- 大数据文件（镜像里现场重建）----
+data/*.duckdb
+data/*.duckdb.wal
+data/_timeout_test_*
+
+# ---- 文档与产物 ----
+docs/shots/
+*.png
+*.docx
+*.pdf
+reports/*.log

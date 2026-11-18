@@ -1,0 +1,37 @@
+# ---- 环境与依赖 ----
+.venv/
+.wheels/
+.tmp/
+tmp_pip/
+.cache/
+.env
+__pycache__/
+*.pyc
+
+# ---- 数据库（体积大且可重建）----
+data/askdata.duckdb
+data/askdata.duckdb.wal
+data/_timeout_test_*.duckdb
+data/_timeout_test_*.duckdb.wal
+
+# ---- 浏览器调试产物 ----
+.edge-profile*/
+tmp_acceptance/
+
+# ---- 截图 ----
+# 只忽略散落在根目录的临时截图。
+# 不要写成裸的 *.png —— 那会把 docs/ 里的文档图一起干掉，README 会全裂。
+/*.png
+
+# 截图脚本一次生成 12 张（6 页 × 日夜），仓库里只保留 README 引用的 5 张
+docs/shots/*
+!docs/shots/ask-light.png
+!docs/shots/eval-light.png
+!docs/shots/dict-light.png
+!docs/shots/guard-light.png
+!docs/shots/ask-dark.png
+# 运行产物：日志、PID、临时诊断文件
+/*.log
+/*.err
+/.server.pid
+/*.txt
