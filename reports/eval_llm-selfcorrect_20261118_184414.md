@@ -1,0 +1,365 @@
+# askdata 评测报告
+
+- **策略**：`llm-selfcorrect`
+- **数据集**：v2.0（50 题）
+- **运行时间**：2026-11-18 18:44:12
+- **总耗时**：1.65s
+
+## 1. 总览
+
+| 指标 | 值 |
+|------|----|
+| Execution Accuracy（严格） | **88.0%**（44/50） |
+| Execution Accuracy（忽略列序） | 88.0%（44/50） |
+| SQL 平均执行耗时 | 3.5 ms |
+
+### 模型调用
+
+| 项 | 值 |
+|----|----|
+| 模型 | deepseek-chat |
+| 实际调用次数 | 1 |
+| 缓存命中 | 50 |
+| prompt tokens | 2346 |
+| completion tokens | 143 |
+| SQL 解析失败 | 0 |
+| 接口报错 | 0 |
+
+### 执行反馈自纠（P3）
+
+| 指标 | 值 |
+|------|----|
+| 一次通过 EX | 86.0% |
+| 自纠后 EX | **88.0%** |
+| 修复题数（先错后对） | 1 |
+| 改坏题数（先对后错） | 0 |
+| 触发重试的题数 | 1 |
+| 平均尝试次数 | 1.02 |
+
+- 修复：h08
+
+## 2. 按难度
+
+| 难度 | 题数 | 正确 | EX |
+|------|------|------|----|
+| easy | 10 | 10 | 100.0% |
+| medium | 20 | 18 | 90.0% |
+| hard | 20 | 16 | 80.0% |
+
+## 3. 按题组（扩题后同组内才可比）
+
+| 题组 | 题数 | 正确 | EX |
+|------|------|------|----|
+| core30 | 30 | 27 | 90.0% |
+| ext20 | 20 | 17 | 85.0% |
+
+## 4. 失败分布
+
+| 状态 | 题数 | 占比 |
+|------|------|------|
+| 正确 | 44 | 88.0% |
+| 结果值不一致 | 5 | 10.0% |
+| 列数不一致 | 1 | 2.0% |
+
+## 5. 按标签（最容易出错的能力点排在前面）
+
+| 标签 | 题数 | 正确 | EX |
+|------|------|------|----|
+| order_by_limit | 1 | 0 | 0.0% |
+| subquery | 7 | 3 | 42.9% |
+| window | 10 | 7 | 70.0% |
+| aggregate | 6 | 5 | 83.3% |
+| top_n | 8 | 7 | 87.5% |
+| null_handling | 9 | 8 | 88.9% |
+| time_bucket | 9 | 8 | 88.9% |
+| business_rule | 20 | 18 | 90.0% |
+| join | 20 | 18 | 90.0% |
+| group | 23 | 21 | 91.3% |
+| ratio | 14 | 13 | 92.9% |
+| count | 5 | 5 | 100.0% |
+| time_filter | 5 | 5 | 100.0% |
+| yoy | 4 | 4 | 100.0% |
+| having | 4 | 4 | 100.0% |
+| left_join | 4 | 4 | 100.0% |
+| conditional_agg | 4 | 4 | 100.0% |
+| payment | 3 | 3 | 100.0% |
+| distinct | 2 | 2 | 100.0% |
+| filter | 1 | 1 | 100.0% |
+| date_type | 1 | 1 | 100.0% |
+| anti_pattern | 1 | 1 | 100.0% |
+| self_join | 1 | 1 | 100.0% |
+| rank | 1 | 1 | 100.0% |
+| pivot | 1 | 1 | 100.0% |
+
+## 6. 逐题结果
+
+| ID | 难度 | 状态 | 尝试 | gold 行数 | pred 行数 | 题目 |
+|----|------|------|------|-----------|-----------|------|
+| e01 | easy | 正确 | 1 | 1 | 1 | 2025 年一共有多少笔订单？ |
+| e02 | easy | 正确 | 1 | 1 | 1 | 目前在售（上架）的商品有多少个？ |
+| e03 | easy | 正确 | 1 | 1 | 1 | 2025 年的销售额（GMV）是多少？ |
+| e04 | easy | 正确 | 1 | 1 | 1 | 2025 年已完成状态的退款金额合计是多少？ |
+| e05 | easy | 正确 | 1 | 1 | 1 | 平台目前有多少个未注销的注册用户？ |
+| e06 | easy | 正确 | 1 | 4 | 4 | 各支付方式的支付成功金额分别是多少？ |
+| e07 | easy | 正确 | 1 | 1 | 1 | 2025 年有效订单的平均订单金额是多少？ |
+| e08 | easy | 正确 | 1 | 1 | 1 | 商品一共有几个品类？ |
+| e09 | easy | 正确 | 1 | 1 | 1 | 2025 年有多少个不同用户下过有效订单？ |
+| e10 | easy | 正确 | 1 | 1 | 1 | 2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销… |
+| m01 | medium | 正确 | 1 | 12 | 12 | 2025 年每个月的销售额分别是多少？ |
+| m02 | medium | 正确 | 1 | 11 | 11 | 2025 年每个月新增的注册用户数是多少？ |
+| m03 | medium | 正确 | 1 | 1 | 1 | 2025 年销售额相比 2024 年同比增长了百分之多少？ |
+| m04 | medium | 结果值不一致 | 1 | 5 | 5 | 2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。 |
+| m05 | medium | 正确 | 1 | 5 | 5 | 2025 年各渠道的有效订单数和销售额分别是多少？ |
+| m06 | medium | 正确 | 1 | 10 | 10 | 用户数最多的前 10 个省份是哪些？分别有多少用户？ |
+| m07 | medium | 正确 | 1 | 5 | 5 | 2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）… |
+| m08 | medium | 正确 | 1 | 1 | 1 | 2025 年下过 2 笔及以上有效订单的用户有多少个？ |
+| m09 | medium | 正确 | 1 | 4 | 4 | 2025 年各支付方式的订单数占比是多少？（按支付成功流水统计） |
+| m10 | medium | 正确 | 1 | 12 | 12 | 2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 ×… |
+| m11 | medium | 正确 | 1 | 5 | 5 | 2025 年客单价最高的前 5 个城市是哪些？请给出城市、订单数和客单价。（只… |
+| m12 | medium | 正确 | 1 | 9 | 9 | 2025 年每个月的新客首单数是多少？（新客 = 该用户第一次下有效订单） |
+| h01 | hard | 正确 | 1 | 12 | 12 | 2025 年每月销售额的环比增长率（百分比数值，保留 2 位小数）是多少？ |
+| h02 | hard | 正确 | 1 | 5 | 5 | 2025 年每个品类中销售额最高的商品分别是哪个？请给出品类、商品名称和销售额。 |
+| h03 | hard | 列数不一致 | 1 | 12 | 12 | 2025 年每个月的累计销售额是多少？ |
+| h04 | hard | 正确 | 1 | 5 | 5 | 2025 年各渠道的销售额相比 2024 年同比增长了多少？请给出渠道、202… |
+| h05 | hard | 结果值不一致 | 1 | 1 | 1 | 2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？ |
+| h06 | hard | 正确 | 1 | 5 | 5 | 2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（占比为百分比数… |
+| h07 | hard | 正确 | 1 | 1 | 1 | 2025 年下过单、但在 2025 年的订单里一次都没有支付成功的用户有多少个？ |
+| h08 | hard | 正确 | 2 | 12 | 12 | 2025 年每个月的复购用户数是多少？（当月有效订单不少于 2 笔的用户） |
+| m13 | medium | 正确 | 1 | 5 | 5 | 2025 年各渠道的销售额、退款金额和退款率分别是多少？（退款率 = 已完成退… |
+| m14 | medium | 正确 | 1 | 10 | 10 | 2025 年各省份的销售额和下单用户数分别是多少？（返回三列：省份、销售额、下… |
+| m15 | medium | 正确 | 1 | 5 | 5 | 2025 年各品类中有销量的在售 SKU 数、销量件数和销售额分别是多少？（返… |
+| m16 | medium | 结果值不一致 | 1 | 5 | 5 | 2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效… |
+| m17 | medium | 正确 | 1 | 4 | 4 | 2025 年各支付方式的成功支付笔数、金额和平均每笔金额分别是多少？（返回四列… |
+| m18 | medium | 正确 | 1 | 5 | 5 | 2025 年各渠道的有效订单数和客单价分别是多少？（返回三列：渠道、有效订单数… |
+| m19 | medium | 正确 | 1 | 10 | 10 | 2025 年销售额排名前 10 的商品是哪些？请给出商品名称、品类、销量件数和… |
+| m20 | medium | 正确 | 1 | 11 | 11 | 2025 年各城市的新客数分别是多少？（新客 = 该用户第一次下有效订单发生在… |
+| h09 | hard | 正确 | 1 | 10 | 10 | 2025 年各省份的销售额相比 2024 年同比增长了多少？请给出省份、202… |
+| h10 | hard | 正确 | 1 | 60 | 60 | 2025 年各品类每月的销售额，以及该月及其前两个月（共 3 个月）的移动平均… |
+| h11 | hard | 正确 | 1 | 1 | 1 | 2025 年新客的销售额占 2025 年总销售额的百分之多少？（新客 = 该用… |
+| h12 | hard | 正确 | 1 | 1 | 1 | 2025 年的复购率是多少？（复购率 = 有效订单不少于 2 笔的用户数 / … |
+| h13 | hard | 结果值不一致 | 1 | 3 | 3 | 2025 年退款率最高的前 3 个商品品类是哪些？（退款率 = 该品类分摊到的… |
+| h14 | hard | 正确 | 1 | 5 | 5 | 各渠道 2025 年的销售额排名与 2024 年相比分别是第几名？（返回三列：… |
+| h15 | hard | 结果值不一致 | 1 | 1 | 1 | 2025 年首次下有效订单的用户，从首单到第二单平均相隔多少天？（只算 202… |
+| h16 | hard | 正确 | 1 | 5 | 5 | 2025 年各会员等级的人均订单数分别是多少？（人均订单数 = 有效订单数 /… |
+| h17 | hard | 正确 | 1 | 12 | 12 | 2025 年每月的累计销售额和累计退款率分别是多少？（累计退款率 = 年初到当… |
+| h18 | hard | 正确 | 1 | 3 | 3 | 2025 年销售额同比增幅最高的前 3 个商品品类是哪些？（返回四列：品类、2… |
+| h19 | hard | 正确 | 1 | 25 | 25 | 2025 年各渠道的已完成退款中，各种退款原因各有多少笔、占该渠道退款的百分之… |
+| h20 | hard | 正确 | 1 | 5 | 5 | 2025 年各品类销量最高的商品，与前一名之外的「第二名」差距是多少？请给出品… |
+
+## 7. 失败明细
+
+### m04 · medium · 结果值不一致
+
+- 问题：2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。
+- 口径：按明细金额汇总；同额时用商品名做次序保证结果稳定
+
+```sql
+-- gold
+SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5
+
+-- generated
+SELECT p.product_name, SUM(o.pay_amount) AS sales_amount
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+WHERE o.status IN ('已支付', '已发货', '已完成')
+  AND o.order_time >= TIMESTAMP '2025-01-01'
+  AND o.order_time < TIMESTAMP '2026-01-01'
+GROUP BY p.product_id, p.product_name
+ORDER BY sales_amount DESC
+LIMIT 5
+```
+
+### h03 · hard · 列数不一致
+
+- 问题：2025 年每个月的累计销售额是多少？
+- 口径：累计值 = 年初到当月的销售额
+
+```sql
+-- gold
+WITH m AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym) SELECT ym, ROUND(SUM(amt) OVER (ORDER BY ym), 2) AS cum_amt FROM m ORDER BY ym
+
+-- generated
+SELECT
+    strftime(o.order_time, '%Y-%m') AS month,
+    SUM(o.pay_amount) AS monthly_sales,
+    SUM(SUM(o.pay_amount)) OVER (ORDER BY strftime(o.order_time, '%Y-%m')) AS cumulative_sales
+FROM orders o
+WHERE o.status IN ('已支付', '已发货', '已完成')
+  AND o.order_time >= TIMESTAMP '2025-01-01'
+  AND o.order_time < TIMESTAMP '2026-01-01'
+GROUP BY strftime(o.order_time, '%Y-%m')
+ORDER BY month
+```
+
+### h05 · hard · 结果值不一致
+
+- 问题：2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？
+- 口径：同用户同日多单的间隔为 0；中位数按天算
+
+```sql
+-- gold
+WITH o AS (SELECT user_id, order_time, LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_time FROM orders WHERE status IN ('已支付', '已发货', '已完成')) SELECT ROUND(percentile_cont(0.5) WITHIN GROUP (ORDER BY date_diff('day', prev_time, order_time)), 1) AS median_gap_days FROM o WHERE prev_time IS NOT NULL AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'
+
+-- generated
+WITH valid_orders AS (
+    SELECT
+        user_id,
+        order_time,
+        LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_order_time
+    FROM orders
+    WHERE status IN ('已支付', '已发货', '已完成')
+      AND order_time >= TIMESTAMP '2025-01-01'
+      AND order_time < TIMESTAMP '2026-01-01'
+),
+intervals AS (
+    SELECT
+        user_id,
+        date_diff('day', prev_order_time, order_time) AS gap_days
+    FROM valid_orders
+    WHERE prev_order_time IS NOT NULL
+)
+SELECT
+    median(gap_days) AS median_gap_days
+FROM intervals
+```
+
+### m16 · medium · 结果值不一致
+
+- 问题：2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效订单不少于 2 笔的用户；返回两列：会员等级、复购用户数）
+- 口径：member_level 有 NULL，归「未知」
+
+```sql
+-- gold
+WITH repeat_users AS ( SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id HAVING COUNT(*) >= 2 ) SELECT COALESCE(u.member_level, '未知') AS member_level, COUNT(*) AS repeat_user_cnt FROM repeat_users r JOIN users u ON u.user_id = r.user_id GROUP BY 1 ORDER BY 2 DESC
+
+-- generated
+SELECT
+    u.member_level,
+    COUNT(*) AS repurchase_user_count
+FROM (
+    SELECT
+        o.user_id
+    FROM orders o
+    WHERE o.status IN ('已支付', '已发货', '已完成')
+      AND o.order_time >= TIMESTAMP '2025-01-01'
+      AND o.order_time < TIMESTAMP '2026-01-01'
+    GROUP BY o.user_id
+    HAVING COUNT(DISTINCT o.order_id) >= 2
+) r
+JOIN users u ON u.user_id = r.user_id
+GROUP BY u.member_level
+```
+
+### h13 · hard · 结果值不一致
+
+- 问题：2025 年退款率最高的前 3 个商品品类是哪些？（退款率 = 该品类分摊到的退款金额 / 该品类销售额 × 100；退款金额按订单内各品类的明细金额占比分摊；返回四列：品类、销售额、退款金额、退款率）
+- 口径：多品类订单的退款要按明细金额占比分摊，不能整单归给一个品类
+
+```sql
+-- gold
+WITH item_cat AS ( SELECT oi.order_id, p.category, SUM(oi.item_amount) AS cat_amt FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY 1, 2 ), order_amt AS ( SELECT order_id, SUM(cat_amt) AS amt FROM item_cat GROUP BY order_id ), alloc AS ( SELECT ic.category, r.refund_amount * ic.cat_amt / oa.amt AS refund_amt FROM refunds r JOIN item_cat ic ON ic.order_id = r.order_id JOIN order_amt oa ON oa.order_id = r.order_id WHERE r.status = '已完成' AND r.refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' ), rf AS ( SELECT category, SUM(refund_amt) AS amt FROM alloc GROUP BY 1 ), gmv AS ( SELECT p.category, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ) SELECT g.category, ROUND(g.amt, 2), ROUND(COALESCE(rf.amt, 0), 2), ROUND(COALESCE(rf.amt, 0) / g.amt * 100, 2) AS refund_rate_pct FROM gmv g LEFT JOIN rf ON rf.category = g.category ORDER BY refund_rate_pct DESC LIMIT 3
+
+-- generated
+WITH valid_orders AS (
+    SELECT order_id, pay_amount
+    FROM orders
+    WHERE status IN ('已支付', '已发货', '已完成')
+      AND order_time >= TIMESTAMP '2025-01-01'
+      AND order_time < TIMESTAMP '2026-01-01'
+),
+order_category_amount AS (
+    SELECT
+        oi.order_id,
+        p.category,
+        SUM(oi.item_amount) AS category_amount
+    FROM order_items oi
+    JOIN products p ON oi.product_id = p.product_id
+    JOIN valid_orders vo ON oi.order_id = vo.order_id
+    GROUP BY oi.order_id, p.category
+),
+order_total_item_amount AS (
+    SELECT
+        oi.order_id,
+        SUM(oi.item_amount) AS total_item_amount
+    FROM order_items oi
+    JOIN valid_orders vo ON oi.order_id = vo.order_id
+    GROUP BY oi.order_id
+),
+category_sales AS (
+    SELECT
+        oca.category,
+        SUM(vo.pay_amount * oca.category_amount / otia.total_item_amount) AS sales_amount
+    FROM order_category_amount oca
+    JOIN order_total_item_amount otia ON oca.order_id = otia.order_id
+    JOIN valid_orders vo ON oca.order_id = vo.order_id
+    GROUP BY oca.category
+),
+completed_refunds AS (
+    SELECT order_id, SUM(refund_amount) AS refund_amount
+    FROM refunds
+    WHERE status = '已完成'
+      AND refund_time >= TIMESTAMP '2025-01-01'
+      AND refund_time < TIMESTAMP '2026-01-01'
+    GROUP BY order_id
+),
+category_refund AS (
+    SELECT
+        oca.category,
+        SUM(cr.refund_amount * oca.category_amount / otia.total_item_amount) AS refund_amount
+    FROM order_category_amount oca
+    JOIN order_total_item_amount otia ON oca.order_id = otia.order_id
+    JOIN completed_refunds cr ON oca.order_id = cr.order_id
+    GROUP BY oca.category
+)
+SELECT
+    cs.category AS 品类,
+    cs.sales_amount AS 销售额,
+    COALESCE(cr.refund_amount, 0) AS 退款金额,
+    COALESCE(cr.refund_amount, 0) / cs.sales_amount * 100 AS 退款率
+FROM category_sales cs
+LEFT JOIN category_refund cr ON cs.category = cr.category
+WHERE cs.sales_amount > 0
+ORDER BY 退款率 DESC
+LIMIT 3
+```
+
+### h15 · hard · 结果值不一致
+
+- 问题：2025 年首次下有效订单的用户，从首单到第二单平均相隔多少天？（只算 2025 年首单且至少下过两单的用户；返回一个天数，保留 1 位小数）
+- 口径：首单和第二单要从全量历史里取，不能先按 2025 过滤
+
+```sql
+-- gold
+WITH ranked AS ( SELECT user_id, order_time, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time) AS rn FROM orders WHERE status IN ('已支付', '已发货', '已完成') ), pairs AS ( SELECT user_id, MAX(CASE WHEN rn = 1 THEN order_time END) AS t1, MAX(CASE WHEN rn = 2 THEN order_time END) AS t2 FROM ranked GROUP BY user_id ) SELECT ROUND(AVG(date_diff('day', t1, t2)), 1) AS avg_gap_days FROM pairs WHERE t2 IS NOT NULL AND t1 >= TIMESTAMP '2025-01-01' AND t1 < TIMESTAMP '2026-01-01'
+
+-- generated
+WITH valid_orders AS (
+    SELECT order_id, user_id, order_time
+    FROM orders
+    WHERE status IN ('已支付', '已发货', '已完成')
+),
+ranked AS (
+    SELECT
+        user_id,
+        order_time,
+        ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time, order_id) AS rn
+    FROM valid_orders
+),
+first_orders AS (
+    SELECT user_id, order_time AS first_time
+    FROM ranked
+    WHERE rn = 1
+      AND order_time >= TIMESTAMP '2025-01-01'
+      AND order_time < TIMESTAMP '2026-01-01'
+),
+second_orders AS (
+    SELECT user_id, order_time AS second_time
+    FROM ranked
+    WHERE rn = 2
+)
+SELECT ROUND(AVG(EXTRACT(EPOCH FROM (s.second_time - f.first_time)) / 86400.0), 1) AS avg_days
+FROM first_orders f
+JOIN second_orders s ON f.user_id = s.user_id
+```
+

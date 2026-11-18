@@ -1,0 +1,111 @@
+{
+  "strategy": "llm",
+  "dataset_version": "v2.2",
+  "started_at": "2026-11-18 20:27:45",
+  "elapsed_s": 4.911,
+  "total": 3,
+  "execution_accuracy": 1.0,
+  "execution_accuracy_lenient": 1.0,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 3,
+    "cache_hits": 0,
+    "prompt_tokens": 33147,
+    "completion_tokens": 625,
+    "parse_failures": 0,
+    "api_errors": 0,
+    "latency_ms": 4854
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "medium",
+      "count": 2,
+      "correct": 2,
+      "ex": 1.0
+    },
+    {
+      "difficulty": "hard",
+      "count": 1,
+      "correct": 1,
+      "ex": 1.0
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "core30",
+      "count": 1,
+      "correct": 1,
+      "ex": 1.0
+    },
+    {
+      "cohort": "ext20",
+      "count": 2,
+      "correct": 2,
+      "ex": 1.0
+    }
+  ],
+  "status_counts": {
+    "correct": 3
+  },
+  "results": [
+    {
+      "id": "m07",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "ratio",
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100，返回三列：品类、销售额、毛利率）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT\n    p.category AS 品类,\n    SUM(oi.item_amount) AS 销售额,\n    (SUM(oi.item_amount) - SUM(p.cost * oi.quantity)) / SUM(oi.item_amount) * 100 AS 毛利率\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nORDER BY 销售额 DESC",
+      "error": null
+    },
+    {
+      "id": "m14",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "group",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额和下单用户数分别是多少？（返回三列：省份、销售额、下单用户数，忽略省份为空的用户）",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT\n    u.province AS 省份,\n    SUM(o.pay_amount) AS 销售额,\n    COUNT(DISTINCT o.user_id) AS 下单用户数\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND u.province IS NOT NULL\nGROUP BY u.province\nORDER BY 销售额 DESC",
+      "error": null
+    },
+    {
+      "id": "h09",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "yoy",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额相比 2024 年同比增长了多少？请给出省份、2024 销售额、2025 销售额和增长率（百分比），忽略省份为空的用户。",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT\n    u.province,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2024,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2025,\n    (SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END)\n     - SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END))\n    / NULLIF(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END), 0) * 100 AS growth_rate\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND u.province IS NOT NULL\n  AND o.order_time >= TIMESTAMP '2024-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY u.province\nORDER BY u.province",
+      "error": null
+    }
+  ]
+}

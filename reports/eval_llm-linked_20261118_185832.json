@@ -1,0 +1,80 @@
+{
+  "strategy": "llm-linked",
+  "dataset_version": "v2.2",
+  "started_at": "2026-11-18 18:58:29",
+  "elapsed_s": 2.852,
+  "total": 2,
+  "execution_accuracy": 0.5,
+  "execution_accuracy_lenient": 0.5,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 2,
+    "cache_hits": 0,
+    "prompt_tokens": 3761,
+    "completion_tokens": 420,
+    "parse_failures": 0,
+    "api_errors": 0,
+    "latency_ms": 2769
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "medium",
+      "count": 1,
+      "correct": 0,
+      "ex": 0.0
+    },
+    {
+      "difficulty": "hard",
+      "count": 1,
+      "correct": 1,
+      "ex": 1.0
+    }
+  ],
+  "by_cohort": [],
+  "status_counts": {
+    "value_mismatch": 1,
+    "correct": 1
+  },
+  "results": [
+    {
+      "id": "m13",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "ratio",
+        "left_join",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的销售额、退款金额和退款率分别是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回四列：渠道、销售额、退款金额、退款率）",
+      "status": "value_mismatch",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT\n    c.channel_name AS 渠道,\n    COALESCE(o.sales_amount, 0) AS 销售额,\n    COALESCE(r.refund_amount, 0) AS 退款金额,\n    CASE WHEN COALESCE(o.sales_amount, 0) = 0 THEN NULL\n         ELSE COALESCE(r.refund_amount, 0) / o.sales_amount * 100\n    END AS 退款率\nFROM channels c\nLEFT JOIN (\n    SELECT channel_id, SUM(pay_amount) AS sales_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY channel_id\n) o ON c.channel_id = o.channel_id\nLEFT JOIN (\n    SELECT o2.channel_id, SUM(rf.refund_amount) AS refund_amount\n    FROM refunds rf\n    JOIN orders o2 ON rf.order_id = o2.order_id\n    WHERE rf.status = '已完成'\n      AND o2.order_time >= TIMESTAMP '2025-01-01'\n      AND o2.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY o2.channel_id\n) r ON c.channel_id = r.channel_id\nORDER BY c.channel_id",
+      "error": null
+    },
+    {
+      "id": "h12",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "ratio",
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年的复购率是多少？（复购率 = 有效订单不少于 2 笔的用户数 / 下单用户数 × 100，返回一个百分比数值）",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT\n    ROUND(\n        100.0 * COUNT(*) FILTER (WHERE order_cnt >= 2) / COUNT(*),\n        2\n    ) AS repurchase_rate\nFROM (\n    SELECT\n        user_id,\n        COUNT(DISTINCT order_id) AS order_cnt\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id\n) t",
+      "error": null
+    }
+  ]
+}

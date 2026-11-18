@@ -1,0 +1,51 @@
+{
+  "strategy": "llm",
+  "dataset_version": "v2.0",
+  "started_at": "2026-11-18 18:43:02",
+  "elapsed_s": 0.003,
+  "total": 1,
+  "execution_accuracy": 1.0,
+  "execution_accuracy_lenient": 1.0,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 0,
+    "cache_hits": 1,
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "parse_failures": 0,
+    "api_errors": 0
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "easy",
+      "count": 1,
+      "correct": 1,
+      "ex": 1.0
+    }
+  ],
+  "by_cohort": [],
+  "status_counts": {
+    "correct": 1
+  },
+  "results": [
+    {
+      "id": "e03",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年的销售额（GMV）是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT SUM(pay_amount) AS gmv\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    }
+  ]
+}

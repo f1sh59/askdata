@@ -1,0 +1,497 @@
+{
+  "dataset_version": "mt1.0",
+  "started_at": "2026-11-18 20:58:26",
+  "repeats": 3,
+  "elapsed_s": 7.2,
+  "control": {
+    "ex": 0.0,
+    "correct": 0,
+    "total": 20,
+    "rewrite_rate": 0.0
+  },
+  "multiturn": [
+    {
+      "ex": 0.75,
+      "correct": 15,
+      "total": 20,
+      "rewrite_rate": 0.95
+    },
+    {
+      "ex": 0.75,
+      "correct": 15,
+      "total": 20,
+      "rewrite_rate": 0.95
+    },
+    {
+      "ex": 0.8,
+      "correct": 16,
+      "total": 20,
+      "rewrite_rate": 0.95
+    }
+  ],
+  "mean_ex": 0.7666666666666666,
+  "by_kind": [
+    {
+      "kind": "swap_limit",
+      "n": 4,
+      "correct": 3.3333333333333335,
+      "rate": 0.8333333333333334
+    },
+    {
+      "kind": "swap_year",
+      "n": 10,
+      "correct": 8.0,
+      "rate": 0.8
+    },
+    {
+      "kind": "drop_time",
+      "n": 6,
+      "correct": 4.0,
+      "rate": 0.6666666666666666
+    }
+  ],
+  "pairs": [
+    {
+      "id": "mt01",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年的销售额（GMV）是多少？",
+      "sql": "SELECT SUM(pay_amount) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01';",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt02",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年有效订单的平均订单金额是多少？",
+      "sql": "SELECT AVG(pay_amount) AS avg_order_amount FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01';",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt03",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年有多少个不同用户下过有效订单？",
+      "sql": "SELECT COUNT(DISTINCT user_id) AS user_count FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01';",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt04",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年销售额最高的商品品类是哪个？它的销售额是多少？",
+      "sql": "SELECT p.category, SUM(oi.item_amount) AS sales_amount FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.category ORDER BY sales_amount DESC LIMIT 1",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt05",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年每个月的销售额分别是多少？",
+      "sql": "SELECT DATE_TRUNC('month', order_time) AS month, SUM(pay_amount) AS sales_amount FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' GROUP BY DATE_TRUNC('month', order_time) ORDER BY month",
+      "status": "value_mismatch",
+      "status_label": "结果值不一致",
+      "gold_rows": 12,
+      "pred_rows": 12
+    },
+    {
+      "id": "mt06",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年销售额排名前5的商品是哪些？请给出商品名称和销售额。",
+      "sql": "SELECT p.product_name, SUM(oi.item_amount) AS sales_amount FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.product_id, p.product_name ORDER BY sales_amount DESC LIMIT 5",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 5,
+      "pred_rows": 5
+    },
+    {
+      "id": "mt07",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年各渠道的有效订单数和销售额分别是多少？",
+      "sql": "SELECT c.channel_name, COUNT(DISTINCT o.order_id) AS valid_order_count, SUM(o.pay_amount) AS sales_amount FROM orders o JOIN channels c ON o.channel_id = c.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY c.channel_name ORDER BY c.channel_name;",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 5,
+      "pred_rows": 5
+    },
+    {
+      "id": "mt08",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年各品类的销售额和毛利率分别是多少？",
+      "sql": "SELECT p.category, SUM(oi.item_amount) AS sales_amount, (SUM(oi.item_amount) - SUM(p.cost * oi.quantity)) / SUM(oi.item_amount) * 100 AS gross_margin_rate FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN orders o ON oi.order_id = o.order_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.category",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 5,
+      "pred_rows": 5
+    },
+    {
+      "id": "mt09",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": "2024年下过2笔及以上有效订单的用户有多少个？",
+      "sql": "SELECT COUNT(*) AS user_count FROM (SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' GROUP BY user_id HAVING COUNT(*) >= 2) t;",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt10",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 12,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt11",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围、把数据库里全部时间都算上，销售额（GMV）是多少？",
+      "sql": "SELECT SUM(pay_amount) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成');",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt12",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围、按数据库中全部时间统计的有效订单平均订单金额是多少？",
+      "sql": "SELECT AVG(pay_amount) AS avg_order_amount FROM orders WHERE status IN ('已支付', '已发货', '已完成');",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt13",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围、按数据库中全部时间统计，有多少个不同用户下过有效订单？",
+      "sql": "SELECT COUNT(DISTINCT user_id) AS user_count FROM orders WHERE status IN ('已支付', '已发货', '已完成');",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt14",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围、按数据库中全部时间统计，销售额最高的商品品类是哪个？它的销售额是多少？",
+      "sql": "SELECT p.category, SUM(oi.item_amount) AS sales_amount FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status IN ('已支付', '已发货', '已完成') GROUP BY p.category ORDER BY sales_amount DESC LIMIT 1",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 1,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt15",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围时，数据库中全部时间内的总销售额是多少？",
+      "sql": "SELECT SUM(pay_amount) AS total_sales FROM orders WHERE status IN ('已支付', '已发货', '已完成');",
+      "status": "column_mismatch",
+      "status_label": "列数不一致",
+      "gold_rows": 24,
+      "pred_rows": 1
+    },
+    {
+      "id": "mt16",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": "不限时间范围、按数据库中全部历史时间计算，销售额排名前5的商品是哪些？请给出商品名称和销售额。",
+      "sql": "SELECT p.product_name, SUM(oi.item_amount) AS sales_amount FROM order_items oi JOIN products p ON oi.product_id = p.product_id GROUP BY p.product_id, p.product_name ORDER BY sales_amount DESC LIMIT 5",
+      "status": "value_mismatch",
+      "status_label": "结果值不一致",
+      "gold_rows": 5,
+      "pred_rows": 5
+    },
+    {
+      "id": "mt17",
+      "kind": "swap_limit",
+      "followup": "那只要前 3 名呢？",
+      "rewritten": "2025年销售额排名前3的商品是哪些？请给出商品名称和销售额。",
+      "sql": "SELECT p.product_name, SUM(oi.item_amount) AS sales_amount FROM orders o JOIN order_items oi ON o.order_id = oi.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_id, p.product_name ORDER BY sales_amount DESC LIMIT 3",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 3,
+      "pred_rows": 3
+    },
+    {
+      "id": "mt18",
+      "kind": "swap_limit",
+      "followup": "那只要前 3 名呢？",
+      "rewritten": "2025年有效订单数不少于30单的城市中，客单价最高的前3个城市是哪些？请给出城市、订单数和客单价。",
+      "sql": "SELECT u.city, COUNT(DISTINCT o.order_id) AS order_count, SUM(o.pay_amount) / COUNT(DISTINCT o.order_id) AS avg_order_value FROM orders o JOIN users u ON o.user_id = u.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' AND u.city IS NOT NULL GROUP BY u.city HAVING COUNT(DISTINCT o.order_id) >= 30 ORDER BY avg_order_value DESC LIMIT 3;",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 3,
+      "pred_rows": 3
+    },
+    {
+      "id": "mt19",
+      "kind": "swap_limit",
+      "followup": "那只要前 5 名呢？",
+      "rewritten": "用户数最多的前5个省份是哪些？分别有多少用户？",
+      "sql": "SELECT province, COUNT(*) AS user_count FROM users WHERE province IS NOT NULL GROUP BY province ORDER BY user_count DESC LIMIT 5",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 5,
+      "pred_rows": 5
+    },
+    {
+      "id": "mt20",
+      "kind": "swap_limit",
+      "followup": "那只要前 5 名呢？",
+      "rewritten": "2025年销售额排名前5的商品是哪些？请给出商品名称、品类、销量件数和销售额。",
+      "sql": "SELECT p.product_name, p.category, SUM(oi.quantity) AS total_quantity, SUM(oi.item_amount) AS total_sales FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN products p ON oi.product_id = p.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_id, p.product_name, p.category ORDER BY total_sales DESC LIMIT 5",
+      "status": "correct",
+      "status_label": "正确",
+      "gold_rows": 5,
+      "pred_rows": 5
+    }
+  ],
+  "control_pairs": [
+    {
+      "id": "mt01",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt02",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt03",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt04",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt05",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 12,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt06",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt07",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt08",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt09",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt10",
+      "kind": "swap_year",
+      "followup": "那换成 2024 年呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 12,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt11",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt12",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt13",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt14",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 1,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt15",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 24,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt16",
+      "kind": "drop_time",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt17",
+      "kind": "swap_limit",
+      "followup": "那只要前 3 名呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 3,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt18",
+      "kind": "swap_limit",
+      "followup": "那只要前 3 名呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 3,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt19",
+      "kind": "swap_limit",
+      "followup": "那只要前 5 名呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    },
+    {
+      "id": "mt20",
+      "kind": "swap_limit",
+      "followup": "那只要前 5 名呢？",
+      "rewritten": null,
+      "sql": null,
+      "status": "no_sql",
+      "status_label": "未产出 SQL",
+      "gold_rows": 5,
+      "pred_rows": 0
+    }
+  ]
+}

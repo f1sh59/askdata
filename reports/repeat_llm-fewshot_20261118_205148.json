@@ -1,0 +1,65 @@
+{
+  "strategy": "llm-fewshot",
+  "dataset_version": "v2.2",
+  "n_runs": 3,
+  "mean_ex": 1.0,
+  "std_ex": 0.0,
+  "min_ex": 1.0,
+  "max_ex": 1.0,
+  "runs": [
+    {
+      "ex": 1.0,
+      "correct": 25,
+      "total": 25,
+      "prompt_tokens": 292100,
+      "completion_tokens": 3660,
+      "latency_ms": 32151,
+      "api_errors": 0
+    },
+    {
+      "ex": 1.0,
+      "correct": 25,
+      "total": 25,
+      "prompt_tokens": 292100,
+      "completion_tokens": 3732,
+      "latency_ms": 34029,
+      "api_errors": 0
+    },
+    {
+      "ex": 1.0,
+      "correct": 25,
+      "total": 25,
+      "prompt_tokens": 292100,
+      "completion_tokens": 3640,
+      "latency_ms": 33183,
+      "api_errors": 0
+    }
+  ],
+  "passes": {
+    "e02": 3,
+    "e04": 3,
+    "e06": 3,
+    "e08": 3,
+    "e10": 3,
+    "m02": 3,
+    "m04": 3,
+    "m06": 3,
+    "m08": 3,
+    "m10": 3,
+    "m12": 3,
+    "h02": 3,
+    "h04": 3,
+    "h06": 3,
+    "h08": 3,
+    "m14": 3,
+    "m16": 3,
+    "m18": 3,
+    "m20": 3,
+    "h10": 3,
+    "h12": 3,
+    "h14": 3,
+    "h16": 3,
+    "h18": 3,
+    "h20": 3
+  }
+}

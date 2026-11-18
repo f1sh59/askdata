@@ -1,0 +1,107 @@
+{
+  "model": "deepseek-chat",
+  "baseline_ex": 0.0,
+  "closed_ex": 0.8,
+  "usage": {
+    "model": "deepseek-chat",
+    "calls": 2,
+    "cache_hits": 43,
+    "prompt_tokens": 6303,
+    "completion_tokens": 439,
+    "parse_failures": 0,
+    "api_errors": 0,
+    "latency_ms": 3531
+  },
+  "items": [
+    {
+      "id": "v01",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v02",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v03",
+      "asked": true,
+      "baseline_status": "value_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v04",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v05",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v06",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v07",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "value_mismatch"
+    },
+    {
+      "id": "v08",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "value_mismatch"
+    },
+    {
+      "id": "v09",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v10",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v11",
+      "asked": true,
+      "baseline_status": "value_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v12",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v13",
+      "asked": true,
+      "baseline_status": "column_mismatch",
+      "closed_status": "correct"
+    },
+    {
+      "id": "v14",
+      "asked": true,
+      "baseline_status": "value_mismatch",
+      "closed_status": "value_mismatch"
+    },
+    {
+      "id": "v15",
+      "asked": true,
+      "baseline_status": "value_mismatch",
+      "closed_status": "correct"
+    }
+  ]
+}

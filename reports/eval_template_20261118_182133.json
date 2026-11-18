@@ -1,0 +1,491 @@
+{
+  "strategy": "template",
+  "dataset_version": "v1",
+  "started_at": "2026-11-18 18:21:33",
+  "elapsed_s": 0.109,
+  "total": 30,
+  "execution_accuracy": 0.3,
+  "execution_accuracy_lenient": 0.3,
+  "by_difficulty": [
+    {
+      "difficulty": "easy",
+      "count": 10,
+      "correct": 9,
+      "ex": 0.9
+    },
+    {
+      "difficulty": "medium",
+      "count": 12,
+      "correct": 0,
+      "ex": 0.0
+    },
+    {
+      "difficulty": "hard",
+      "count": 8,
+      "correct": 0,
+      "ex": 0.0
+    }
+  ],
+  "status_counts": {
+    "correct": 9,
+    "no_sql": 17,
+    "column_mismatch": 4
+  },
+  "results": [
+    {
+      "id": "e01",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "time_filter"
+      ],
+      "question": "2025 年一共有多少笔订单？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT COUNT(*) AS order_cnt FROM orders WHERE order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e02",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "filter"
+      ],
+      "question": "目前在售（上架）的商品有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT COUNT(*) AS product_cnt FROM products WHERE is_online = TRUE",
+      "error": null
+    },
+    {
+      "id": "e03",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年的销售额（GMV）是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e04",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年已完成状态的退款金额合计是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(refund_amount), 2) AS refund_amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e05",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "null_handling"
+      ],
+      "question": "平台目前有多少个未注销的注册用户？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT COUNT(*) AS user_cnt FROM users WHERE is_deleted = FALSE",
+      "error": null
+    },
+    {
+      "id": "e06",
+      "difficulty": "easy",
+      "tags": [
+        "group",
+        "payment"
+      ],
+      "question": "各支付方式的支付成功金额分别是多少？",
+      "status": "correct",
+      "gold_row_count": 4,
+      "pred_row_count": 4,
+      "generated_sql": "SELECT pay_method, ROUND(SUM(pay_amount), 2) AS amt FROM payments WHERE pay_status = '成功' GROUP BY pay_method ORDER BY amt DESC",
+      "error": null
+    },
+    {
+      "id": "e07",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有效订单的平均订单金额是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e08",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "distinct"
+      ],
+      "question": "商品一共有几个品类？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT COUNT(DISTINCT category) AS category_cnt FROM products",
+      "error": null
+    },
+    {
+      "id": "e09",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "distinct",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有多少个不同用户下过有效订单？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e10",
+      "difficulty": "easy",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额最高的商品品类是哪个？",
+      "status": "no_sql",
+      "gold_row_count": 1,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m01",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的销售额分别是多少？",
+      "status": "column_mismatch",
+      "gold_row_count": 12,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "m02",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "time_bucket",
+        "date_type"
+      ],
+      "question": "2025 年每个月新增的注册用户数是多少？",
+      "status": "no_sql",
+      "gold_row_count": 11,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m03",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "business_rule",
+        "yoy"
+      ],
+      "question": "2025 年销售额相比 2024 年同比增长了百分之多少？",
+      "status": "no_sql",
+      "gold_row_count": 1,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m04",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额排名前 5 的商品是哪些？",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m05",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的有效订单数和销售额分别是多少？",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m06",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "用户数最多的前 10 个省份是哪些？分别有多少用户？",
+      "status": "no_sql",
+      "gold_row_count": 10,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m07",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各品类的毛利率是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100）",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m08",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年下过 2 笔及以上有效订单的用户有多少个？",
+      "status": "no_sql",
+      "gold_row_count": 1,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m09",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "group",
+        "payment"
+      ],
+      "question": "2025 年各支付方式的订单数占比是多少？（按支付成功流水统计）",
+      "status": "no_sql",
+      "gold_row_count": 4,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m10",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "group",
+        "left_join",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100）",
+      "status": "column_mismatch",
+      "gold_row_count": 12,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "m11",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "having",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "2025 年客单价最高的前 5 个城市是哪些？（只统计有效订单数不少于 30 单的城市）",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "m12",
+      "difficulty": "medium",
+      "tags": [
+        "subquery",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的新客首单数是多少？（新客 = 该用户第一次下有效订单）",
+      "status": "no_sql",
+      "gold_row_count": 9,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h01",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "time_bucket",
+        "ratio"
+      ],
+      "question": "2025 年每月销售额的环比增长率是多少？",
+      "status": "no_sql",
+      "gold_row_count": 12,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h02",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "top_n",
+        "group"
+      ],
+      "question": "2025 年每个品类中销售额最高的商品分别是哪个？",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h03",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的累计销售额是多少？",
+      "status": "column_mismatch",
+      "gold_row_count": 12,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "h04",
+      "difficulty": "hard",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "ratio",
+        "yoy"
+      ],
+      "question": "2025 年各渠道的销售额相比 2024 年同比增长了多少？请给出渠道、2024 销售额、2025 销售额和增长率（百分比）。",
+      "status": "no_sql",
+      "gold_row_count": 5,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h05",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "subquery",
+        "business_rule"
+      ],
+      "question": "2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？",
+      "status": "no_sql",
+      "gold_row_count": 1,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h06",
+      "difficulty": "hard",
+      "tags": [
+        "join",
+        "group",
+        "ratio",
+        "null_handling",
+        "business_rule"
+      ],
+      "question": "2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（会员等级缺失的用户归为「未知」）",
+      "status": "column_mismatch",
+      "gold_row_count": 5,
+      "pred_row_count": 1,
+      "generated_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "h07",
+      "difficulty": "hard",
+      "tags": [
+        "left_join",
+        "anti_pattern",
+        "business_rule"
+      ],
+      "question": "2025 年下过单但从未支付成功的用户有多少个？",
+      "status": "no_sql",
+      "gold_row_count": 1,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    },
+    {
+      "id": "h08",
+      "difficulty": "hard",
+      "tags": [
+        "group",
+        "having",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的复购用户数是多少？（当月有效订单不少于 2 笔的用户）",
+      "status": "no_sql",
+      "gold_row_count": 12,
+      "pred_row_count": 0,
+      "generated_sql": null,
+      "error": null
+    }
+  ]
+}

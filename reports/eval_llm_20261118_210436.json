@@ -1,0 +1,69 @@
+{
+  "strategy": "llm",
+  "dataset_version": "v2.2",
+  "started_at": "2026-11-18 21:04:34",
+  "elapsed_s": 1.862,
+  "total": 2,
+  "execution_accuracy": 1.0,
+  "execution_accuracy_lenient": 1.0,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 2,
+    "cache_hits": 0,
+    "prompt_tokens": 22253,
+    "completion_tokens": 64,
+    "parse_failures": 0,
+    "api_errors": 0,
+    "latency_ms": 1851
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "easy",
+      "count": 2,
+      "correct": 2,
+      "ex": 1.0
+    }
+  ],
+  "by_cohort": [],
+  "status_counts": {
+    "correct": 2
+  },
+  "results": [
+    {
+      "id": "e01",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "time_filter"
+      ],
+      "question": "2025 年一共有多少笔订单？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT COUNT(*) AS order_count\nFROM orders\nWHERE order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e02",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "filter"
+      ],
+      "question": "目前在售（上架）的商品有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": null,
+      "first_attempt_status": null,
+      "generated_sql": "SELECT COUNT(*) AS product_count\nFROM products\nWHERE is_online = TRUE",
+      "error": null
+    }
+  ]
+}

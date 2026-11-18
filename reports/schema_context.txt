@@ -1,0 +1,774 @@
+### as_complaint  
+字段：
+- complaint_id INTEGER
+- customer_id INTEGER
+- content VARCHAR
+- status VARCHAR
+枚举值：
+- content: content_14 / content_15 / content_16 / content_17 / content_18 / content_2 / content_22 / content_29 / content_36 / content_39 / content_27 / content_3 / content_35 / content_5 / content_8 / content_1 / content_12 / content_13 / content_19 / content_21 / content_23 / content_26 / content_28 / content_33 / content_34 / content_37 / content_40 / content_6 / content_7 / content_9
+- status: 处理中 / 待处理 / 已关闭 / 已完成
+样例数据：
+- complaint_id=29, customer_id=732, content=content_14, status=已关闭
+- complaint_id=43, customer_id=216, content=content_29, status=处理中
+
+### as_repair_order  
+字段：
+- repair_id INTEGER
+- product_id INTEGER
+- fault_desc VARCHAR
+- status VARCHAR
+枚举值：
+- fault_desc: fault_desc_12 / fault_desc_37 / fault_desc_38 / fault_desc_5 / fault_desc_14 / fault_desc_19 / fault_desc_22 / fault_desc_31 / fault_desc_32 / fault_desc_39 / fault_desc_8 / fault_desc_9 / fault_desc_17 / fault_desc_18 / fault_desc_20 / fault_desc_21 / fault_desc_23 / fault_desc_26 / fault_desc_3 / fault_desc_34 / fault_desc_35 / fault_desc_36 / fault_desc_6 / fault_desc_7
+- status: 已完成 / 处理中 / 待处理 / 已关闭
+样例数据：
+- repair_id=22, product_id=741, fault_desc=fault_desc_9, status=已完成
+- repair_id=25, product_id=40, fault_desc=fault_desc_14, status=已完成
+
+### as_return_apply  
+字段：
+- apply_id INTEGER
+- order_no VARCHAR
+- reason VARCHAR
+- status VARCHAR
+枚举值：
+- status: 处理中 / 已关闭 / 已完成 / 待处理
+样例数据：
+- apply_id=54, order_no=order_no_10, reason=reason_30, status=处理中
+- apply_id=58, order_no=order_no_6, reason=reason_7, status=待处理
+
+### as_warranty  
+字段：
+- warranty_id INTEGER
+- product_id INTEGER
+- expire_date DATE
+样例数据：
+- warranty_id=15, product_id=985, expire_date=2025-05-10
+- warranty_id=30, product_id=493, expire_date=2025-04-22
+
+### channels  渠道维表（一行 = 一个销售渠道）
+字段：
+- channel_id INTEGER
+- channel_name VARCHAR
+- channel_type VARCHAR  -- 平台电商 / 内容电商 / 自营
+枚举值：
+- channel_name: 京东 / 天猫 / 官网 / 小程序 / 抖音
+- channel_type: 平台电商 / 自营 / 内容电商
+样例数据：
+- channel_id=1, channel_name=天猫, channel_type=平台电商
+- channel_id=2, channel_name=京东, channel_type=平台电商
+
+### cust_contact_log  
+字段：
+- log_id INTEGER
+- customer_id INTEGER
+- channel_type VARCHAR
+- content VARCHAR
+- created_at DATE
+枚举值：
+- channel_type: 类型B / 类型A / 类型C
+样例数据：
+- log_id=1, customer_id=75, channel_type=类型B, content=content_34, created_at=2025-05-25
+- log_id=11, customer_id=551, channel_type=类型B, content=content_30, created_at=2023-10-13
+
+### cust_lifecycle  
+字段：
+- customer_id INTEGER
+- stage VARCHAR
+- entered_at DATE
+样例数据：
+- customer_id=11, stage=stage_25, entered_at=2025-05-01
+- customer_id=14, stage=stage_5, entered_at=2024-03-04
+
+### cust_satisfaction  
+字段：
+- survey_id INTEGER
+- customer_id INTEGER
+- score INTEGER
+- created_at DATE
+样例数据：
+- survey_id=3, customer_id=581, score=364, created_at=2023-11-08
+- survey_id=12, customer_id=58, score=661, created_at=2025-04-20
+
+### cust_segment  
+字段：
+- segment_id INTEGER
+- segment_name VARCHAR
+- rule_desc VARCHAR
+- created_at DATE
+枚举值：
+- segment_name: segment_name_11 / segment_name_19 / segment_name_25 / segment_name_3 / segment_name_5 / segment_name_13 / segment_name_14 / segment_name_2 / segment_name_20 / segment_name_22 / segment_name_23 / segment_name_27 / segment_name_28 / segment_name_34 / segment_name_38 / segment_name_39 / segment_name_4 / segment_name_7 / segment_name_8
+- rule_desc: rule_desc_14 / rule_desc_2 / rule_desc_35 / rule_desc_5 / rule_desc_1 / rule_desc_10 / rule_desc_15 / rule_desc_17 / rule_desc_21 / rule_desc_22 / rule_desc_23 / rule_desc_24 / rule_desc_25 / rule_desc_28 / rule_desc_31 / rule_desc_33 / rule_desc_38 / rule_desc_40 / rule_desc_6 / rule_desc_7
+样例数据：
+- segment_id=22, segment_name=segment_name_23, rule_desc=rule_desc_17, created_at=2025-08-10
+- segment_id=28, segment_name=segment_name_8, rule_desc=rule_desc_7, created_at=2024-09-28
+
+### cust_service_ticket  
+字段：
+- ticket_id INTEGER
+- customer_id INTEGER
+- ticket_type VARCHAR
+- status VARCHAR
+- created_at DATE
+枚举值：
+- ticket_type: 类型B / 类型A / 类型C
+- status: 处理中 / 待处理 / 已关闭 / 已完成
+样例数据：
+- ticket_id=3, customer_id=81, ticket_type=类型B, status=待处理, created_at=2023-12-26
+- ticket_id=12, customer_id=839, ticket_type=类型B, status=已关闭, created_at=2024-11-25
+
+### dim_brand  
+字段：
+- brand_id INTEGER
+- brand_name VARCHAR
+- country VARCHAR
+枚举值：
+- brand_name: brand_name_23 / brand_name_7 / brand_name_16 / brand_name_18 / brand_name_34 / brand_name_37 / brand_name_8 / brand_name_11 / brand_name_12 / brand_name_2 / brand_name_21 / brand_name_27 / brand_name_32 / brand_name_33 / brand_name_35 / brand_name_36 / brand_name_38 / brand_name_39 / brand_name_4 / brand_name_40 / brand_name_9
+- country: country_16 / country_2 / country_24 / country_29 / country_30 / country_6 / country_1 / country_12 / country_13 / country_19 / country_20 / country_22 / country_25 / country_26 / country_3 / country_31 / country_32 / country_33 / country_35 / country_39 / country_5 / country_7 / country_8 / country_9
+样例数据：
+- brand_id=16, brand_name=brand_name_27, country=country_31
+- brand_id=20, brand_name=brand_name_7, country=country_13
+
+### dim_category_tree  
+字段：
+- node_id INTEGER
+- parent_id INTEGER
+- node_name VARCHAR
+- node_level VARCHAR
+枚举值：
+- node_name: node_name_15 / node_name_20 / node_name_40 / node_name_16 / node_name_22 / node_name_23 / node_name_25 / node_name_26 / node_name_3 / node_name_8 / node_name_1 / node_name_12 / node_name_13 / node_name_14 / node_name_18 / node_name_19 / node_name_2 / node_name_21 / node_name_24 / node_name_29 / node_name_30 / node_name_32 / node_name_33 / node_name_35 / node_name_38 / node_name_39 / node_name_4
+- node_level: node_level_18 / node_level_26 / node_level_13 / node_level_16 / node_level_19 / node_level_21 / node_level_3 / node_level_30 / node_level_4 / node_level_40 / node_level_10 / node_level_11 / node_level_2 / node_level_23 / node_level_24 / node_level_25 / node_level_27 / node_level_28 / node_level_33 / node_level_34 / node_level_35 / node_level_37 / node_level_38 / node_level_39 / node_level_5 / node_level_8 / node_level_9
+样例数据：
+- node_id=14, parent_id=445, node_name=node_name_16, node_level=node_level_3
+- node_id=87, parent_id=478, node_name=node_name_38, node_level=node_level_35
+
+### dim_customer  
+字段：
+- customer_id INTEGER
+- customer_name VARCHAR
+- segment_code VARCHAR
+- reg_source VARCHAR
+- created_at DATE
+样例数据：
+- customer_id=1, customer_name=customer_name_37, segment_code=segment_code_10, reg_source=reg_source_35, created_at=2023-04-14
+- customer_id=2, customer_name=customer_name_31, segment_code=segment_code_23, reg_source=reg_source_6, created_at=2025-05-04
+
+### dim_customer_addr  
+字段：
+- addr_id INTEGER
+- customer_id INTEGER
+- city VARCHAR
+- detail VARCHAR
+样例数据：
+- addr_id=5, customer_id=10, city=city_8, detail=detail_6
+- addr_id=16, customer_id=905, city=city_40, detail=detail_6
+
+### dim_customer_tag  
+字段：
+- tag_id INTEGER
+- tag_name VARCHAR
+- tag_level VARCHAR
+- created_at DATE
+枚举值：
+- tag_name: tag_name_13 / tag_name_18 / tag_name_7 / tag_name_11 / tag_name_12 / tag_name_15 / tag_name_17 / tag_name_2 / tag_name_28 / tag_name_34 / tag_name_35 / tag_name_36 / tag_name_40 / tag_name_5 / tag_name_8 / tag_name_10 / tag_name_14 / tag_name_16 / tag_name_21 / tag_name_27 / tag_name_6 / tag_name_9
+- tag_level: tag_level_33 / tag_level_18 / tag_level_30 / tag_level_16 / tag_level_17 / tag_level_24 / tag_level_26 / tag_level_34 / tag_level_36 / tag_level_5 / tag_level_6 / tag_level_13 / tag_level_15 / tag_level_19 / tag_level_2 / tag_level_20 / tag_level_25 / tag_level_27 / tag_level_28 / tag_level_29 / tag_level_3 / tag_level_31 / tag_level_40 / tag_level_7 / tag_level_8
+样例数据：
+- tag_id=45, tag_name=tag_name_34, tag_level=tag_level_16, created_at=2025-08-18
+- tag_id=59, tag_name=tag_name_12, tag_level=tag_level_28, created_at=2025-07-05
+
+### dim_sku_ext  
+字段：
+- sku_id INTEGER
+- attr_name VARCHAR
+- attr_value VARCHAR
+样例数据：
+- sku_id=2, attr_name=attr_name_34, attr_value=attr_value_19
+- sku_id=32, attr_name=attr_name_23, attr_value=attr_value_18
+
+### fin_bill  
+字段：
+- bill_id INTEGER
+- account_id INTEGER
+- bill_amount DECIMAL(18,3)
+- bill_month VARCHAR
+枚举值：
+- bill_month: bill_month_38 / bill_month_33 / bill_month_22 / bill_month_29 / bill_month_37 / bill_month_39 / bill_month_7 / bill_month_11 / bill_month_12 / bill_month_15 / bill_month_19 / bill_month_2 / bill_month_25 / bill_month_26 / bill_month_28 / bill_month_31 / bill_month_34 / bill_month_35 / bill_month_36 / bill_month_9 / bill_month_1 / bill_month_16 / bill_month_17 / bill_month_20 / bill_month_24 / bill_month_27 / bill_month_32 / bill_month_40 / bill_month_5 / bill_month_8
+样例数据：
+- bill_id=10, account_id=331, bill_amount=373.890, bill_month=bill_month_28
+- bill_id=28, account_id=97, bill_amount=8422.090, bill_month=bill_month_28
+
+### fin_fee_rate  
+字段：
+- rate_id INTEGER
+- biz_type VARCHAR
+- rate DECIMAL(18,3)
+枚举值：
+- biz_type: 类型B / 类型C / 类型A
+样例数据：
+- rate_id=78, biz_type=类型C, rate=5584.510
+- rate_id=84, biz_type=类型A, rate=6829.840
+
+### fin_ledger  
+字段：
+- entry_id INTEGER
+- account_code VARCHAR
+- debit DECIMAL(18,3)
+- credit DECIMAL(18,3)
+样例数据：
+- entry_id=7, account_code=account_code_20, debit=3230.730, credit=7406.960
+- entry_id=7, account_code=account_code_6, debit=9088.010, credit=4012.520
+
+### fin_payment_channel  
+字段：
+- channel_code VARCHAR
+- channel_name VARCHAR
+- fee_rate DECIMAL(18,3)
+枚举值：
+- channel_code: channel_code_11 / channel_code_12 / channel_code_13 / channel_code_15 / channel_code_22 / channel_code_29 / channel_code_30 / channel_code_4 / channel_code_5 / channel_code_6 / channel_code_7 / channel_code_8
+- channel_name: channel_name_33 / channel_name_11 / channel_name_14 / channel_name_16 / channel_name_19 / channel_name_20 / channel_name_28 / channel_name_38 / channel_name_4 / channel_name_6
+样例数据：
+- channel_code=channel_code_11, channel_name=channel_name_38, fee_rate=455.070
+- channel_code=channel_code_12, channel_name=channel_name_20, fee_rate=4319.650
+
+### fin_payment_recon  
+字段：
+- recon_id INTEGER
+- trade_no VARCHAR
+- amount DECIMAL(18,3)
+- diff_amount DECIMAL(18,3)
+- status VARCHAR
+枚举值：
+- status: 处理中 / 已完成 / 待处理 / 已关闭
+样例数据：
+- recon_id=4, trade_no=trade_no_10, amount=424.110, diff_amount=3536.600, status=已完成
+- recon_id=21, trade_no=trade_no_26, amount=3900.780, diff_amount=3793.070, status=待处理
+
+### fin_refund_audit  
+字段：
+- audit_id INTEGER
+- refund_no VARCHAR
+- auditor VARCHAR
+- status VARCHAR
+枚举值：
+- status: 已完成 / 处理中 / 待处理 / 已关闭
+样例数据：
+- audit_id=3, refund_no=refund_no_28, auditor=auditor_12, status=待处理
+- audit_id=19, refund_no=refund_no_21, auditor=auditor_10, status=待处理
+
+### fin_settlement  
+字段：
+- settle_id INTEGER
+- merchant_id INTEGER
+- settle_amount DECIMAL(18,3)
+- settle_date DATE
+样例数据：
+- settle_id=14, merchant_id=266, settle_amount=6270.140, settle_date=2024-10-09
+- settle_id=52, merchant_id=203, settle_amount=2484.610, settle_date=2023-03-28
+
+### fin_tax_record  
+字段：
+- tax_id INTEGER
+- tax_type VARCHAR
+- tax_amount DECIMAL(18,3)
+枚举值：
+- tax_type: 类型C / 类型B / 类型A
+样例数据：
+- tax_id=4, tax_type=类型B, tax_amount=4191.550
+- tax_id=17, tax_type=类型A, tax_amount=3285.260
+
+### inv_batch  
+字段：
+- batch_id INTEGER
+- product_id INTEGER
+- batch_no VARCHAR
+- expire_date DATE
+样例数据：
+- batch_id=13, product_id=220, batch_no=batch_no_23, expire_date=2023-10-22
+- batch_id=14, product_id=247, batch_no=batch_no_30, expire_date=2024-09-11
+
+### inv_count  
+字段：
+- count_id INTEGER
+- warehouse_id INTEGER
+- diff_qty INTEGER
+- created_at DATE
+样例数据：
+- count_id=45, warehouse_id=61, diff_qty=418, created_at=2025-08-15
+- count_id=71, warehouse_id=698, diff_qty=974, created_at=2024-12-10
+
+### inv_inbound  
+字段：
+- inbound_id INTEGER
+- product_id INTEGER
+- qty INTEGER
+- created_at DATE
+样例数据：
+- inbound_id=8, product_id=786, qty=208, created_at=2023-12-11
+- inbound_id=17, product_id=201, qty=858, created_at=2024-08-10
+
+### inv_outbound  
+字段：
+- outbound_id INTEGER
+- product_id INTEGER
+- qty INTEGER
+- created_at DATE
+样例数据：
+- outbound_id=5, product_id=626, qty=138, created_at=2024-10-01
+- outbound_id=7, product_id=111, qty=408, created_at=2023-09-27
+
+### inv_stock  
+字段：
+- stock_id INTEGER
+- product_id INTEGER
+- warehouse_id INTEGER
+- qty INTEGER
+样例数据：
+- stock_id=2, product_id=705, warehouse_id=532, qty=425
+- stock_id=3, product_id=383, warehouse_id=221, qty=419
+
+### inv_transfer  
+字段：
+- transfer_id INTEGER
+- from_wh INTEGER
+- to_wh INTEGER
+- qty INTEGER
+样例数据：
+- transfer_id=20, from_wh=522, to_wh=561, qty=488
+- transfer_id=23, from_wh=692, to_wh=360, qty=392
+
+### inv_warehouse  
+字段：
+- warehouse_id INTEGER
+- warehouse_name VARCHAR
+- city VARCHAR
+枚举值：
+- warehouse_name: warehouse_name_10 / warehouse_name_34 / warehouse_name_36 / warehouse_name_9 / warehouse_name_1 / warehouse_name_15 / warehouse_name_16 / warehouse_name_28 / warehouse_name_31 / warehouse_name_35 / warehouse_name_40
+- city: city_16 / city_1 / city_11 / city_12 / city_18 / city_19 / city_21 / city_25 / city_29 / city_3 / city_32 / city_35 / city_37 / city_4
+样例数据：
+- warehouse_id=5, warehouse_name=warehouse_name_15, city=city_21
+- warehouse_id=42, warehouse_name=warehouse_name_34, city=city_19
+
+### logis_carrier  
+字段：
+- carrier_code VARCHAR
+- carrier_name VARCHAR
+- service_level VARCHAR
+枚举值：
+- carrier_code: carrier_code_19 / carrier_code_9 / carrier_code_1 / carrier_code_10 / carrier_code_11 / carrier_code_13 / carrier_code_20 / carrier_code_26 / carrier_code_28 / carrier_code_3 / carrier_code_30 / carrier_code_31 / carrier_code_38 / carrier_code_40 / carrier_code_5 / carrier_code_8
+- carrier_name: carrier_name_2 / carrier_name_19 / carrier_name_28 / carrier_name_5 / carrier_name_11 / carrier_name_15 / carrier_name_21 / carrier_name_22 / carrier_name_24 / carrier_name_31 / carrier_name_33 / carrier_name_38 / carrier_name_9
+- service_level: service_level_10 / service_level_15 / service_level_24 / service_level_40 / service_level_19 / service_level_2 / service_level_20 / service_level_21 / service_level_27 / service_level_29 / service_level_34 / service_level_38 / service_level_6 / service_level_7
+样例数据：
+- carrier_code=carrier_code_1, carrier_name=carrier_name_19, service_level=service_level_6
+- carrier_code=carrier_code_10, carrier_name=carrier_name_2, service_level=service_level_19
+
+### logis_exception  
+字段：
+- exception_id INTEGER
+- waybill_no VARCHAR
+- reason VARCHAR
+- created_at DATE
+样例数据：
+- exception_id=14, waybill_no=waybill_no_26, reason=reason_5, created_at=2024-04-02
+- exception_id=45, waybill_no=waybill_no_38, reason=reason_9, created_at=2024-12-19
+
+### logis_fee  
+字段：
+- fee_id INTEGER
+- waybill_no VARCHAR
+- freight DECIMAL(18,3)
+- created_at DATE
+样例数据：
+- fee_id=8, waybill_no=waybill_no_22, freight=5268.740, created_at=2023-12-30
+- fee_id=9, waybill_no=waybill_no_34, freight=9684.500, created_at=2024-09-23
+
+### logis_route  
+字段：
+- route_id INTEGER
+- from_city VARCHAR
+- to_city VARCHAR
+- days INTEGER
+枚举值：
+- from_city: from_city_7 / from_city_25 / from_city_28 / from_city_10 / from_city_11 / from_city_26 / from_city_33 / from_city_35 / from_city_36 / from_city_6 / from_city_9 / from_city_15 / from_city_19 / from_city_2 / from_city_21 / from_city_23 / from_city_24 / from_city_29 / from_city_30 / from_city_31 / from_city_34 / from_city_39 / from_city_4 / from_city_40
+- to_city: to_city_18 / to_city_20 / to_city_39 / to_city_9 / to_city_2 / to_city_21 / to_city_27 / to_city_3 / to_city_33 / to_city_8 / to_city_1 / to_city_10 / to_city_11 / to_city_12 / to_city_15 / to_city_17 / to_city_19 / to_city_24 / to_city_25 / to_city_26 / to_city_28 / to_city_36 / to_city_40 / to_city_5 / to_city_6 / to_city_7
+样例数据：
+- route_id=29, from_city=from_city_7, to_city=to_city_9, days=877
+- route_id=40, from_city=from_city_10, to_city=to_city_18, days=129
+
+### logis_track  
+字段：
+- track_id INTEGER
+- waybill_no VARCHAR
+- node_desc VARCHAR
+- track_time DATE
+样例数据：
+- track_id=6, waybill_no=waybill_no_37, node_desc=node_desc_20, track_time=2023-07-30
+- track_id=11, waybill_no=waybill_no_6, node_desc=node_desc_1, track_time=2024-06-19
+
+### logis_waybill  
+字段：
+- waybill_no VARCHAR
+- order_no VARCHAR
+- carrier_code VARCHAR
+- status VARCHAR
+枚举值：
+- status: 待处理 / 已完成 / 处理中 / 已关闭
+样例数据：
+- waybill_no=waybill_no_1, order_no=order_no_8, carrier_code=carrier_code_14, status=已完成
+- waybill_no=waybill_no_1, order_no=order_no_21, carrier_code=carrier_code_18, status=待处理
+
+### mkt_activity  
+字段：
+- signup_id INTEGER
+- campaign_id INTEGER
+- merchant_id INTEGER
+- status VARCHAR
+枚举值：
+- status: 已关闭 / 待处理 / 已完成 / 处理中
+样例数据：
+- signup_id=25, campaign_id=404, merchant_id=158, status=待处理
+- signup_id=81, campaign_id=538, merchant_id=685, status=已关闭
+
+### mkt_campaign  
+字段：
+- campaign_id INTEGER
+- campaign_name VARCHAR
+- start_date DATE
+- end_date DATE
+枚举值：
+- campaign_name: campaign_name_25 / campaign_name_7 / campaign_name_15 / campaign_name_19 / campaign_name_33 / campaign_name_4 / campaign_name_10 / campaign_name_12 / campaign_name_13 / campaign_name_17 / campaign_name_22 / campaign_name_23 / campaign_name_27 / campaign_name_28 / campaign_name_29 / campaign_name_34 / campaign_name_35 / campaign_name_36 / campaign_name_37 / campaign_name_39 / campaign_name_5 / campaign_name_6
+样例数据：
+- campaign_id=13, campaign_name=campaign_name_15, start_date=2024-03-14, end_date=2023-08-09
+- campaign_id=20, campaign_name=campaign_name_22, start_date=2025-08-21, end_date=2023-11-06
+
+### mkt_channel_cost  
+字段：
+- cost_id INTEGER
+- campaign_id INTEGER
+- channel VARCHAR
+- cost DECIMAL(18,3)
+- stat_date DATE
+样例数据：
+- cost_id=7, campaign_id=59, channel=channel_39, cost=6768.430, stat_date=2024-04-03
+- cost_id=22, campaign_id=528, channel=channel_35, cost=7281.600, stat_date=2023-04-17
+
+### mkt_content  
+字段：
+- content_id INTEGER
+- title VARCHAR
+- content_type VARCHAR
+- created_at DATE
+枚举值：
+- title: title_29 / title_22 / title_24 / title_34 / title_1 / title_10 / title_16 / title_19 / title_20 / title_21 / title_25 / title_35 / title_37 / title_40 / title_9 / title_12 / title_13 / title_14 / title_15 / title_17 / title_18 / title_2 / title_28 / title_36 / title_39 / title_4 / title_6 / title_7 / title_8
+- content_type: 类型A / 类型B / 类型C
+样例数据：
+- content_id=9, title=title_9, content_type=类型C, created_at=2025-01-21
+- content_id=47, title=title_40, content_type=类型A, created_at=2025-09-07
+
+### mkt_coupon  
+字段：
+- coupon_id INTEGER
+- coupon_code VARCHAR
+- discount DECIMAL(18,3)
+- status VARCHAR
+枚举值：
+- status: 已关闭 / 待处理 / 已完成 / 处理中
+样例数据：
+- coupon_id=11, coupon_code=coupon_code_19, discount=39.890, status=已关闭
+- coupon_id=11, coupon_code=coupon_code_12, discount=4050.450, status=已关闭
+
+### mkt_coupon_rule  
+字段：
+- rule_id INTEGER
+- coupon_id INTEGER
+- rule_desc VARCHAR
+枚举值：
+- rule_desc: rule_desc_23 / rule_desc_34 / rule_desc_18 / rule_desc_25 / rule_desc_29 / rule_desc_33 / rule_desc_16 / rule_desc_21 / rule_desc_36 / rule_desc_37 / rule_desc_11 / rule_desc_12 / rule_desc_14 / rule_desc_15 / rule_desc_17 / rule_desc_19 / rule_desc_20 / rule_desc_22 / rule_desc_24 / rule_desc_26 / rule_desc_27 / rule_desc_30 / rule_desc_32 / rule_desc_4 / rule_desc_6 / rule_desc_8 / rule_desc_9
+样例数据：
+- rule_id=46, coupon_id=144, rule_desc=rule_desc_20
+- rule_id=63, coupon_id=465, rule_desc=rule_desc_33
+
+### mkt_roi_daily  
+字段：
+- roi_id INTEGER
+- campaign_id INTEGER
+- gmv DECIMAL(18,3)
+- cost DECIMAL(18,3)
+- stat_date DATE
+样例数据：
+- roi_id=3, campaign_id=293, gmv=2875.220, cost=4134.470, stat_date=2024-09-16
+- roi_id=6, campaign_id=410, gmv=2394.320, cost=2626.480, stat_date=2023-06-20
+
+### ods_order_ext  
+字段：
+- order_no VARCHAR
+- ext_key VARCHAR
+- ext_value VARCHAR
+- created_at DATE
+样例数据：
+- order_no=order_no_1, ext_key=ext_key_15, ext_value=ext_value_13, created_at=2024-02-16
+- order_no=order_no_1, ext_key=ext_key_7, ext_value=ext_value_32, created_at=2023-04-01
+
+### ods_order_log  
+字段：
+- log_id INTEGER
+- order_no VARCHAR
+- action VARCHAR
+- created_at DATE
+样例数据：
+- log_id=8, order_no=order_no_18, action=action_10, created_at=2023-07-12
+- log_id=10, order_no=order_no_1, action=action_12, created_at=2023-04-17
+
+### ods_order_raw  
+字段：
+- raw_id INTEGER
+- payload VARCHAR
+- ingest_time DATE
+样例数据：
+- raw_id=8, payload=payload_36, ingest_time=2025-02-01
+- raw_id=23, payload=payload_4, ingest_time=2025-01-03
+
+### order_items  订单明细（一行 = 订单里的一件商品，item_amount = unit_price × quantity）
+字段：
+- item_id INTEGER
+- order_id INTEGER
+- product_id INTEGER
+- quantity INTEGER
+- unit_price DECIMAL(10,2)
+- item_amount DECIMAL(12,2)
+样例数据：
+- item_id=1, order_id=1, product_id=50, quantity=4, unit_price=420.02, item_amount=1680.08
+- item_id=2, order_id=2, product_id=63, quantity=4, unit_price=2277.38, item_amount=9109.52
+
+### orders  订单头（一行 = 一笔订单，包含已取消/待支付/已退款订单）
+字段：
+- order_id INTEGER
+- user_id INTEGER
+- channel_id INTEGER
+- order_time TIMESTAMP  -- 下单时间（TIMESTAMP 类型）
+- status VARCHAR  -- 订单状态：待支付/已支付/已发货/已完成/已取消/已退款
+- total_amount DECIMAL(12,2)  -- 折扣前商品金额合计
+- discount_amount DECIMAL(12,2)  -- 优惠金额
+- pay_amount DECIMAL(12,2)  -- 实付金额 = total_amount - discount_amount
+- coupon_code VARCHAR  -- 使用的优惠券编码，可为 NULL
+枚举值：
+- status: 已完成 / 已发货 / 已取消 / 已支付 / 已退款 / 待支付
+- coupon_code: CPN202511 / CPN202512 / CPN202411 / CPN202506 / CPN202412 / CPN202505 / CPN202509 / CPN202510 / CPN202508 / CPN202405 / CPN202406 / CPN202504 / CPN202503 / CPN202501 / CPN202410 / CPN202409 / CPN202507 / CPN202401 / CPN202403 / CPN202404 / CPN202408 / CPN202407 / CPN202502 / CPN202402
+样例数据：
+- order_id=1, user_id=230, channel_id=1, order_time=2024-01-23 20:49:00, status=已完成, total_amount=1680.08, discount_amount=211.52, pay_amount=1468.56, coupon_code=CPN202401
+- order_id=2, user_id=57, channel_id=1, order_time=2024-01-27 12:38:00, status=已完成, total_amount=20428.49, discount_amount=0.00, pay_amount=20428.49, coupon_code=NULL
+
+### payments  支付流水（一行 = 一次支付尝试，pay_status 可能是成功/失败/退款）
+字段：
+- payment_id INTEGER
+- order_id INTEGER
+- pay_time TIMESTAMP
+- pay_method VARCHAR
+- pay_amount DECIMAL(12,2)
+- pay_status VARCHAR  -- 支付状态：成功/失败/退款
+枚举值：
+- pay_method: 支付宝 / 微信 / 银行卡 / 花呗
+- pay_status: 成功 / 失败 / 退款
+样例数据：
+- payment_id=1, order_id=1, pay_time=2024-01-23 20:50:51, pay_method=银行卡, pay_amount=1468.56, pay_status=成功
+- payment_id=2, order_id=2, pay_time=2024-01-27 12:39:48, pay_method=支付宝, pay_amount=20428.49, pay_status=成功
+
+### prod_bom  
+字段：
+- bom_id INTEGER
+- parent_sku INTEGER
+- child_sku INTEGER
+- qty INTEGER
+样例数据：
+- bom_id=5, parent_sku=498, child_sku=894, qty=913
+- bom_id=10, parent_sku=137, child_sku=934, qty=310
+
+### prod_price_history  
+字段：
+- record_id INTEGER
+- product_id INTEGER
+- old_price DECIMAL(18,3)
+- new_price DECIMAL(18,3)
+- created_at DATE
+样例数据：
+- record_id=1, product_id=115, old_price=8342.080, new_price=7764.180, created_at=2023-10-21
+- record_id=3, product_id=315, old_price=7105.960, new_price=5529.220, created_at=2025-07-28
+
+### prod_quality_check  
+字段：
+- check_id INTEGER
+- product_id INTEGER
+- result VARCHAR
+- created_at DATE
+枚举值：
+- result: result_34 / result_31 / result_16 / result_30 / result_35 / result_1 / result_12 / result_15 / result_17 / result_18 / result_22 / result_25 / result_26 / result_29 / result_3 / result_40 / result_5 / result_6 / result_10 / result_2 / result_21 / result_23 / result_27 / result_28 / result_33 / result_36 / result_37 / result_8 / result_9
+样例数据：
+- check_id=7, product_id=697, result=result_9, created_at=2024-01-11
+- check_id=45, product_id=202, result=result_33, created_at=2023-02-19
+
+### prod_stock_snapshot  
+字段：
+- snapshot_id INTEGER
+- product_id INTEGER
+- warehouse_id INTEGER
+- qty INTEGER
+- created_at DATE
+样例数据：
+- snapshot_id=9, product_id=368, warehouse_id=942, qty=94, created_at=2024-10-21
+- snapshot_id=15, product_id=26, warehouse_id=351, qty=155, created_at=2024-05-13
+
+### prod_supplier  
+字段：
+- supplier_id INTEGER
+- supplier_name VARCHAR
+- coop_level VARCHAR
+枚举值：
+- supplier_name: supplier_name_21 / supplier_name_6 / supplier_name_1 / supplier_name_2 / supplier_name_24 / supplier_name_32 / supplier_name_39 / supplier_name_40 / supplier_name_9 / supplier_name_14 / supplier_name_15 / supplier_name_16 / supplier_name_17 / supplier_name_18 / supplier_name_20 / supplier_name_22 / supplier_name_26 / supplier_name_27 / supplier_name_30 / supplier_name_31 / supplier_name_33 / supplier_name_35 / supplier_name_36 / supplier_name_37
+- coop_level: coop_level_2 / coop_level_22 / coop_level_10 / coop_level_14 / coop_level_3 / coop_level_36 / coop_level_37 / coop_level_39 / coop_level_4 / coop_level_1 / coop_level_12 / coop_level_19 / coop_level_21 / coop_level_23 / coop_level_26 / coop_level_28 / coop_level_29 / coop_level_30 / coop_level_34 / coop_level_35 / coop_level_38 / coop_level_40 / coop_level_5 / coop_level_7
+样例数据：
+- supplier_id=49, supplier_name=supplier_name_26, coop_level=coop_level_29
+- supplier_id=50, supplier_name=supplier_name_6, coop_level=coop_level_5
+
+### products  商品维表（一行 = 一个 SKU，cost 是成本价）
+字段：
+- product_id INTEGER
+- product_name VARCHAR
+- category VARCHAR  -- 商品品类（一级）
+- sub_category VARCHAR  -- 二级类目
+- list_price DECIMAL(10,2)  -- 商品标价
+- cost DECIMAL(10,2)  -- 成本价（每件）
+- launch_date DATE
+- is_online BOOLEAN  -- 是否在售，FALSE 表示已下架但历史订单里仍有
+枚举值：
+- category: 家电 / 数码 / 服饰 / 美妆 / 食品
+- sub_category: 冰箱 / 厨房电器 / 女装 / 平板 / 手机 / 洗衣机 / 男装 / 空调 / 耳机 / 配件 / 个护 / 彩妆 / 护肤 / 生鲜 / 粮油 / 配饰 / 零食 / 鞋履 / 饮料 / 香水
+样例数据：
+- product_id=1, product_name=数码手机001, category=数码, sub_category=手机, list_price=8698.77, cost=4349.38, launch_date=2024-09-13, is_online=True
+- product_id=2, product_name=数码耳机002, category=数码, sub_category=耳机, list_price=1193.25, cost=876.92, launch_date=2024-12-12, is_online=True
+
+### refunds  退款单（一行 = 一次退款申请，status 可能是处理中/已完成/已拒绝）
+字段：
+- refund_id INTEGER
+- order_id INTEGER
+- refund_time TIMESTAMP  -- 退款发生时间，按此字段归月
+- refund_amount DECIMAL(12,2)
+- reason VARCHAR
+- status VARCHAR  -- 退款状态：处理中/已完成/已拒绝
+枚举值：
+- reason: 价格保护 / 质量问题 / 发错货 / 物流破损 / 七天无理由
+- status: 已完成 / 处理中 / 已拒绝
+样例数据：
+- refund_id=1, order_id=3, refund_time=2024-01-30 06:45:00, refund_amount=7012.82, reason=价格保护, status=已完成
+- refund_id=2, order_id=9, refund_time=2024-02-04 21:10:00, refund_amount=2615.28, reason=七天无理由, status=已完成
+
+### sys_dict  
+字段：
+- dict_id INTEGER
+- dict_code VARCHAR
+- dict_name VARCHAR
+样例数据：
+- dict_id=17, dict_code=dict_code_34, dict_name=dict_name_4
+- dict_id=78, dict_code=dict_code_32, dict_name=dict_name_21
+
+### sys_operation_log  
+字段：
+- log_id INTEGER
+- user_id INTEGER
+- action VARCHAR
+- created_at DATE
+样例数据：
+- log_id=2, user_id=421, action=action_13, created_at=2024-12-26
+- log_id=6, user_id=397, action=action_17, created_at=2025-01-25
+
+### sys_role  
+字段：
+- role_id INTEGER
+- role_name VARCHAR
+- remark VARCHAR
+枚举值：
+- role_name: role_name_12 / role_name_13 / role_name_16 / role_name_17 / role_name_18 / role_name_19 / role_name_24 / role_name_3 / role_name_30 / role_name_6
+- remark: remark_3 / remark_12 / remark_15 / remark_17 / remark_18 / remark_24 / remark_27 / remark_29 / remark_31
+样例数据：
+- role_id=86, role_name=role_name_13, remark=remark_12
+- role_id=164, role_name=role_name_24, remark=remark_24
+
+### sys_user  
+字段：
+- user_id INTEGER
+- login_name VARCHAR
+- role_id INTEGER
+枚举值：
+- login_name: login_name_11 / login_name_12 / login_name_14 / login_name_16 / login_name_29 / login_name_38 / login_name_1 / login_name_17 / login_name_21 / login_name_25 / login_name_26 / login_name_27 / login_name_28 / login_name_31 / login_name_32 / login_name_33 / login_name_34 / login_name_4 / login_name_40
+样例数据：
+- user_id=53, login_name=login_name_21, role_id=93
+- user_id=94, login_name=login_name_33, role_id=493
+
+### trade_audit_record  
+字段：
+- audit_id INTEGER
+- order_no VARCHAR
+- status VARCHAR
+- created_at DATE
+枚举值：
+- status: 处理中 / 待处理 / 已完成 / 已关闭
+样例数据：
+- audit_id=11, order_no=order_no_14, status=待处理, created_at=2023-07-30
+- audit_id=28, order_no=order_no_5, status=已关闭, created_at=2023-04-24
+
+### trade_contract  
+字段：
+- contract_id INTEGER
+- partner_name VARCHAR
+- sign_date DATE
+枚举值：
+- partner_name: partner_name_13 / partner_name_10 / partner_name_25 / partner_name_36 / partner_name_40 / partner_name_11 / partner_name_12 / partner_name_27 / partner_name_3 / partner_name_32 / partner_name_4 / partner_name_1 / partner_name_14 / partner_name_15 / partner_name_17 / partner_name_2 / partner_name_20 / partner_name_24 / partner_name_26 / partner_name_28 / partner_name_29 / partner_name_31 / partner_name_33 / partner_name_37 / partner_name_38 / partner_name_39 / partner_name_6 / partner_name_7
+样例数据：
+- contract_id=5, partner_name=partner_name_38, sign_date=2024-12-05
+- contract_id=6, partner_name=partner_name_24, sign_date=2024-02-29
+
+### trade_invoice  
+字段：
+- invoice_id INTEGER
+- order_no VARCHAR
+- invoice_type VARCHAR
+- amount DECIMAL(18,3)
+枚举值：
+- invoice_type: 类型C / 类型A / 类型B
+样例数据：
+- invoice_id=12, order_no=order_no_10, invoice_type=类型C, amount=9565.730
+- invoice_id=24, order_no=order_no_33, invoice_type=类型C, amount=9003.720
+
+### trade_order_split  
+字段：
+- split_id INTEGER
+- parent_order_no VARCHAR
+- child_order_no VARCHAR
+- qty INTEGER
+样例数据：
+- split_id=18, parent_order_no=parent_order_no_19, child_order_no=child_order_no_5, qty=296
+- split_id=53, parent_order_no=parent_order_no_28, child_order_no=child_order_no_7, qty=991
+
+### trade_settle_detail  
+字段：
+- settle_id INTEGER
+- order_no VARCHAR
+- settle_amount DECIMAL(18,3)
+- settle_date DATE
+样例数据：
+- settle_id=5, order_no=order_no_12, settle_amount=858.630, settle_date=2023-09-12
+- settle_id=5, order_no=order_no_12, settle_amount=2300.240, settle_date=2023-09-29
+
+### users  用户维表（一行 = 一个注册用户，is_deleted=TRUE 表示已注销）
+字段：
+- user_id INTEGER
+- user_name VARCHAR
+- city VARCHAR  -- 城市，存在 NULL
+- province VARCHAR  -- 省份，存在 NULL
+- register_date DATE  -- 注册日期（DATE 类型）
+- member_level VARCHAR  -- 会员等级，存在 NULL
+- is_deleted BOOLEAN  -- 软删除标记，为 TRUE 的用户历史订单仍然有效
+枚举值：
+- city: 武汉 / 上海 / 北京 / 杭州 / 西安 / 南京 / 重庆 / 长沙 / 成都 / 深圳 / 广州 / 苏州
+- province: 广东 / 江苏 / 湖北 / 上海 / 北京 / 浙江 / 陕西 / 湖南 / 重庆 / 四川
+- member_level: 普通 / 银牌 / 金牌 / 钻石
+样例数据：
+- user_id=1, user_name=用户0001, city=NULL, province=NULL, register_date=2024-02-11, member_level=普通, is_deleted=False
+- user_id=2, user_name=用户0002, city=杭州, province=浙江, register_date=2023-12-13, member_level=NULL, is_deleted=False

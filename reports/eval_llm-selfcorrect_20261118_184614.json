@@ -1,0 +1,1023 @@
+{
+  "strategy": "llm-selfcorrect",
+  "dataset_version": "v2.1",
+  "started_at": "2026-11-18 18:46:11",
+  "elapsed_s": 2.927,
+  "total": 50,
+  "execution_accuracy": 0.92,
+  "execution_accuracy_lenient": 0.92,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 2,
+    "cache_hits": 50,
+    "prompt_tokens": 4822,
+    "completion_tokens": 399,
+    "parse_failures": 0,
+    "api_errors": 0
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "easy",
+      "count": 10,
+      "correct": 10,
+      "ex": 1.0
+    },
+    {
+      "difficulty": "medium",
+      "count": 20,
+      "correct": 20,
+      "ex": 1.0
+    },
+    {
+      "difficulty": "hard",
+      "count": 20,
+      "correct": 16,
+      "ex": 0.8
+    }
+  ],
+  "by_cohort": [
+    {
+      "cohort": "core30",
+      "count": 30,
+      "correct": 28,
+      "ex": 0.9333
+    },
+    {
+      "cohort": "ext20",
+      "count": 20,
+      "correct": 18,
+      "ex": 0.9
+    }
+  ],
+  "status_counts": {
+    "correct": 46,
+    "column_mismatch": 1,
+    "value_mismatch": 3
+  },
+  "results": [
+    {
+      "id": "e01",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "time_filter"
+      ],
+      "question": "2025 年一共有多少笔订单？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(*) AS order_count\nFROM orders\nWHERE order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(*) AS order_count\nFROM orders\nWHERE order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e02",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "filter"
+      ],
+      "question": "目前在售（上架）的商品有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(*) AS product_count\nFROM products\nWHERE is_online = TRUE",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(*) AS product_count\nFROM products\nWHERE is_online = TRUE",
+      "error": null
+    },
+    {
+      "id": "e03",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年的销售额（GMV）是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT SUM(pay_amount) AS gmv\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT SUM(pay_amount) AS gmv\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e04",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年已完成状态的退款金额合计是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT SUM(refund_amount) AS total_refund_amount\nFROM refunds\nWHERE status = '已完成'\n  AND refund_time >= TIMESTAMP '2025-01-01'\n  AND refund_time < TIMESTAMP '2026-01-01'",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT SUM(refund_amount) AS total_refund_amount\nFROM refunds\nWHERE status = '已完成'\n  AND refund_time >= TIMESTAMP '2025-01-01'\n  AND refund_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e05",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "null_handling"
+      ],
+      "question": "平台目前有多少个未注销的注册用户？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(*) AS active_user_count\nFROM users\nWHERE is_deleted = FALSE",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(*) AS active_user_count\nFROM users\nWHERE is_deleted = FALSE",
+      "error": null
+    },
+    {
+      "id": "e06",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "payment"
+      ],
+      "question": "各支付方式的支付成功金额分别是多少？",
+      "status": "correct",
+      "gold_row_count": 4,
+      "pred_row_count": 4,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT pay_method, SUM(pay_amount) AS total_success_amount\nFROM payments\nWHERE pay_status = '成功'\nGROUP BY pay_method\nORDER BY total_success_amount DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT pay_method, SUM(pay_amount) AS total_success_amount\nFROM payments\nWHERE pay_status = '成功'\nGROUP BY pay_method\nORDER BY total_success_amount DESC",
+      "error": null
+    },
+    {
+      "id": "e07",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有效订单的平均订单金额是多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT AVG(pay_amount) AS avg_order_amount\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT AVG(pay_amount) AS avg_order_amount\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e08",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "distinct"
+      ],
+      "question": "商品一共有几个品类？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(DISTINCT category) AS category_count\nFROM products",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(DISTINCT category) AS category_count\nFROM products",
+      "error": null
+    },
+    {
+      "id": "e09",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "count",
+        "distinct",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有多少个不同用户下过有效订单？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(DISTINCT user_id) AS user_count\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(DISTINCT user_id) AS user_count\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'",
+      "error": null
+    },
+    {
+      "id": "e10",
+      "difficulty": "easy",
+      "cohort": "core30",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销售额）",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT p.category, SUM(oi.item_amount) AS sales_amount\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nORDER BY sales_amount DESC\nLIMIT 1",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT p.category, SUM(oi.item_amount) AS sales_amount\nFROM orders o\nJOIN order_items oi ON o.order_id = oi.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nORDER BY sales_amount DESC\nLIMIT 1",
+      "error": null
+    },
+    {
+      "id": "m01",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的销售额分别是多少？",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT strftime(order_time, '%Y-%m') AS month,\n       SUM(pay_amount) AS sales_amount\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(order_time, '%Y-%m')\nORDER BY month",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT strftime(order_time, '%Y-%m') AS month,\n       SUM(pay_amount) AS sales_amount\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(order_time, '%Y-%m')\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "m02",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "time_bucket",
+        "date_type"
+      ],
+      "question": "2025 年每个月新增的注册用户数是多少？",
+      "status": "correct",
+      "gold_row_count": 11,
+      "pred_row_count": 11,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT strftime(register_date, '%Y-%m') AS month, COUNT(*) AS new_user_count\nFROM users\nWHERE register_date >= DATE '2025-01-01' AND register_date < DATE '2026-01-01'\nGROUP BY month\nORDER BY month",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT strftime(register_date, '%Y-%m') AS month, COUNT(*) AS new_user_count\nFROM users\nWHERE register_date >= DATE '2025-01-01' AND register_date < DATE '2026-01-01'\nGROUP BY month\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "m03",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "ratio",
+        "business_rule",
+        "yoy"
+      ],
+      "question": "2025 年销售额相比 2024 年同比增长了百分之多少？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n  (SUM(CASE WHEN order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' THEN pay_amount ELSE 0 END)\n   - SUM(CASE WHEN order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' THEN pay_amount ELSE 0 END))\n  / NULLIF(SUM(CASE WHEN order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' THEN pay_amount ELSE 0 END), 0) * 100 AS yoy_growth_pct\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n  (SUM(CASE WHEN order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' THEN pay_amount ELSE 0 END)\n   - SUM(CASE WHEN order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' THEN pay_amount ELSE 0 END))\n  / NULLIF(SUM(CASE WHEN order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' THEN pay_amount ELSE 0 END), 0) * 100 AS yoy_growth_pct\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')",
+      "error": null
+    },
+    {
+      "id": "m04",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT p.product_name, SUM(oi.item_amount) AS sales_amount\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.product_id, p.product_name\nORDER BY sales_amount DESC\nLIMIT 5",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT p.product_name, SUM(oi.item_amount) AS sales_amount\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.product_id, p.product_name\nORDER BY sales_amount DESC\nLIMIT 5",
+      "error": null
+    },
+    {
+      "id": "m05",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的有效订单数和销售额分别是多少？",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    c.channel_name,\n    COUNT(DISTINCT o.order_id) AS valid_order_count,\n    SUM(o.pay_amount) AS sales_amount\nFROM orders o\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name\nORDER BY sales_amount DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    c.channel_name,\n    COUNT(DISTINCT o.order_id) AS valid_order_count,\n    SUM(o.pay_amount) AS sales_amount\nFROM orders o\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name\nORDER BY sales_amount DESC",
+      "error": null
+    },
+    {
+      "id": "m06",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "用户数最多的前 10 个省份是哪些？分别有多少用户？",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT province, COUNT(*) AS user_count\nFROM users\nWHERE province IS NOT NULL\nGROUP BY province\nORDER BY user_count DESC\nLIMIT 10",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT province, COUNT(*) AS user_count\nFROM users\nWHERE province IS NOT NULL\nGROUP BY province\nORDER BY user_count DESC\nLIMIT 10",
+      "error": null
+    },
+    {
+      "id": "m07",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "ratio",
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100，返回三列：品类、销售额、毛利率）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    p.category AS 品类,\n    SUM(oi.item_amount) AS 销售额,\n    (SUM(oi.item_amount) - SUM(oi.quantity * p.cost)) / SUM(oi.item_amount) * 100 AS 毛利率\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nORDER BY 销售额 DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    p.category AS 品类,\n    SUM(oi.item_amount) AS 销售额,\n    (SUM(oi.item_amount) - SUM(oi.quantity * p.cost)) / SUM(oi.item_amount) * 100 AS 毛利率\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nORDER BY 销售额 DESC",
+      "error": null
+    },
+    {
+      "id": "m08",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年下过 2 笔及以上有效订单的用户有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(*) AS user_count\nFROM (\n    SELECT user_id\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id\n    HAVING COUNT(DISTINCT order_id) >= 2\n) t",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(*) AS user_count\nFROM (\n    SELECT user_id\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id\n    HAVING COUNT(DISTINCT order_id) >= 2\n) t",
+      "error": null
+    },
+    {
+      "id": "m09",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "ratio",
+        "group",
+        "payment"
+      ],
+      "question": "2025 年各支付方式的订单数占比是多少？（按支付成功流水统计）",
+      "status": "correct",
+      "gold_row_count": 4,
+      "pred_row_count": 4,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    p.pay_method,\n    COUNT(DISTINCT p.order_id) AS order_count,\n    ROUND(COUNT(DISTINCT p.order_id) * 100.0 / SUM(COUNT(DISTINCT p.order_id)) OVER (), 2) AS order_pct\nFROM payments p\nWHERE p.pay_status = '成功'\n  AND p.pay_time >= TIMESTAMP '2025-01-01'\n  AND p.pay_time < TIMESTAMP '2026-01-01'\nGROUP BY p.pay_method\nORDER BY order_count DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    p.pay_method,\n    COUNT(DISTINCT p.order_id) AS order_count,\n    ROUND(COUNT(DISTINCT p.order_id) * 100.0 / SUM(COUNT(DISTINCT p.order_id)) OVER (), 2) AS order_pct\nFROM payments p\nWHERE p.pay_status = '成功'\n  AND p.pay_time >= TIMESTAMP '2025-01-01'\n  AND p.pay_time < TIMESTAMP '2026-01-01'\nGROUP BY p.pay_method\nORDER BY order_count DESC",
+      "error": null
+    },
+    {
+      "id": "m10",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "ratio",
+        "group",
+        "left_join",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回两列：月份、退款率）",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 2,
+      "first_attempt_sql": "SELECT\n    strftime(r.refund_time, '%Y-%m') AS month,\n    SUM(r.refund_amount) * 100.0 / NULLIF((\n        SELECT SUM(o.pay_amount)\n        FROM orders o\n        WHERE o.status IN ('已支付', '已发货', '已完成')\n          AND strftime(o.order_time, '%Y-%m') = strftime(r.refund_time, '%Y-%m')\n    ), 0) AS refund_rate\nFROM refunds r\nWHERE r.status = '已完成'\n  AND r.refund_time >= TIMESTAMP '2025-01-01'\n  AND r.refund_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(r.refund_time, '%Y-%m')\nORDER BY month",
+      "first_attempt_status": "sql_error",
+      "generated_sql": "WITH refund_monthly AS (\n    SELECT\n        strftime(refund_time, '%Y-%m') AS month,\n        SUM(refund_amount) AS refund_amount\n    FROM refunds\n    WHERE status = '已完成'\n      AND refund_time >= TIMESTAMP '2025-01-01'\n      AND refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(refund_time, '%Y-%m')\n),\nsales_monthly AS (\n    SELECT\n        strftime(order_time, '%Y-%m') AS month,\n        SUM(pay_amount) AS sales_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(order_time, '%Y-%m')\n)\nSELECT\n    s.month,\n    COALESCE(r.refund_amount, 0) * 100.0 / NULLIF(s.sales_amount, 0) AS refund_rate\nFROM sales_monthly s\nLEFT JOIN refund_monthly r ON s.month = r.month\nORDER BY s.month",
+      "error": null
+    },
+    {
+      "id": "m11",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "join",
+        "group",
+        "having",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "2025 年客单价最高的前 5 个城市是哪些？请给出城市、订单数和客单价。（只统计有效订单数不少于 30 单的城市）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    u.city,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    SUM(o.pay_amount) / COUNT(DISTINCT o.order_id) AS avg_order_value\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND u.city IS NOT NULL\nGROUP BY u.city\nHAVING COUNT(DISTINCT o.order_id) >= 30\nORDER BY avg_order_value DESC\nLIMIT 5",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    u.city,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    SUM(o.pay_amount) / COUNT(DISTINCT o.order_id) AS avg_order_value\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND u.city IS NOT NULL\nGROUP BY u.city\nHAVING COUNT(DISTINCT o.order_id) >= 30\nORDER BY avg_order_value DESC\nLIMIT 5",
+      "error": null
+    },
+    {
+      "id": "m12",
+      "difficulty": "medium",
+      "cohort": "core30",
+      "tags": [
+        "subquery",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的新客首单数是多少？（新客 = 该用户第一次下有效订单）",
+      "status": "correct",
+      "gold_row_count": 9,
+      "pred_row_count": 9,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH first_valid_order AS (\n    SELECT\n        user_id,\n        MIN(order_time) AS first_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n    GROUP BY user_id\n)\nSELECT\n    strftime(first_order_time, '%Y-%m') AS month,\n    COUNT(*) AS new_customer_first_orders\nFROM first_valid_order\nWHERE first_order_time >= TIMESTAMP '2025-01-01'\n  AND first_order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(first_order_time, '%Y-%m')\nORDER BY month",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH first_valid_order AS (\n    SELECT\n        user_id,\n        MIN(order_time) AS first_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n    GROUP BY user_id\n)\nSELECT\n    strftime(first_order_time, '%Y-%m') AS month,\n    COUNT(*) AS new_customer_first_orders\nFROM first_valid_order\nWHERE first_order_time >= TIMESTAMP '2025-01-01'\n  AND first_order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(first_order_time, '%Y-%m')\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "h01",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "window",
+        "time_bucket",
+        "ratio"
+      ],
+      "question": "2025 年每月销售额的环比增长率（百分比数值，保留 2 位小数）是多少？",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH monthly_sales AS (\n    SELECT\n        strftime(order_time, '%Y-%m') AS month,\n        SUM(pay_amount) AS sales\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(order_time, '%Y-%m')\n)\nSELECT\n    month,\n    sales,\n    ROUND(\n        (sales - LAG(sales) OVER (ORDER BY month)) * 100.0\n        / NULLIF(LAG(sales) OVER (ORDER BY month), 0),\n        2\n    ) AS mom_growth_rate\nFROM monthly_sales\nORDER BY month",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH monthly_sales AS (\n    SELECT\n        strftime(order_time, '%Y-%m') AS month,\n        SUM(pay_amount) AS sales\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(order_time, '%Y-%m')\n)\nSELECT\n    month,\n    sales,\n    ROUND(\n        (sales - LAG(sales) OVER (ORDER BY month)) * 100.0\n        / NULLIF(LAG(sales) OVER (ORDER BY month), 0),\n        2\n    ) AS mom_growth_rate\nFROM monthly_sales\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "h02",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "window",
+        "top_n",
+        "group"
+      ],
+      "question": "2025 年每个品类中销售额最高的商品分别是哪个？请给出品类、商品名称和销售额。",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH product_sales AS (\n    SELECT\n        p.category,\n        p.product_id,\n        p.product_name,\n        SUM(oi.item_amount) AS sales_amount\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, p.product_id, p.product_name\n),\nranked AS (\n    SELECT\n        category,\n        product_name,\n        sales_amount,\n        ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales_amount DESC) AS rn\n    FROM product_sales\n)\nSELECT\n    category,\n    product_name,\n    sales_amount\nFROM ranked\nWHERE rn = 1\nORDER BY category",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH product_sales AS (\n    SELECT\n        p.category,\n        p.product_id,\n        p.product_name,\n        SUM(oi.item_amount) AS sales_amount\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, p.product_id, p.product_name\n),\nranked AS (\n    SELECT\n        category,\n        product_name,\n        sales_amount,\n        ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales_amount DESC) AS rn\n    FROM product_sales\n)\nSELECT\n    category,\n    product_name,\n    sales_amount\nFROM ranked\nWHERE rn = 1\nORDER BY category",
+      "error": null
+    },
+    {
+      "id": "h03",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "window",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的累计销售额是多少？",
+      "status": "column_mismatch",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    strftime(order_time, '%Y-%m') AS month,\n    SUM(pay_amount) AS monthly_sales,\n    SUM(SUM(pay_amount)) OVER (ORDER BY strftime(order_time, '%Y-%m')) AS cumulative_sales\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(order_time, '%Y-%m')\nORDER BY month",
+      "first_attempt_status": "column_mismatch",
+      "generated_sql": "SELECT\n    strftime(order_time, '%Y-%m') AS month,\n    SUM(pay_amount) AS monthly_sales,\n    SUM(SUM(pay_amount)) OVER (ORDER BY strftime(order_time, '%Y-%m')) AS cumulative_sales\nFROM orders\nWHERE status IN ('已支付', '已发货', '已完成')\n  AND order_time >= TIMESTAMP '2025-01-01'\n  AND order_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(order_time, '%Y-%m')\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "h04",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "ratio",
+        "yoy"
+      ],
+      "question": "2025 年各渠道的销售额相比 2024 年同比增长了多少？请给出渠道、2024 销售额、2025 销售额和增长率（百分比）。",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    c.channel_name,\n    COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0) AS sales_2024,\n    COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount END), 0) AS sales_2025,\n    CASE\n        WHEN COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0) = 0 THEN NULL\n        ELSE ROUND(\n            (COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount END), 0)\n             - COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0))\n            * 100.0\n            / COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0)\n        , 2)\n    END AS growth_rate_pct\nFROM channels c\nLEFT JOIN orders o\n    ON o.channel_id = c.channel_id\n    AND o.status IN ('已支付', '已发货', '已完成')\n    AND o.order_time >= TIMESTAMP '2024-01-01'\n    AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_id, c.channel_name\nORDER BY c.channel_id",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    c.channel_name,\n    COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0) AS sales_2024,\n    COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount END), 0) AS sales_2025,\n    CASE\n        WHEN COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0) = 0 THEN NULL\n        ELSE ROUND(\n            (COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount END), 0)\n             - COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0))\n            * 100.0\n            / COALESCE(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount END), 0)\n        , 2)\n    END AS growth_rate_pct\nFROM channels c\nLEFT JOIN orders o\n    ON o.channel_id = c.channel_id\n    AND o.status IN ('已支付', '已发货', '已完成')\n    AND o.order_time >= TIMESTAMP '2024-01-01'\n    AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_id, c.channel_name\nORDER BY c.channel_id",
+      "error": null
+    },
+    {
+      "id": "h05",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "window",
+        "subquery",
+        "business_rule"
+      ],
+      "question": "2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？",
+      "status": "value_mismatch",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH valid_orders AS (\n    SELECT\n        user_id,\n        order_time,\n        LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nintervals AS (\n    SELECT\n        user_id,\n        date_diff('day', prev_order_time, order_time) AS gap_days\n    FROM valid_orders\n    WHERE prev_order_time IS NOT NULL\n)\nSELECT\n    median(gap_days) AS median_gap_days\nFROM intervals",
+      "first_attempt_status": "value_mismatch",
+      "generated_sql": "WITH valid_orders AS (\n    SELECT\n        user_id,\n        order_time,\n        LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nintervals AS (\n    SELECT\n        user_id,\n        date_diff('day', prev_order_time, order_time) AS gap_days\n    FROM valid_orders\n    WHERE prev_order_time IS NOT NULL\n)\nSELECT\n    median(gap_days) AS median_gap_days\nFROM intervals",
+      "error": null
+    },
+    {
+      "id": "h06",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "join",
+        "group",
+        "ratio",
+        "null_handling",
+        "business_rule"
+      ],
+      "question": "2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（占比为百分比数值；会员等级缺失的用户归为「未知」）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    SUM(o.pay_amount) AS sales_amount,\n    ROUND(SUM(o.pay_amount) * 100.0 / SUM(SUM(o.pay_amount)) OVER (), 2) AS sales_ratio\nFROM orders o\nLEFT JOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY sales_amount DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    SUM(o.pay_amount) AS sales_amount,\n    ROUND(SUM(o.pay_amount) * 100.0 / SUM(SUM(o.pay_amount)) OVER (), 2) AS sales_ratio\nFROM orders o\nLEFT JOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY sales_amount DESC",
+      "error": null
+    },
+    {
+      "id": "h07",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "left_join",
+        "anti_pattern",
+        "business_rule"
+      ],
+      "question": "2025 年下过单、但在 2025 年的订单里一次都没有支付成功的用户有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(DISTINCT o.user_id) AS user_count\nFROM orders o\nWHERE o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM orders o2\n    JOIN payments p ON p.order_id = o2.order_id\n    WHERE o2.user_id = o.user_id\n      AND o2.order_time >= TIMESTAMP '2025-01-01'\n      AND o2.order_time < TIMESTAMP '2026-01-01'\n      AND p.pay_status = '成功'\n  )",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(DISTINCT o.user_id) AS user_count\nFROM orders o\nWHERE o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM orders o2\n    JOIN payments p ON p.order_id = o2.order_id\n    WHERE o2.user_id = o.user_id\n      AND o2.order_time >= TIMESTAMP '2025-01-01'\n      AND o2.order_time < TIMESTAMP '2026-01-01'\n      AND p.pay_status = '成功'\n  )",
+      "error": null
+    },
+    {
+      "id": "h08",
+      "difficulty": "hard",
+      "cohort": "core30",
+      "tags": [
+        "group",
+        "having",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的复购用户数是多少？（当月有效订单不少于 2 笔的用户）",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 2,
+      "first_attempt_sql": "SELECT\n  strftime(o.order_time, '%Y-%m') AS month,\n  COUNT(*) AS repeat_user_count\nFROM (\n  SELECT\n    user_id,\n    strftime(order_time, '%Y-%m') AS month,\n    COUNT(DISTINCT order_id) AS order_cnt\n  FROM orders\n  WHERE status IN ('已支付', '已发货', '已完成')\n    AND order_time >= TIMESTAMP '2025-01-01'\n    AND order_time < TIMESTAMP '2026-01-01'\n  GROUP BY user_id, strftime(order_time, '%Y-%m')\n  HAVING COUNT(DISTINCT order_id) >= 2\n) o\nGROUP BY o.month\nORDER BY o.month",
+      "first_attempt_status": "sql_error",
+      "generated_sql": "SELECT\n  month,\n  COUNT(*) AS repeat_user_count\nFROM (\n  SELECT\n    user_id,\n    strftime(order_time, '%Y-%m') AS month,\n    COUNT(DISTINCT order_id) AS order_cnt\n  FROM orders\n  WHERE status IN ('已支付', '已发货', '已完成')\n    AND order_time >= TIMESTAMP '2025-01-01'\n    AND order_time < TIMESTAMP '2026-01-01'\n  GROUP BY user_id, strftime(order_time, '%Y-%m')\n  HAVING COUNT(DISTINCT order_id) >= 2\n) o\nGROUP BY month\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "m13",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "ratio",
+        "left_join",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的销售额、退款金额和退款率分别是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回四列：渠道、销售额、退款金额、退款率）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    c.channel_name AS 渠道,\n    COALESCE(s.sales_amount, 0) AS 销售额,\n    COALESCE(r.refund_amount, 0) AS 退款金额,\n    CASE WHEN COALESCE(s.sales_amount, 0) = 0 THEN NULL\n         ELSE COALESCE(r.refund_amount, 0) / s.sales_amount * 100\n    END AS 退款率\nFROM channels c\nLEFT JOIN (\n    SELECT o.channel_id, SUM(o.pay_amount) AS sales_amount\n    FROM orders o\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.channel_id\n) s ON c.channel_id = s.channel_id\nLEFT JOIN (\n    SELECT o.channel_id, SUM(rf.refund_amount) AS refund_amount\n    FROM refunds rf\n    JOIN orders o ON rf.order_id = o.order_id\n    WHERE rf.status = '已完成'\n      AND rf.refund_time >= TIMESTAMP '2025-01-01'\n      AND rf.refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.channel_id\n) r ON c.channel_id = r.channel_id\nORDER BY c.channel_id",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    c.channel_name AS 渠道,\n    COALESCE(s.sales_amount, 0) AS 销售额,\n    COALESCE(r.refund_amount, 0) AS 退款金额,\n    CASE WHEN COALESCE(s.sales_amount, 0) = 0 THEN NULL\n         ELSE COALESCE(r.refund_amount, 0) / s.sales_amount * 100\n    END AS 退款率\nFROM channels c\nLEFT JOIN (\n    SELECT o.channel_id, SUM(o.pay_amount) AS sales_amount\n    FROM orders o\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.channel_id\n) s ON c.channel_id = s.channel_id\nLEFT JOIN (\n    SELECT o.channel_id, SUM(rf.refund_amount) AS refund_amount\n    FROM refunds rf\n    JOIN orders o ON rf.order_id = o.order_id\n    WHERE rf.status = '已完成'\n      AND rf.refund_time >= TIMESTAMP '2025-01-01'\n      AND rf.refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.channel_id\n) r ON c.channel_id = r.channel_id\nORDER BY c.channel_id",
+      "error": null
+    },
+    {
+      "id": "m14",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "group",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额和下单用户数分别是多少？（返回三列：省份、销售额、下单用户数，忽略省份为空的用户）",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    u.province,\n    SUM(o.pay_amount) AS sales_amount,\n    COUNT(DISTINCT o.user_id) AS order_user_count\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND u.province IS NOT NULL\nGROUP BY u.province\nORDER BY sales_amount DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    u.province,\n    SUM(o.pay_amount) AS sales_amount,\n    COUNT(DISTINCT o.user_id) AS order_user_count\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND u.province IS NOT NULL\nGROUP BY u.province\nORDER BY sales_amount DESC",
+      "error": null
+    },
+    {
+      "id": "m15",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "group",
+        "conditional_agg"
+      ],
+      "question": "2025 年各品类中有销量的在售 SKU 数、销量件数和销售额分别是多少？（返回四列：品类、在售 SKU 数、销量件数、销售额）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    p.category,\n    COUNT(DISTINCT CASE WHEN p.is_online THEN p.product_id END) AS online_sku_count,\n    SUM(oi.quantity) AS total_quantity,\n    SUM(oi.item_amount) AS total_sales\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nHAVING SUM(oi.quantity) > 0\nORDER BY p.category",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    p.category,\n    COUNT(DISTINCT CASE WHEN p.is_online THEN p.product_id END) AS online_sku_count,\n    SUM(oi.quantity) AS total_quantity,\n    SUM(oi.item_amount) AS total_sales\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.category\nHAVING SUM(oi.quantity) > 0\nORDER BY p.category",
+      "error": null
+    },
+    {
+      "id": "m16",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "subquery",
+        "group",
+        "null_handling"
+      ],
+      "question": "2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效订单不少于 2 笔的用户；返回两列：会员等级、复购用户数；会员等级缺失归为「未知」）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(*) AS repeat_user_count\nFROM (\n    SELECT\n        o.user_id\n    FROM orders o\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.user_id\n    HAVING COUNT(DISTINCT o.order_id) >= 2\n) r\nJOIN users u ON u.user_id = r.user_id\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY repeat_user_count DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(*) AS repeat_user_count\nFROM (\n    SELECT\n        o.user_id\n    FROM orders o\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY o.user_id\n    HAVING COUNT(DISTINCT o.order_id) >= 2\n) r\nJOIN users u ON u.user_id = r.user_id\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY repeat_user_count DESC",
+      "error": null
+    },
+    {
+      "id": "m17",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "payment",
+        "group",
+        "aggregate"
+      ],
+      "question": "2025 年各支付方式的成功支付笔数、金额和平均每笔金额分别是多少？（返回四列：支付方式、笔数、金额、平均每笔金额）",
+      "status": "correct",
+      "gold_row_count": 4,
+      "pred_row_count": 4,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    pay_method,\n    COUNT(*) AS payment_count,\n    SUM(pay_amount) AS total_amount,\n    AVG(pay_amount) AS avg_amount\nFROM payments\nWHERE pay_status = '成功'\n  AND pay_time >= TIMESTAMP '2025-01-01'\n  AND pay_time < TIMESTAMP '2026-01-01'\nGROUP BY pay_method\nORDER BY pay_method",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    pay_method,\n    COUNT(*) AS payment_count,\n    SUM(pay_amount) AS total_amount,\n    AVG(pay_amount) AS avg_amount\nFROM payments\nWHERE pay_status = '成功'\n  AND pay_time >= TIMESTAMP '2025-01-01'\n  AND pay_time < TIMESTAMP '2026-01-01'\nGROUP BY pay_method\nORDER BY pay_method",
+      "error": null
+    },
+    {
+      "id": "m18",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "group",
+        "aggregate"
+      ],
+      "question": "2025 年各渠道的有效订单数和客单价分别是多少？（返回三列：渠道、有效订单数、客单价）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    c.channel_name AS 渠道,\n    COUNT(DISTINCT o.order_id) AS 有效订单数,\n    SUM(o.pay_amount) / COUNT(DISTINCT o.order_id) AS 客单价\nFROM orders o\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name\nORDER BY 有效订单数 DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    c.channel_name AS 渠道,\n    COUNT(DISTINCT o.order_id) AS 有效订单数,\n    SUM(o.pay_amount) / COUNT(DISTINCT o.order_id) AS 客单价\nFROM orders o\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name\nORDER BY 有效订单数 DESC",
+      "error": null
+    },
+    {
+      "id": "m19",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "group",
+        "top_n"
+      ],
+      "question": "2025 年销售额排名前 10 的商品是哪些？请给出商品名称、品类、销量件数和销售额。",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    p.product_name,\n    p.category,\n    SUM(oi.quantity) AS total_quantity,\n    SUM(oi.item_amount) AS total_sales\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.product_id, p.product_name, p.category\nORDER BY total_sales DESC\nLIMIT 10",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    p.product_name,\n    p.category,\n    SUM(oi.quantity) AS total_quantity,\n    SUM(oi.item_amount) AS total_sales\nFROM order_items oi\nJOIN orders o ON oi.order_id = o.order_id\nJOIN products p ON oi.product_id = p.product_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY p.product_id, p.product_name, p.category\nORDER BY total_sales DESC\nLIMIT 10",
+      "error": null
+    },
+    {
+      "id": "m20",
+      "difficulty": "medium",
+      "cohort": "ext20",
+      "tags": [
+        "subquery",
+        "join",
+        "null_handling"
+      ],
+      "question": "2025 年各城市的新客数分别是多少？（新客 = 该用户第一次下有效订单发生在 2025 年；返回两列：城市、新客数，忽略城市为空）",
+      "status": "correct",
+      "gold_row_count": 11,
+      "pred_row_count": 11,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    u.city,\n    COUNT(*) AS new_customer_count\nFROM (\n    SELECT\n        user_id,\n        MIN(order_time) AS first_valid_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n    GROUP BY user_id\n) first_orders\nJOIN users u ON u.user_id = first_orders.user_id\nWHERE first_orders.first_valid_order_time >= TIMESTAMP '2025-01-01'\n  AND first_orders.first_valid_order_time < TIMESTAMP '2026-01-01'\n  AND u.city IS NOT NULL\nGROUP BY u.city\nORDER BY u.city",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    u.city,\n    COUNT(*) AS new_customer_count\nFROM (\n    SELECT\n        user_id,\n        MIN(order_time) AS first_valid_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n    GROUP BY user_id\n) first_orders\nJOIN users u ON u.user_id = first_orders.user_id\nWHERE first_orders.first_valid_order_time >= TIMESTAMP '2025-01-01'\n  AND first_orders.first_valid_order_time < TIMESTAMP '2026-01-01'\n  AND u.city IS NOT NULL\nGROUP BY u.city\nORDER BY u.city",
+      "error": null
+    },
+    {
+      "id": "h09",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "yoy",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额相比 2024 年同比增长了多少？请给出省份、2024 销售额、2025 销售额和增长率（百分比），忽略省份为空的用户。",
+      "status": "correct",
+      "gold_row_count": 10,
+      "pred_row_count": 10,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    u.province,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2024,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2025,\n    ROUND(\n        (SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END)\n         - SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END))\n        / NULLIF(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END), 0) * 100,\n        2\n    ) AS growth_rate_pct\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND u.province IS NOT NULL\n  AND o.order_time >= TIMESTAMP '2024-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY u.province\nORDER BY u.province",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    u.province,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2024,\n    SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END) AS sales_2025,\n    ROUND(\n        (SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN o.pay_amount ELSE 0 END)\n         - SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END))\n        / NULLIF(SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN o.pay_amount ELSE 0 END), 0) * 100,\n        2\n    ) AS growth_rate_pct\nFROM orders o\nJOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND u.province IS NOT NULL\n  AND o.order_time >= TIMESTAMP '2024-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY u.province\nORDER BY u.province",
+      "error": null
+    },
+    {
+      "id": "h10",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "join",
+        "time_bucket"
+      ],
+      "question": "2025 年各品类每月的销售额，以及该月及其前两个月（共 3 个月）的移动平均销售额分别是多少？（返回四列：品类、月份、当月销售额、3 个月移动平均；按品类、月份排序）",
+      "status": "correct",
+      "gold_row_count": 60,
+      "pred_row_count": 60,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH monthly_sales AS (\n    SELECT\n        p.category,\n        strftime(o.order_time, '%Y-%m') AS month,\n        SUM(oi.item_amount) AS sales_amount\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, strftime(o.order_time, '%Y-%m')\n)\nSELECT\n    category,\n    month,\n    sales_amount,\n    AVG(sales_amount) OVER (\n        PARTITION BY category\n        ORDER BY month\n        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW\n    ) AS moving_avg_3m\nFROM monthly_sales\nORDER BY category, month",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH monthly_sales AS (\n    SELECT\n        p.category,\n        strftime(o.order_time, '%Y-%m') AS month,\n        SUM(oi.item_amount) AS sales_amount\n    FROM orders o\n    JOIN order_items oi ON o.order_id = oi.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, strftime(o.order_time, '%Y-%m')\n)\nSELECT\n    category,\n    month,\n    sales_amount,\n    AVG(sales_amount) OVER (\n        PARTITION BY category\n        ORDER BY month\n        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW\n    ) AS moving_avg_3m\nFROM monthly_sales\nORDER BY category, month",
+      "error": null
+    },
+    {
+      "id": "h11",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "subquery",
+        "ratio",
+        "business_rule"
+      ],
+      "question": "2025 年新客的销售额占 2025 年总销售额的百分之多少？（新客 = 该用户第一次下有效订单发生在 2025 年；返回一个百分比数值）",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH valid_orders AS (\n    SELECT order_id, user_id, pay_amount, order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n),\nfirst_valid_order AS (\n    SELECT user_id, MIN(order_time) AS first_order_time\n    FROM valid_orders\n    GROUP BY user_id\n),\nnew_customers_2025 AS (\n    SELECT user_id\n    FROM first_valid_order\n    WHERE first_order_time >= TIMESTAMP '2025-01-01'\n      AND first_order_time < TIMESTAMP '2026-01-01'\n),\ntotal_2025 AS (\n    SELECT SUM(pay_amount) AS total_sales\n    FROM valid_orders\n    WHERE order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nnew_2025 AS (\n    SELECT SUM(vo.pay_amount) AS new_sales\n    FROM valid_orders vo\n    JOIN new_customers_2025 nc ON vo.user_id = nc.user_id\n    WHERE vo.order_time >= TIMESTAMP '2025-01-01'\n      AND vo.order_time < TIMESTAMP '2026-01-01'\n)\nSELECT\n    ROUND(new_2025.new_sales * 100.0 / NULLIF(total_2025.total_sales, 0), 2) AS new_customer_sales_pct\nFROM new_2025, total_2025",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH valid_orders AS (\n    SELECT order_id, user_id, pay_amount, order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n),\nfirst_valid_order AS (\n    SELECT user_id, MIN(order_time) AS first_order_time\n    FROM valid_orders\n    GROUP BY user_id\n),\nnew_customers_2025 AS (\n    SELECT user_id\n    FROM first_valid_order\n    WHERE first_order_time >= TIMESTAMP '2025-01-01'\n      AND first_order_time < TIMESTAMP '2026-01-01'\n),\ntotal_2025 AS (\n    SELECT SUM(pay_amount) AS total_sales\n    FROM valid_orders\n    WHERE order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nnew_2025 AS (\n    SELECT SUM(vo.pay_amount) AS new_sales\n    FROM valid_orders vo\n    JOIN new_customers_2025 nc ON vo.user_id = nc.user_id\n    WHERE vo.order_time >= TIMESTAMP '2025-01-01'\n      AND vo.order_time < TIMESTAMP '2026-01-01'\n)\nSELECT\n    ROUND(new_2025.new_sales * 100.0 / NULLIF(total_2025.total_sales, 0), 2) AS new_customer_sales_pct\nFROM new_2025, total_2025",
+      "error": null
+    },
+    {
+      "id": "h12",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "ratio",
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年的复购率是多少？（复购率 = 有效订单不少于 2 笔的用户数 / 下单用户数 × 100，返回一个百分比数值）",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    ROUND(\n        100.0 * COUNT(*) FILTER (WHERE order_cnt >= 2) / COUNT(*),\n        2\n    ) AS repurchase_rate\nFROM (\n    SELECT\n        user_id,\n        COUNT(DISTINCT order_id) AS order_cnt\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id\n) t",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    ROUND(\n        100.0 * COUNT(*) FILTER (WHERE order_cnt >= 2) / COUNT(*),\n        2\n    ) AS repurchase_rate\nFROM (\n    SELECT\n        user_id,\n        COUNT(DISTINCT order_id) AS order_cnt\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id\n) t",
+      "error": null
+    },
+    {
+      "id": "h13",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "subquery",
+        "ratio",
+        "order_by_limit"
+      ],
+      "question": "2025 年退款率最高的前 3 个商品品类是哪些？（退款率 = 该品类分摊到的退款金额 / 该品类销售额 × 100；退款金额按订单内各品类的明细金额占比分摊；返回四列：品类、销售额、退款金额、退款率）",
+      "status": "value_mismatch",
+      "gold_row_count": 3,
+      "pred_row_count": 3,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH valid_orders AS (\n    SELECT order_id, pay_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\norder_category_amount AS (\n    SELECT oi.order_id, p.category, SUM(oi.item_amount) AS cat_amount\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    GROUP BY oi.order_id, p.category\n),\norder_total_item AS (\n    SELECT order_id, SUM(cat_amount) AS total_item_amount\n    FROM order_category_amount\n    GROUP BY order_id\n),\ncategory_sales AS (\n    SELECT oca.category, SUM(oca.cat_amount) AS sales_amount\n    FROM order_category_amount oca\n    JOIN valid_orders vo ON oca.order_id = vo.order_id\n    GROUP BY oca.category\n),\nrefund_orders AS (\n    SELECT r.order_id, SUM(r.refund_amount) AS refund_amount\n    FROM refunds r\n    JOIN valid_orders vo ON r.order_id = vo.order_id\n    WHERE r.status = '已完成'\n      AND r.refund_time >= TIMESTAMP '2025-01-01'\n      AND r.refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY r.order_id\n),\ncategory_refund AS (\n    SELECT oca.category,\n           SUM(ro.refund_amount * oca.cat_amount / oti.total_item_amount) AS refund_amount\n    FROM refund_orders ro\n    JOIN order_category_amount oca ON ro.order_id = oca.order_id\n    JOIN order_total_item oti ON ro.order_id = oti.order_id\n    GROUP BY oca.category\n)\nSELECT cs.category AS 品类,\n       cs.sales_amount AS 销售额,\n       COALESCE(cr.refund_amount, 0) AS 退款金额,\n       COALESCE(cr.refund_amount, 0) / cs.sales_amount * 100 AS 退款率\nFROM category_sales cs\nLEFT JOIN category_refund cr ON cs.category = cr.category\nORDER BY 退款率 DESC\nLIMIT 3",
+      "first_attempt_status": "value_mismatch",
+      "generated_sql": "WITH valid_orders AS (\n    SELECT order_id, pay_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\norder_category_amount AS (\n    SELECT oi.order_id, p.category, SUM(oi.item_amount) AS cat_amount\n    FROM order_items oi\n    JOIN products p ON oi.product_id = p.product_id\n    GROUP BY oi.order_id, p.category\n),\norder_total_item AS (\n    SELECT order_id, SUM(cat_amount) AS total_item_amount\n    FROM order_category_amount\n    GROUP BY order_id\n),\ncategory_sales AS (\n    SELECT oca.category, SUM(oca.cat_amount) AS sales_amount\n    FROM order_category_amount oca\n    JOIN valid_orders vo ON oca.order_id = vo.order_id\n    GROUP BY oca.category\n),\nrefund_orders AS (\n    SELECT r.order_id, SUM(r.refund_amount) AS refund_amount\n    FROM refunds r\n    JOIN valid_orders vo ON r.order_id = vo.order_id\n    WHERE r.status = '已完成'\n      AND r.refund_time >= TIMESTAMP '2025-01-01'\n      AND r.refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY r.order_id\n),\ncategory_refund AS (\n    SELECT oca.category,\n           SUM(ro.refund_amount * oca.cat_amount / oti.total_item_amount) AS refund_amount\n    FROM refund_orders ro\n    JOIN order_category_amount oca ON ro.order_id = oca.order_id\n    JOIN order_total_item oti ON ro.order_id = oti.order_id\n    GROUP BY oca.category\n)\nSELECT cs.category AS 品类,\n       cs.sales_amount AS 销售额,\n       COALESCE(cr.refund_amount, 0) AS 退款金额,\n       COALESCE(cr.refund_amount, 0) / cs.sales_amount * 100 AS 退款率\nFROM category_sales cs\nLEFT JOIN category_refund cr ON cs.category = cr.category\nORDER BY 退款率 DESC\nLIMIT 3",
+      "error": null
+    },
+    {
+      "id": "h14",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "self_join",
+        "rank"
+      ],
+      "question": "各渠道 2025 年的销售额排名与 2024 年相比分别是第几名？（返回三列：渠道、2024 年排名、2025 年排名，按 2025 年排名升序）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH channel_sales AS (\n    SELECT\n        c.channel_name,\n        strftime(o.order_time, '%Y') AS yr,\n        SUM(o.pay_amount) AS sales\n    FROM orders o\n    JOIN channels c ON o.channel_id = c.channel_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND ((o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01')\n        OR (o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01'))\n    GROUP BY c.channel_name, strftime(o.order_time, '%Y')\n),\nranked AS (\n    SELECT\n        channel_name,\n        yr,\n        RANK() OVER (PARTITION BY yr ORDER BY sales DESC) AS rnk\n    FROM channel_sales\n)\nSELECT\n    channel_name AS 渠道,\n    MAX(CASE WHEN yr = '2024' THEN rnk END) AS \"2024年排名\",\n    MAX(CASE WHEN yr = '2025' THEN rnk END) AS \"2025年排名\"\nFROM ranked\nGROUP BY channel_name\nORDER BY \"2025年排名\" ASC",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH channel_sales AS (\n    SELECT\n        c.channel_name,\n        strftime(o.order_time, '%Y') AS yr,\n        SUM(o.pay_amount) AS sales\n    FROM orders o\n    JOIN channels c ON o.channel_id = c.channel_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND ((o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01')\n        OR (o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01'))\n    GROUP BY c.channel_name, strftime(o.order_time, '%Y')\n),\nranked AS (\n    SELECT\n        channel_name,\n        yr,\n        RANK() OVER (PARTITION BY yr ORDER BY sales DESC) AS rnk\n    FROM channel_sales\n)\nSELECT\n    channel_name AS 渠道,\n    MAX(CASE WHEN yr = '2024' THEN rnk END) AS \"2024年排名\",\n    MAX(CASE WHEN yr = '2025' THEN rnk END) AS \"2025年排名\"\nFROM ranked\nGROUP BY channel_name\nORDER BY \"2025年排名\" ASC",
+      "error": null
+    },
+    {
+      "id": "h15",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "subquery",
+        "aggregate"
+      ],
+      "question": "2025 年首次下有效订单的用户，从首单到第二单平均相隔多少整天？（间隔按整天向下取整计算；只算 2025 年首单且至少下过两单的用户；返回一个天数，保留 1 位小数）",
+      "status": "value_mismatch",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH valid_orders AS (\n    SELECT order_id, user_id, order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n),\nranked AS (\n    SELECT\n        user_id,\n        order_time,\n        ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time, order_id) AS rn\n    FROM valid_orders\n),\nfirst_orders AS (\n    SELECT user_id, order_time AS first_time\n    FROM ranked\n    WHERE rn = 1\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nsecond_orders AS (\n    SELECT user_id, order_time AS second_time\n    FROM ranked\n    WHERE rn = 2\n)\nSELECT\n    ROUND(AVG(FLOOR(EXTRACT(EPOCH FROM (s.second_time - f.first_time)) / 86400)), 1) AS avg_days\nFROM first_orders f\nJOIN second_orders s ON f.user_id = s.user_id",
+      "first_attempt_status": "value_mismatch",
+      "generated_sql": "WITH valid_orders AS (\n    SELECT order_id, user_id, order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n),\nranked AS (\n    SELECT\n        user_id,\n        order_time,\n        ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time, order_id) AS rn\n    FROM valid_orders\n),\nfirst_orders AS (\n    SELECT user_id, order_time AS first_time\n    FROM ranked\n    WHERE rn = 1\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nsecond_orders AS (\n    SELECT user_id, order_time AS second_time\n    FROM ranked\n    WHERE rn = 2\n)\nSELECT\n    ROUND(AVG(FLOOR(EXTRACT(EPOCH FROM (s.second_time - f.first_time)) / 86400)), 1) AS avg_days\nFROM first_orders f\nJOIN second_orders s ON f.user_id = s.user_id",
+      "error": null
+    },
+    {
+      "id": "h16",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "join",
+        "ratio",
+        "null_handling",
+        "business_rule"
+      ],
+      "question": "2025 年各会员等级的人均订单数分别是多少？（人均订单数 = 有效订单数 / 该等级 2025 年有下单的用户数；返回四列：会员等级、订单数、用户数、人均订单数，会员等级缺失归为「未知」）",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    COUNT(DISTINCT o.user_id) AS user_count,\n    COUNT(DISTINCT o.order_id) * 1.0 / COUNT(DISTINCT o.user_id) AS avg_orders_per_user\nFROM orders o\nLEFT JOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY member_level",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    COALESCE(u.member_level, '未知') AS member_level,\n    COUNT(DISTINCT o.order_id) AS order_count,\n    COUNT(DISTINCT o.user_id) AS user_count,\n    COUNT(DISTINCT o.order_id) * 1.0 / COUNT(DISTINCT o.user_id) AS avg_orders_per_user\nFROM orders o\nLEFT JOIN users u ON o.user_id = u.user_id\nWHERE o.status IN ('已支付', '已发货', '已完成')\n  AND o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\nGROUP BY COALESCE(u.member_level, '未知')\nORDER BY member_level",
+      "error": null
+    },
+    {
+      "id": "h17",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "left_join",
+        "time_bucket",
+        "ratio"
+      ],
+      "question": "2025 年每月的累计销售额和累计退款率分别是多少？（累计退款率 = 年初到当月的已完成退款金额 / 年初到当月的销售额 × 100；返回四列：月份、累计销售额、累计退款金额、累计退款率）",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH months AS (\n    SELECT strftime(order_time, '%Y-%m') AS month\n    FROM orders\n    WHERE order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nsales AS (\n    SELECT strftime(order_time, '%Y-%m') AS month,\n           SUM(pay_amount) AS sales_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nrefunds_agg AS (\n    SELECT strftime(refund_time, '%Y-%m') AS month,\n           SUM(refund_amount) AS refund_amount\n    FROM refunds\n    WHERE status = '已完成'\n      AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nmonthly AS (\n    SELECT m.month,\n           COALESCE(s.sales_amount, 0) AS sales_amount,\n           COALESCE(r.refund_amount, 0) AS refund_amount\n    FROM months m\n    LEFT JOIN sales s ON m.month = s.month\n    LEFT JOIN refunds_agg r ON m.month = r.month\n)\nSELECT month,\n       SUM(sales_amount) OVER (ORDER BY month) AS cumulative_sales,\n       SUM(refund_amount) OVER (ORDER BY month) AS cumulative_refund,\n       ROUND(SUM(refund_amount) OVER (ORDER BY month) / NULLIF(SUM(sales_amount) OVER (ORDER BY month), 0) * 100, 2) AS cumulative_refund_rate\nFROM monthly\nORDER BY month",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH months AS (\n    SELECT strftime(order_time, '%Y-%m') AS month\n    FROM orders\n    WHERE order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nsales AS (\n    SELECT strftime(order_time, '%Y-%m') AS month,\n           SUM(pay_amount) AS sales_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nrefunds_agg AS (\n    SELECT strftime(refund_time, '%Y-%m') AS month,\n           SUM(refund_amount) AS refund_amount\n    FROM refunds\n    WHERE status = '已完成'\n      AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY 1\n),\nmonthly AS (\n    SELECT m.month,\n           COALESCE(s.sales_amount, 0) AS sales_amount,\n           COALESCE(r.refund_amount, 0) AS refund_amount\n    FROM months m\n    LEFT JOIN sales s ON m.month = s.month\n    LEFT JOIN refunds_agg r ON m.month = r.month\n)\nSELECT month,\n       SUM(sales_amount) OVER (ORDER BY month) AS cumulative_sales,\n       SUM(refund_amount) OVER (ORDER BY month) AS cumulative_refund,\n       ROUND(SUM(refund_amount) OVER (ORDER BY month) / NULLIF(SUM(sales_amount) OVER (ORDER BY month), 0) * 100, 2) AS cumulative_refund_rate\nFROM monthly\nORDER BY month",
+      "error": null
+    },
+    {
+      "id": "h18",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "yoy",
+        "top_n"
+      ],
+      "question": "2025 年销售额同比增幅最高的前 3 个商品品类是哪些？（返回四列：品类、2024 销售额、2025 销售额、同比增幅百分比）",
+      "status": "correct",
+      "gold_row_count": 3,
+      "pred_row_count": 3,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH yearly_sales AS (\n    SELECT\n        p.category,\n        SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN oi.item_amount ELSE 0 END) AS sales_2024,\n        SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN oi.item_amount ELSE 0 END) AS sales_2025\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2024-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category\n)\nSELECT\n    category,\n    sales_2024,\n    sales_2025,\n    (sales_2025 - sales_2024) / sales_2024 * 100 AS yoy_growth_pct\nFROM yearly_sales\nWHERE sales_2024 > 0\nORDER BY yoy_growth_pct DESC\nLIMIT 3",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH yearly_sales AS (\n    SELECT\n        p.category,\n        SUM(CASE WHEN o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' THEN oi.item_amount ELSE 0 END) AS sales_2024,\n        SUM(CASE WHEN o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' THEN oi.item_amount ELSE 0 END) AS sales_2025\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2024-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category\n)\nSELECT\n    category,\n    sales_2024,\n    sales_2025,\n    (sales_2025 - sales_2024) / sales_2024 * 100 AS yoy_growth_pct\nFROM yearly_sales\nWHERE sales_2024 > 0\nORDER BY yoy_growth_pct DESC\nLIMIT 3",
+      "error": null
+    },
+    {
+      "id": "h19",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "join",
+        "ratio",
+        "group"
+      ],
+      "question": "2025 年各渠道的已完成退款中，各种退款原因各有多少笔、占该渠道退款的百分之多少？（返回三列：渠道、退款原因、笔数、占比）",
+      "status": "correct",
+      "gold_row_count": 25,
+      "pred_row_count": 25,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT\n    c.channel_name AS 渠道,\n    r.reason AS 退款原因,\n    COUNT(*) AS 笔数,\n    COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY c.channel_name) AS 占比\nFROM refunds r\nJOIN orders o ON r.order_id = o.order_id\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE r.status = '已完成'\n  AND r.refund_time >= TIMESTAMP '2025-01-01'\n  AND r.refund_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name, r.reason\nORDER BY c.channel_name, 笔数 DESC",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT\n    c.channel_name AS 渠道,\n    r.reason AS 退款原因,\n    COUNT(*) AS 笔数,\n    COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY c.channel_name) AS 占比\nFROM refunds r\nJOIN orders o ON r.order_id = o.order_id\nJOIN channels c ON o.channel_id = c.channel_id\nWHERE r.status = '已完成'\n  AND r.refund_time >= TIMESTAMP '2025-01-01'\n  AND r.refund_time < TIMESTAMP '2026-01-01'\nGROUP BY c.channel_name, r.reason\nORDER BY c.channel_name, 笔数 DESC",
+      "error": null
+    },
+    {
+      "id": "h20",
+      "difficulty": "hard",
+      "cohort": "ext20",
+      "tags": [
+        "window",
+        "join",
+        "pivot",
+        "top_n"
+      ],
+      "question": "2025 年各品类销量最高的商品，与前一名之外的「第二名」差距是多少？请给出品类、第一名商品、第一名销售额、第二名销售额和两者差额。",
+      "status": "correct",
+      "gold_row_count": 5,
+      "pred_row_count": 5,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH item_sales AS (\n    SELECT\n        p.category,\n        p.product_id,\n        p.product_name,\n        SUM(oi.item_amount) AS sales_amount\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, p.product_id, p.product_name\n),\nranked AS (\n    SELECT\n        category,\n        product_id,\n        product_name,\n        sales_amount,\n        ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales_amount DESC, product_id) AS rn\n    FROM item_sales\n)\nSELECT\n    r1.category,\n    r1.product_name AS top_product,\n    r1.sales_amount AS top_sales,\n    r2.sales_amount AS second_sales,\n    r1.sales_amount - r2.sales_amount AS diff\nFROM ranked r1\nJOIN ranked r2 ON r1.category = r2.category AND r2.rn = 2\nWHERE r1.rn = 1\nORDER BY r1.category",
+      "first_attempt_status": "correct",
+      "generated_sql": "WITH item_sales AS (\n    SELECT\n        p.category,\n        p.product_id,\n        p.product_name,\n        SUM(oi.item_amount) AS sales_amount\n    FROM order_items oi\n    JOIN orders o ON oi.order_id = o.order_id\n    JOIN products p ON oi.product_id = p.product_id\n    WHERE o.status IN ('已支付', '已发货', '已完成')\n      AND o.order_time >= TIMESTAMP '2025-01-01'\n      AND o.order_time < TIMESTAMP '2026-01-01'\n    GROUP BY p.category, p.product_id, p.product_name\n),\nranked AS (\n    SELECT\n        category,\n        product_id,\n        product_name,\n        sales_amount,\n        ROW_NUMBER() OVER (PARTITION BY category ORDER BY sales_amount DESC, product_id) AS rn\n    FROM item_sales\n)\nSELECT\n    r1.category,\n    r1.product_name AS top_product,\n    r1.sales_amount AS top_sales,\n    r2.sales_amount AS second_sales,\n    r1.sales_amount - r2.sales_amount AS diff\nFROM ranked r1\nJOIN ranked r2 ON r1.category = r2.category AND r2.rn = 2\nWHERE r1.rn = 1\nORDER BY r1.category",
+      "error": null
+    }
+  ]
+}

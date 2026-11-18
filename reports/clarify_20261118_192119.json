@@ -1,0 +1,337 @@
+{
+  "model": "deepseek-chat",
+  "vague": [
+    {
+      "id": "v01",
+      "question": "最近销售额怎么样？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问“最近”具体指哪个时间范围（如最近7天、最近30天、本月、2025年等）？以及销售额是否需要按渠道、品类或月份等维度拆分？"
+    },
+    {
+      "id": "v02",
+      "question": "哪个品类卖得最好？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问“卖得最好”是指按销售额（有效订单的 item_amount 汇总）还是按销量（quantity 汇总）排序？另外需要限定时间范围吗（例如 2025 年全年）？"
+    },
+    {
+      "id": "v03",
+      "question": "退款率是多少？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问退款率的时间范围是什么（如2025年全年、某个月份）？以及退款率的口径如何定义：是按退款单数/订单数、退款金额/销售额，还是其他口径？"
+    },
+    {
+      "id": "v04",
+      "question": "各渠道的数据怎么样？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问您想统计哪个指标（如销售额、订单量、客单价等）？时间范围是什么？以及按渠道的哪个维度（channel_name 还是 channel_type）拆分？"
+    },
+    {
+      "id": "v05",
+      "question": "Top 5 商品是哪些？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问 Top 5 商品是按什么指标排序（销售额、销量还是退款金额等）？时间范围是什么？"
+    },
+    {
+      "id": "v06",
+      "question": "用户复购率如何？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问复购率的口径是什么？例如：统计时间范围（如2025年）、复购定义（同一用户在时间窗口内有效订单数≥2）、以及按什么维度拆分（整体/渠道/品类）？"
+    },
+    {
+      "id": "v07",
+      "question": "各会员等级表现如何？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问要统计哪个时间范围？以及“表现”具体指哪些指标（如有效订单数、销售额、客单价、退款金额等）？"
+    },
+    {
+      "id": "v08",
+      "question": "同比表现怎么样？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问要统计哪个指标（如销售额、订单量、退款金额等）的同比？对比的时间范围是哪两个期间（例如 2025 年 vs 2024 年，或某月 vs 去年同月）？是否需要按维度（如品类、渠道、地区）拆分？"
+    },
+    {
+      "id": "v09",
+      "question": "帮我看下数据",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问您想分析哪方面的数据？请明确：1）统计对象（如订单、用户、商品、投诉、退款等）；2）时间范围（如2025年全年、2025年3月等）；3）具体指标（如销售额、订单量、用户数等）；4）是否需要按某个维度拆分或排序（如按渠道、品类、月份等）。"
+    },
+    {
+      "id": "v10",
+      "question": "退款情况汇总一下",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问退款情况汇总需要明确：1) 时间范围（按 refund_time 的哪个月份/年份，或全部历史）；2) 统计指标（退款金额、退款单数、退款率，还是按退款原因/状态分布）；3) 是否需要按维度拆分（如按月、按退款原因、按商品品类）？"
+    },
+    {
+      "id": "v11",
+      "question": "哪个省的用户最活跃？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问“最活跃”具体指哪个指标？例如：有效订单数最多、销售额最高、下单次数最多，还是其他口径？另外需要限定时间范围吗（如2025年）？"
+    },
+    {
+      "id": "v12",
+      "question": "商品利润排行",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问商品利润排行的时间范围是什么？利润口径如何计算（例如：销售额按 order_items.item_amount 汇总减去成本 cost×quantity，还是其他口径）？排行按利润金额降序取前多少名？"
+    },
+    {
+      "id": "v13",
+      "question": "今年做得好吗？",
+      "status": "partial",
+      "coverage": 0.5,
+      "asked": true,
+      "clarification": "请问您想评估哪个业务方面的表现？需要明确：1）统计指标（如销售额、订单量、退款金额、投诉量等）；2）时间范围（“今年”指2025年吗？）；3）按什么维度拆分（如渠道、品类、品牌等）。"
+    },
+    {
+      "id": "v14",
+      "question": "最近的退款和销售对比",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请明确：1）「最近」的具体时间范围（如最近30天、2025年至今、某个月份）；2）「退款和销售对比」的统计口径与维度——是按月对比退款金额与销售额，还是按品类/渠道对比？销售额是否按有效订单 pay_amount 口径、退款金额是否按已完成退款口径？"
+    },
+    {
+      "id": "v15",
+      "question": "有多少活跃用户？",
+      "status": "good",
+      "coverage": 1.0,
+      "asked": true,
+      "clarification": "请问“活跃用户”的定义是什么？例如：在指定时间范围内有有效订单的用户，还是有客服工单/联系记录的用户？另外请明确统计的时间范围（如2025年全年或最近30天）。"
+    }
+  ],
+  "control": [
+    {
+      "id": "e01",
+      "asked": false
+    },
+    {
+      "id": "e02",
+      "asked": false
+    },
+    {
+      "id": "e03",
+      "asked": false
+    },
+    {
+      "id": "e04",
+      "asked": false
+    },
+    {
+      "id": "e05",
+      "asked": false
+    },
+    {
+      "id": "e06",
+      "asked": false
+    },
+    {
+      "id": "e07",
+      "asked": false
+    },
+    {
+      "id": "e08",
+      "asked": false
+    },
+    {
+      "id": "e09",
+      "asked": false
+    },
+    {
+      "id": "e10",
+      "asked": false
+    },
+    {
+      "id": "m01",
+      "asked": false
+    },
+    {
+      "id": "m02",
+      "asked": false
+    },
+    {
+      "id": "m03",
+      "asked": false
+    },
+    {
+      "id": "m04",
+      "asked": false
+    },
+    {
+      "id": "m05",
+      "asked": false
+    },
+    {
+      "id": "m06",
+      "asked": false
+    },
+    {
+      "id": "m07",
+      "asked": false
+    },
+    {
+      "id": "m08",
+      "asked": false
+    },
+    {
+      "id": "m09",
+      "asked": false
+    },
+    {
+      "id": "m10",
+      "asked": false
+    },
+    {
+      "id": "m11",
+      "asked": false
+    },
+    {
+      "id": "m12",
+      "asked": false
+    },
+    {
+      "id": "h01",
+      "asked": false
+    },
+    {
+      "id": "h02",
+      "asked": false
+    },
+    {
+      "id": "h03",
+      "asked": false
+    },
+    {
+      "id": "h04",
+      "asked": false
+    },
+    {
+      "id": "h05",
+      "asked": false
+    },
+    {
+      "id": "h06",
+      "asked": false
+    },
+    {
+      "id": "h07",
+      "asked": false
+    },
+    {
+      "id": "h08",
+      "asked": false
+    },
+    {
+      "id": "m13",
+      "asked": false
+    },
+    {
+      "id": "m14",
+      "asked": false
+    },
+    {
+      "id": "m15",
+      "asked": false
+    },
+    {
+      "id": "m16",
+      "asked": false
+    },
+    {
+      "id": "m17",
+      "asked": false
+    },
+    {
+      "id": "m18",
+      "asked": false
+    },
+    {
+      "id": "m19",
+      "asked": false
+    },
+    {
+      "id": "m20",
+      "asked": false
+    },
+    {
+      "id": "h09",
+      "asked": false
+    },
+    {
+      "id": "h10",
+      "asked": false
+    },
+    {
+      "id": "h11",
+      "asked": false
+    },
+    {
+      "id": "h12",
+      "asked": false
+    },
+    {
+      "id": "h13",
+      "asked": false
+    },
+    {
+      "id": "h14",
+      "asked": false
+    },
+    {
+      "id": "h15",
+      "asked": false
+    },
+    {
+      "id": "h16",
+      "asked": false
+    },
+    {
+      "id": "h17",
+      "asked": false
+    },
+    {
+      "id": "h18",
+      "asked": false
+    },
+    {
+      "id": "h19",
+      "asked": false
+    },
+    {
+      "id": "h20",
+      "asked": false
+    }
+  ],
+  "usage": {
+    "model": "deepseek-chat",
+    "calls": 47,
+    "cache_hits": 18,
+    "prompt_tokens": 159693,
+    "completion_tokens": 8001,
+    "parse_failures": 0,
+    "api_errors": 0,
+    "latency_ms": 58506
+  }
+}

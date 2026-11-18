@@ -1,0 +1,112 @@
+{
+  "strategy": "llm-selfcorrect",
+  "dataset_version": "v1.1",
+  "started_at": "2026-11-18 18:36:17",
+  "elapsed_s": 7.806,
+  "total": 4,
+  "execution_accuracy": 0.75,
+  "execution_accuracy_lenient": 0.75,
+  "extra": {
+    "model": "deepseek-chat",
+    "calls": 6,
+    "cache_hits": 0,
+    "prompt_tokens": 13077,
+    "completion_tokens": 1013,
+    "parse_failures": 0,
+    "api_errors": 0
+  },
+  "by_difficulty": [
+    {
+      "difficulty": "medium",
+      "count": 1,
+      "correct": 1,
+      "ex": 1.0
+    },
+    {
+      "difficulty": "hard",
+      "count": 3,
+      "correct": 2,
+      "ex": 0.6667
+    }
+  ],
+  "status_counts": {
+    "correct": 3,
+    "value_mismatch": 1
+  },
+  "results": [
+    {
+      "id": "m10",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "group",
+        "left_join",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回两列：月份、退款率）",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 2,
+      "first_attempt_sql": "SELECT\n    strftime(r.refund_time, '%Y-%m') AS month,\n    SUM(r.refund_amount) / NULLIF((\n        SELECT SUM(o.pay_amount)\n        FROM orders o\n        WHERE o.status IN ('已支付', '已发货', '已完成')\n          AND strftime(o.order_time, '%Y-%m') = strftime(r.refund_time, '%Y-%m')\n    ), 0) * 100 AS refund_rate\nFROM refunds r\nWHERE r.status = '已完成'\n  AND r.refund_time >= TIMESTAMP '2025-01-01'\n  AND r.refund_time < TIMESTAMP '2026-01-01'\nGROUP BY strftime(r.refund_time, '%Y-%m')\nORDER BY month",
+      "first_attempt_status": "sql_error",
+      "generated_sql": "WITH refund_monthly AS (\n    SELECT\n        strftime(refund_time, '%Y-%m') AS month,\n        SUM(refund_amount) AS refund_amount\n    FROM refunds\n    WHERE status = '已完成'\n      AND refund_time >= TIMESTAMP '2025-01-01'\n      AND refund_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(refund_time, '%Y-%m')\n),\nsales_monthly AS (\n    SELECT\n        strftime(order_time, '%Y-%m') AS month,\n        SUM(pay_amount) AS sales_amount\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY strftime(order_time, '%Y-%m')\n)\nSELECT\n    s.month,\n    COALESCE(r.refund_amount, 0) / NULLIF(s.sales_amount, 0) * 100 AS refund_rate\nFROM sales_monthly s\nLEFT JOIN refund_monthly r ON s.month = r.month\nORDER BY s.month",
+      "error": null
+    },
+    {
+      "id": "h05",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "subquery",
+        "business_rule"
+      ],
+      "question": "2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？",
+      "status": "value_mismatch",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "WITH valid_orders AS (\n    SELECT\n        user_id,\n        order_time,\n        LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nintervals AS (\n    SELECT\n        user_id,\n        date_diff('day', prev_order_time, order_time) AS gap_days\n    FROM valid_orders\n    WHERE prev_order_time IS NOT NULL\n)\nSELECT\n    median(gap_days) AS median_gap_days\nFROM intervals",
+      "first_attempt_status": "value_mismatch",
+      "generated_sql": "WITH valid_orders AS (\n    SELECT\n        user_id,\n        order_time,\n        LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_order_time\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n),\nintervals AS (\n    SELECT\n        user_id,\n        date_diff('day', prev_order_time, order_time) AS gap_days\n    FROM valid_orders\n    WHERE prev_order_time IS NOT NULL\n)\nSELECT\n    median(gap_days) AS median_gap_days\nFROM intervals",
+      "error": null
+    },
+    {
+      "id": "h07",
+      "difficulty": "hard",
+      "tags": [
+        "left_join",
+        "anti_pattern",
+        "business_rule"
+      ],
+      "question": "2025 年下过单、但在 2025 年的订单里一次都没有支付成功的用户有多少个？",
+      "status": "correct",
+      "gold_row_count": 1,
+      "pred_row_count": 1,
+      "attempt_count": 1,
+      "first_attempt_sql": "SELECT COUNT(DISTINCT o.user_id) AS user_count\nFROM orders o\nWHERE o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM orders o2\n    JOIN payments p ON p.order_id = o2.order_id\n    WHERE o2.user_id = o.user_id\n      AND o2.order_time >= TIMESTAMP '2025-01-01'\n      AND o2.order_time < TIMESTAMP '2026-01-01'\n      AND p.pay_status = '成功'\n  )",
+      "first_attempt_status": "correct",
+      "generated_sql": "SELECT COUNT(DISTINCT o.user_id) AS user_count\nFROM orders o\nWHERE o.order_time >= TIMESTAMP '2025-01-01'\n  AND o.order_time < TIMESTAMP '2026-01-01'\n  AND NOT EXISTS (\n    SELECT 1\n    FROM orders o2\n    JOIN payments p ON p.order_id = o2.order_id\n    WHERE o2.user_id = o.user_id\n      AND o2.order_time >= TIMESTAMP '2025-01-01'\n      AND o2.order_time < TIMESTAMP '2026-01-01'\n      AND p.pay_status = '成功'\n  )",
+      "error": null
+    },
+    {
+      "id": "h08",
+      "difficulty": "hard",
+      "tags": [
+        "group",
+        "having",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的复购用户数是多少？（当月有效订单不少于 2 笔的用户）",
+      "status": "correct",
+      "gold_row_count": 12,
+      "pred_row_count": 12,
+      "attempt_count": 2,
+      "first_attempt_sql": "SELECT\n    strftime(order_time, '%Y-%m') AS month,\n    COUNT(*) AS repeat_user_count\nFROM (\n    SELECT\n        user_id,\n        strftime(order_time, '%Y-%m') AS month,\n        COUNT(DISTINCT order_id) AS order_count\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id, strftime(order_time, '%Y-%m')\n    HAVING COUNT(DISTINCT order_id) >= 2\n) t\nGROUP BY month\nORDER BY month",
+      "first_attempt_status": "sql_error",
+      "generated_sql": "SELECT\n    month,\n    COUNT(*) AS repeat_user_count\nFROM (\n    SELECT\n        user_id,\n        strftime(order_time, '%Y-%m') AS month,\n        COUNT(DISTINCT order_id) AS order_count\n    FROM orders\n    WHERE status IN ('已支付', '已发货', '已完成')\n      AND order_time >= TIMESTAMP '2025-01-01'\n      AND order_time < TIMESTAMP '2026-01-01'\n    GROUP BY user_id, strftime(order_time, '%Y-%m')\n    HAVING COUNT(DISTINCT order_id) >= 2\n) t\nGROUP BY month\nORDER BY month",
+      "error": null
+    }
+  ]
+}
