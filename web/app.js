@@ -223,6 +223,28 @@ async function api(path, options = {}) {
 
 /* ---------------- 模型 Key（状态 + 设置页联动） ---------------- */
 
+/* 模型密钥的格式检查。
+   这里挡的不是安全，是"粘错东西"：曾经有人把一整段页面文字粘进来，
+   结果脱敏显示成了「模型 API…要用的表」，还把布局撑坏。
+   Key 都是可见 ASCII、没有空白、长度有界——按这三条拒掉明显不对的输入。 */
+function checkApiKey(raw) {
+  const key = String(raw || "").trim();
+  if (!key) return { ok: false, reason: "Key 不能为空" };
+  if (/\s/.test(key)) return { ok: false, reason: "Key 里不能有空格或换行" };
+  if (!/^[\x21-\x7e]+$/.test(key)) return { ok: false, reason: "Key 只能包含可见的英文字符" };
+  if (key.length < 20) return { ok: false, reason: "太短了，看起来不像密钥" };
+  if (key.length > 200) return { ok: false, reason: "太长了，是不是粘错了东西" };
+  if (!key.startsWith("sk-")) return { ok: false, reason: "通常以 sk- 开头，确认一下" };
+  return { ok: true, key };
+}
+
+/* 脱敏：只露出头尾，长度不够就整段打码 */
+function maskKey(key) {
+  if (!key) return "—";
+  if (key.length <= 12) return "•".repeat(key.length);
+  return `${key.slice(0, 6)}…${key.slice(-4)}`;
+}
+
 /* 配置状态决定"要不要打扰用户"：
    没配 Key → 顶栏徽章醒目、页面顶部提示条出现、设置页说清怎么配
    配好了  → 全部收敛，只剩一个绿点 */
@@ -242,7 +264,7 @@ function refreshKeyState() {
     }
     chip.title = ready
       ? local
-        ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（点击修改）`
+        ? `已配置 ${maskKey(state.apiKey)}（点击修改）`
         : "服务端已配置 API Key（点击可换成本地 Key）"
       : "还没有模型 API Key，提问会失败——点这里去设置";
   }
@@ -253,7 +275,7 @@ function refreshKeyState() {
   const keyState = $("#key-state");
   if (keyState) {
     keyState.textContent = local
-      ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（浏览器本地）`
+      ? `已配置 ${maskKey(state.apiKey)}（浏览器本地）`
       : server
         ? "服务端已配置，这里填可覆盖"
         : "还没有配置，提问会失败";
@@ -266,7 +288,7 @@ function refreshKeyState() {
   if (saved) saved.hidden = editing;
   if (form) form.hidden = !editing;
   if (masked && local) {
-    masked.textContent = `${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}`;
+    masked.textContent = maskKey(state.apiKey);
   }
   const cancel = $("#key-cancel");
   if (cancel) {
@@ -340,11 +362,12 @@ function bindSettings() {
   }
 
   $("#set-key-save").onclick = () => {
-    const value = ($("#set-key-input").value || "").trim();
-    if (!value) {
-      toast("先填入 Key 再保存");
+    const checked = checkApiKey($("#set-key-input").value);
+    if (!checked.ok) {
+      toast(`保存失败：${checked.reason}`);
       return;
     }
+    const value = checked.key;
     state.apiKey = value;
     state.editingKey = false;
     localStorage.setItem("askdata-api-key", value);

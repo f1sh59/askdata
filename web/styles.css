@@ -1364,3 +1364,19 @@ html[data-scale="lg"] .topbar { position: sticky; }
 .key-form[hidden] { display: none; }
 .key-form input { flex: 1; min-width: 220px; }
 #key-cancel[hidden] { display: none; }
+
+/* 长文本不该把布局撑坏：标签说明和脱敏值都要能收敛 */
+.set-label em {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+.key-saved code {
+  max-width: 46ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: ltr;
+}
+.set-key, .key-form { min-width: 0; }
+.set-key input { min-width: 0; }

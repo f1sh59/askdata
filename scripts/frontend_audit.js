@@ -107,7 +107,7 @@ global.clearTimeout = () => {};
 let src = fs.readFileSync("web/app.js", "utf8");
 src += `\n;globalThis.__t = { renderAnswer, rankingList, lineChart, renderAttribution, classifyFailure,
   loadMultiturn, setupMultiturn, runCompare, setupCompare, ensureQuick, composeQuestion, state,
-  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML, refreshKeyState, renderSettings };`;
+  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML, refreshKeyState, renderSettings, checkApiKey, maskKey };`;
 eval(src);
 const T = globalThis.__t;
 
@@ -204,6 +204,14 @@ check("设置页 · 服务状态填好了", (els["#set-tables"].textContent || "
 check("设置页 · 会话轮数显示", (els["#set-session"].textContent || "").includes("2 轮"), els["#set-session"].textContent);
 check("设置页 · Key 状态有说明", Boolean(els["#key-state"].textContent));
 check("设置页 · 召回数量与状态同步", String(T.state.topK) === String(8));
+
+/* 粘错东西要被挡住 */
+check("Key 校验 · 空值被拒", T.checkApiKey("").ok === false);
+check("Key 校验 · 含空格被拒", T.checkApiKey("sk-abc def ghi jkl mno pqr").ok === false);
+check("Key 校验 · 中文被拒", T.checkApiKey("模型 API Key 已配置 这里应该放一串密钥").ok === false);
+check("Key 校验 · 太短被拒", T.checkApiKey("sk-123").ok === false);
+check("Key 校验 · 正常 Key 通过", T.checkApiKey("sk-" + "a".repeat(32)).ok === true);
+check("Key 脱敏 · 长 Key 只露头尾", T.maskKey("sk-b10f4c7e2a9d599b").includes("…"));
 
 /* 保存之后要显示脱敏的 Key，而不是空输入框 */
 T.state.apiKey = "sk-demo-b10f4c7e2a9d599b";
