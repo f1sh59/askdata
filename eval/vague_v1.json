@@ -1,0 +1,530 @@
+{
+  "version": "v1",
+  "description": "15 道信息不完整的问数题。slots 用于 P5（该不该反问），answer/gold_sql 用于 P5.5（用户补充后能否收敛到正确 SQL）。",
+  "created_at": "2026-11-18",
+  "slot_legend": {
+    "time_range": "统计的时间范围",
+    "metric": "统计哪个指标",
+    "definition": "指标口径怎么算",
+    "dimension": "按什么维度拆",
+    "scope": "统计对象是哪张表/哪个业务"
+  },
+  "questions": [
+    {
+      "id": "v01",
+      "source_id": "e03",
+      "question": "最近销售额怎么样？",
+      "why": "缺少时间范围",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年全年的销售额就行。",
+      "gold_sql": "SELECT ROUND(SUM(pay_amount), 2) FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'"
+    },
+    {
+      "id": "v02",
+      "source_id": "e10",
+      "question": "哪个品类卖得最好？",
+      "why": "缺少时间范围，也没说按销售额还是销量",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        },
+        {
+          "name": "metric",
+          "keywords": [
+            "销售额",
+            "销量",
+            "件数",
+            "金额",
+            "指标",
+            "按什么"
+          ]
+        }
+      ],
+      "answer": "2025 年，按销售额算，只要告诉我品类名就行。",
+      "gold_sql": "SELECT p.category FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY SUM(oi.item_amount) DESC LIMIT 1"
+    },
+    {
+      "id": "v03",
+      "source_id": "h12",
+      "question": "退款率是多少？",
+      "why": "缺少时间范围，也没说退款率的算法",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        },
+        {
+          "name": "definition",
+          "keywords": [
+            "口径",
+            "定义",
+            "怎么算",
+            "如何计算",
+            "按什么",
+            "公式",
+            "算法"
+          ]
+        }
+      ],
+      "answer": "2025 年全年整体，退款金额除以销售额再乘 100，给我一个百分比数值。",
+      "gold_sql": "SELECT ROUND((SELECT SUM(refund_amount) FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01') / (SELECT SUM(pay_amount) FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') * 100, 2)"
+    },
+    {
+      "id": "v04",
+      "source_id": "m05",
+      "question": "各渠道的数据怎么样？",
+      "why": "没说要哪些指标，也没说时间范围",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "指标",
+            "销售额",
+            "订单",
+            "退款",
+            "金额",
+            "哪些数据"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年，我要每个渠道的销售额和有效订单数，按渠道名分组。",
+      "gold_sql": "SELECT c.channel_name, ROUND(SUM(o.pay_amount), 2) AS gmv, COUNT(*) AS order_cnt FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY gmv DESC"
+    },
+    {
+      "id": "v05",
+      "source_id": "m19",
+      "question": "Top 5 商品是哪些？",
+      "why": "缺少排序依据和时间范围",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "销售额",
+            "销量",
+            "件数",
+            "金额",
+            "按什么",
+            "排名依据",
+            "指标"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年，按销售额从高到低，给我商品名称和销售额。",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY amt DESC, p.product_name LIMIT 5"
+    },
+    {
+      "id": "v06",
+      "source_id": "h12",
+      "question": "用户复购率如何？",
+      "why": "缺少时间范围，也没说复购怎么定义",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        },
+        {
+          "name": "definition",
+          "keywords": [
+            "复购",
+            "定义",
+            "口径",
+            "怎么算",
+            "如何计算",
+            "按什么"
+          ]
+        }
+      ],
+      "answer": "2025 年，复购率 = 有效订单不少于 2 笔的用户数 / 有下单的用户数 × 100，给我一个百分比。",
+      "gold_sql": "WITH u AS (SELECT user_id, COUNT(*) AS c FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id) SELECT ROUND(COUNT(*) FILTER (WHERE c >= 2) * 100.0 / COUNT(*), 2) FROM u"
+    },
+    {
+      "id": "v07",
+      "source_id": "h06",
+      "question": "各会员等级表现如何？",
+      "why": "没说看什么指标，也没说时间范围",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "指标",
+            "销售额",
+            "订单",
+            "客单价",
+            "金额",
+            "哪些"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年，每个会员等级的销售额和订单数，等级缺失的算「未知」。",
+      "gold_sql": "SELECT COALESCE(u.member_level, '未知'), ROUND(SUM(o.pay_amount), 2) AS amt, COUNT(*) AS order_cnt FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY amt DESC"
+    },
+    {
+      "id": "v08",
+      "source_id": "m03",
+      "question": "同比表现怎么样？",
+      "why": "没说哪一年对哪一年，也没说看哪个指标",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "哪年",
+            "时间",
+            "年",
+            "同比",
+            "对比",
+            "哪两个"
+          ]
+        },
+        {
+          "name": "metric",
+          "keywords": [
+            "指标",
+            "销售额",
+            "订单",
+            "退款",
+            "金额",
+            "什么"
+          ]
+        }
+      ],
+      "answer": "看销售额，2025 年对比 2024 年的同比增长率，只要给我增长率这一个百分比数值。",
+      "gold_sql": "WITH a AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'), b AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01') SELECT ROUND((a.amt - b.amt) / b.amt * 100, 2) FROM a, b"
+    },
+    {
+      "id": "v09",
+      "source_id": "e03",
+      "question": "帮我看下数据",
+      "why": "既没有指标也没有对象",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "指标",
+            "销售额",
+            "订单",
+            "退款",
+            "用户",
+            "金额",
+            "哪些数据",
+            "什么"
+          ]
+        },
+        {
+          "name": "scope",
+          "keywords": [
+            "订单",
+            "商品",
+            "用户",
+            "退款",
+            "渠道",
+            "哪张表",
+            "业务",
+            "哪个"
+          ]
+        }
+      ],
+      "answer": "看订单表，2025 年一共有多少笔订单。",
+      "gold_sql": "SELECT COUNT(*) FROM orders WHERE order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'"
+    },
+    {
+      "id": "v10",
+      "source_id": "m13",
+      "question": "退款情况汇总一下",
+      "why": "没说要笔数、金额还是比率，也没说时间范围",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "笔数",
+            "金额",
+            "率",
+            "数量",
+            "指标",
+            "哪些"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年，给我已完成的退款金额合计和退款笔数，两个数一起。",
+      "gold_sql": "SELECT ROUND(SUM(refund_amount), 2), COUNT(*) FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'"
+    },
+    {
+      "id": "v11",
+      "source_id": "e09",
+      "question": "哪个省的用户最活跃？",
+      "why": "「活跃」没有定义",
+      "slots": [
+        {
+          "name": "definition",
+          "keywords": [
+            "活跃",
+            "定义",
+            "口径",
+            "怎么算",
+            "如何计算",
+            "按什么"
+          ]
+        }
+      ],
+      "answer": "活跃 = 2025 年的有效订单数，给我订单数最多的那个省份和它的订单数。",
+      "gold_sql": "SELECT u.province, COUNT(*) AS cnt FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' AND u.province IS NOT NULL GROUP BY 1 ORDER BY cnt DESC, u.province LIMIT 1"
+    },
+    {
+      "id": "v12",
+      "source_id": "m19",
+      "question": "商品利润排行",
+      "why": "「利润」口径未定，也没说时间范围",
+      "slots": [
+        {
+          "name": "definition",
+          "keywords": [
+            "利润",
+            "口径",
+            "定义",
+            "怎么算",
+            "如何计算",
+            "成本",
+            "毛利"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        }
+      ],
+      "answer": "2025 年，利润 = 明细金额 - 成本 × 数量，按利润从高到低给我前 5 个商品名称和利润。",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount - p.cost * oi.quantity), 2) AS profit FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付','已发货','已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY profit DESC, p.product_name LIMIT 5"
+    },
+    {
+      "id": "v13",
+      "source_id": "m03",
+      "question": "今年做得好吗？",
+      "why": "没说看什么指标，也没说跟什么比",
+      "slots": [
+        {
+          "name": "metric",
+          "keywords": [
+            "指标",
+            "销售额",
+            "订单",
+            "退款",
+            "金额",
+            "什么"
+          ]
+        },
+        {
+          "name": "dimension",
+          "keywords": [
+            "对比",
+            "同比",
+            "环比",
+            "比什么",
+            "基准",
+            "跟什么"
+          ]
+        }
+      ],
+      "answer": "看 2025 年销售额相对 2024 年的增长率，只要给我这一个百分比数值。",
+      "gold_sql": "WITH a AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'), b AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01') SELECT ROUND((a.amt - b.amt) / b.amt * 100, 2) FROM a, b"
+    },
+    {
+      "id": "v14",
+      "source_id": "m13",
+      "question": "最近的退款和销售对比",
+      "why": "缺时间范围，也没说对比什么指标",
+      "slots": [
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久",
+            "具体"
+          ]
+        },
+        {
+          "name": "metric",
+          "keywords": [
+            "金额",
+            "笔数",
+            "率",
+            "指标",
+            "销售额",
+            "哪些"
+          ]
+        }
+      ],
+      "answer": "2025 年全年的退款金额、销售额和退款率，一行三个数，退款率用百分比。",
+      "gold_sql": "WITH r AS (SELECT SUM(refund_amount) AS amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'), s AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') SELECT ROUND(r.amt, 2), ROUND(s.amt, 2), ROUND(r.amt / s.amt * 100, 2) FROM s, r"
+    },
+    {
+      "id": "v15",
+      "source_id": "e09",
+      "question": "有多少活跃用户？",
+      "why": "「活跃」没有定义，也没说时间范围",
+      "slots": [
+        {
+          "name": "definition",
+          "keywords": [
+            "活跃",
+            "定义",
+            "口径",
+            "怎么算",
+            "按什么"
+          ]
+        },
+        {
+          "name": "time_range",
+          "keywords": [
+            "时间",
+            "哪年",
+            "哪个月",
+            "时间段",
+            "范围",
+            "期间",
+            "月份",
+            "多久"
+          ]
+        }
+      ],
+      "answer": "活跃 = 2025 年下过有效订单的用户，给我去重后的用户数。",
+      "gold_sql": "SELECT COUNT(DISTINCT user_id) FROM orders WHERE status IN ('已支付','已发货','已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'"
+    }
+  ],
+  "revisions": [
+    {
+      "from": "v1",
+      "reason": "闭环首轮 10/15。5 道失败里 3 道是我的 gold 列顺序与自己写的用户回答相反（v04/v07/v14），2 道是回答没写清只要一个数（v08/v13）。只改 gold 顺序与回答措辞，业务口径未动。",
+      "changed": [
+        "v04",
+        "v07",
+        "v08",
+        "v13",
+        "v14"
+      ]
+    },
+    {
+      "from": "v1",
+      "reason": "v14 的「退款率」没说单位，模型返回小数 0.08，gold 是百分比 8.2。补一句「退款率用百分比」。",
+      "changed": [
+        "v14"
+      ]
+    }
+  ]
+}

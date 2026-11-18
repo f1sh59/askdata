@@ -1,0 +1,762 @@
+{
+  "version": "v2.2",
+  "description": "askdata 中文问数评测集：50 题（core30 + ext20）。ext20 侧重重表关联、隐式业务口径与时间对比，用来在 90% 附近重新拉开区分度。",
+  "created_at": "2026-11-18",
+  "business_rules": {
+    "valid_order": "status IN ('已支付','已发货','已完成')",
+    "gmv": "有效订单的 pay_amount 之和（不是 total_amount）",
+    "refund_amount": "refunds 表中 status = '已完成' 的退款金额（处理中/已拒绝不算）"
+  },
+  "questions": [
+    {
+      "id": "e01",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "time_filter"
+      ],
+      "question": "2025 年一共有多少笔订单？",
+      "gold_sql": "SELECT COUNT(*) AS order_cnt FROM orders WHERE order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "note": "问的是订单笔数，包含已取消/待支付；不要加状态过滤",
+      "cohort": "core30"
+    },
+    {
+      "id": "e02",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "filter"
+      ],
+      "question": "目前在售（上架）的商品有多少个？",
+      "gold_sql": "SELECT COUNT(*) AS product_cnt FROM products WHERE is_online = TRUE",
+      "note": "is_online 是布尔字段，不能用 Boolean 字面量的写法差异导致结果不同",
+      "cohort": "core30"
+    },
+    {
+      "id": "e03",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年的销售额（GMV）是多少？",
+      "gold_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "note": "GMV 用 pay_amount（折扣后实付），且只算有效订单",
+      "cohort": "core30"
+    },
+    {
+      "id": "e04",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年已完成状态的退款金额合计是多少？",
+      "gold_sql": "SELECT ROUND(SUM(refund_amount), 2) AS refund_amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01'",
+      "note": "只算 status='已完成'；处理中、已拒绝都不计入",
+      "cohort": "core30"
+    },
+    {
+      "id": "e05",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "null_handling"
+      ],
+      "question": "平台目前有多少个未注销的注册用户？",
+      "gold_sql": "SELECT COUNT(*) AS user_cnt FROM users WHERE is_deleted = FALSE",
+      "note": "is_deleted 为真的用户是软删除，要排除",
+      "cohort": "core30"
+    },
+    {
+      "id": "e06",
+      "difficulty": "easy",
+      "tags": [
+        "group",
+        "payment"
+      ],
+      "question": "各支付方式的支付成功金额分别是多少？",
+      "gold_sql": "SELECT pay_method, ROUND(SUM(pay_amount), 2) AS amt FROM payments WHERE pay_status = '成功' GROUP BY pay_method ORDER BY amt DESC",
+      "note": "按支付流水口径统计，含后来发生退款的订单（钱确实收过）",
+      "cohort": "core30"
+    },
+    {
+      "id": "e07",
+      "difficulty": "easy",
+      "tags": [
+        "aggregate",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有效订单的平均订单金额是多少？",
+      "gold_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "note": "AVG 的分母是有效订单数",
+      "cohort": "core30"
+    },
+    {
+      "id": "e08",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "distinct"
+      ],
+      "question": "商品一共有几个品类？",
+      "gold_sql": "SELECT COUNT(DISTINCT category) AS category_cnt FROM products",
+      "note": "品类即 products.category",
+      "cohort": "core30"
+    },
+    {
+      "id": "e09",
+      "difficulty": "easy",
+      "tags": [
+        "count",
+        "distinct",
+        "business_rule",
+        "time_filter"
+      ],
+      "question": "2025 年有多少个不同用户下过有效订单？",
+      "gold_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "note": "按用户去重，只算有效订单",
+      "cohort": "core30"
+    },
+    {
+      "id": "e10",
+      "difficulty": "easy",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销售额）",
+      "gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY amt DESC LIMIT 1",
+      "note": "品类销售额按明细 item_amount 汇总；题目已明确要求两列",
+      "cohort": "core30"
+    },
+    {
+      "id": "m01",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的销售额分别是多少？",
+      "gold_sql": "SELECT strftime(order_time, '%Y-%m') AS ym, ROUND(SUM(pay_amount), 2) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym ORDER BY ym",
+      "note": "12 行；月份用 order_time 截断",
+      "cohort": "core30"
+    },
+    {
+      "id": "m02",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "time_bucket",
+        "date_type"
+      ],
+      "question": "2025 年每个月新增的注册用户数是多少？",
+      "gold_sql": "SELECT strftime(register_date, '%Y-%m') AS ym, COUNT(*) AS user_cnt FROM users WHERE register_date >= DATE '2025-01-01' AND register_date < DATE '2026-01-01' GROUP BY ym ORDER BY ym",
+      "note": "register_date 是 DATE，order_time 是 TIMESTAMP，两者不能混用比较",
+      "cohort": "core30"
+    },
+    {
+      "id": "m03",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "business_rule",
+        "yoy"
+      ],
+      "question": "2025 年销售额相比 2024 年同比增长了百分之多少？",
+      "gold_sql": "WITH y25 AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'), y24 AS (SELECT SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01') SELECT ROUND((y25.amt - y24.amt) / y24.amt * 100, 2) AS yoy_pct FROM y25, y24",
+      "note": "输出百分比数值（如 20.79），不是小数",
+      "cohort": "core30"
+    },
+    {
+      "id": "m04",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "top_n",
+        "business_rule"
+      ],
+      "question": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "note": "按明细金额汇总；同额时用商品名做次序保证结果稳定",
+      "cohort": "core30"
+    },
+    {
+      "id": "m05",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的有效订单数和销售额分别是多少？",
+      "gold_sql": "SELECT c.channel_name, COUNT(*) AS order_cnt, ROUND(SUM(o.pay_amount), 2) AS amt FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY c.channel_name ORDER BY amt DESC",
+      "note": "渠道名来自 channels 维表",
+      "cohort": "core30"
+    },
+    {
+      "id": "m06",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "用户数最多的前 10 个省份是哪些？分别有多少用户？",
+      "gold_sql": "SELECT province, COUNT(*) AS user_cnt FROM users WHERE province IS NOT NULL GROUP BY province ORDER BY user_cnt DESC, province LIMIT 10",
+      "note": "province 存在 NULL，需排除",
+      "cohort": "core30"
+    },
+    {
+      "id": "m07",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "join",
+        "group",
+        "business_rule"
+      ],
+      "question": "2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100，返回三列：品类、销售额、毛利率）",
+      "gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS revenue, ROUND((SUM(oi.item_amount) - SUM(p.cost * oi.quantity)) / SUM(oi.item_amount) * 100, 2) AS gross_margin_pct FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY revenue DESC",
+      "note": "成本 = products.cost × 数量；销售额与毛利率都要返回",
+      "cohort": "core30"
+    },
+    {
+      "id": "m08",
+      "difficulty": "medium",
+      "tags": [
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年下过 2 笔及以上有效订单的用户有多少个？",
+      "gold_sql": "SELECT COUNT(*) AS repeat_user_cnt FROM (SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id HAVING COUNT(*) >= 2) t",
+      "note": "先按用户聚合再计数，不要写成 COUNT(DISTINCT user_id)",
+      "cohort": "core30"
+    },
+    {
+      "id": "m09",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "group",
+        "payment"
+      ],
+      "question": "2025 年各支付方式的订单数占比是多少？（按支付成功流水统计）",
+      "gold_sql": "WITH base AS (SELECT pay_method, COUNT(DISTINCT order_id) AS cnt FROM payments WHERE pay_status = '成功' AND pay_time >= TIMESTAMP '2025-01-01' AND pay_time < TIMESTAMP '2026-01-01' GROUP BY pay_method) SELECT pay_method, cnt, ROUND(cnt * 100.0 / SUM(cnt) OVER (), 2) AS pct FROM base ORDER BY cnt DESC",
+      "note": "占比输出百分比数值；分母是 2025 年支付成功订单总数",
+      "cohort": "core30"
+    },
+    {
+      "id": "m10",
+      "difficulty": "medium",
+      "tags": [
+        "ratio",
+        "group",
+        "left_join",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回两列：月份、退款率）",
+      "gold_sql": "WITH gmv AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym), rf AS (SELECT strftime(refund_time, '%Y-%m') AS ym, SUM(refund_amount) AS amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' GROUP BY ym) SELECT g.ym, ROUND(COALESCE(r.amt, 0) / g.amt * 100, 2) AS refund_rate_pct FROM gmv g LEFT JOIN rf r ON r.ym = g.ym ORDER BY g.ym",
+      "note": "分母是该月全部有效订单的销售额，不是仅退款订单的销售额；退款额按退款时间归月",
+      "cohort": "core30"
+    },
+    {
+      "id": "m11",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "having",
+        "top_n",
+        "null_handling"
+      ],
+      "question": "2025 年客单价最高的前 5 个城市是哪些？请给出城市、订单数和客单价。（只统计有效订单数不少于 30 单的城市）",
+      "gold_sql": "SELECT u.city, COUNT(*) AS order_cnt, ROUND(AVG(o.pay_amount), 2) AS aov FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' AND u.city IS NOT NULL GROUP BY u.city HAVING COUNT(*) >= 30 ORDER BY aov DESC, u.city LIMIT 5",
+      "note": "客单价 = AVG(pay_amount)；过滤条件在 HAVING 而非 WHERE；返回三列",
+      "cohort": "core30"
+    },
+    {
+      "id": "m12",
+      "difficulty": "medium",
+      "tags": [
+        "subquery",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的新客首单数是多少？（新客 = 该用户第一次下有效订单）",
+      "gold_sql": "WITH first_order AS (SELECT user_id, MIN(order_time) AS first_time FROM orders WHERE status IN ('已支付', '已发货', '已完成') GROUP BY user_id) SELECT strftime(first_time, '%Y-%m') AS ym, COUNT(*) AS new_user_cnt FROM first_order WHERE first_time >= TIMESTAMP '2025-01-01' AND first_time < TIMESTAMP '2026-01-01' GROUP BY ym ORDER BY ym",
+      "note": "首次下单时间要先在全量历史里算，再按 2025 过滤",
+      "cohort": "core30"
+    },
+    {
+      "id": "h01",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "time_bucket",
+        "ratio"
+      ],
+      "question": "2025 年每月销售额的环比增长率（百分比数值，保留 2 位小数）是多少？",
+      "gold_sql": "WITH m AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym) SELECT ym, ROUND(amt, 2) AS amt, ROUND((amt - LAG(amt) OVER (ORDER BY ym)) / LAG(amt) OVER (ORDER BY ym) * 100, 2) AS mom_pct FROM m ORDER BY ym",
+      "note": "1 月没有上月，mom_pct 为 NULL；不要在 SQL 里把 NULL 填 0",
+      "cohort": "core30"
+    },
+    {
+      "id": "h02",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "top_n",
+        "group"
+      ],
+      "question": "2025 年每个品类中销售额最高的商品分别是哪个？请给出品类、商品名称和销售额。",
+      "gold_sql": "WITH s AS (SELECT p.category, p.product_name, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category, p.product_name), r AS (SELECT category, product_name, amt, ROW_NUMBER() OVER (PARTITION BY category ORDER BY amt DESC, product_name) AS rn FROM s) SELECT category, product_name, ROUND(amt, 2) AS amt FROM r WHERE rn = 1 ORDER BY category",
+      "note": "组内 Top1，不是全局 Top1；返回三列",
+      "cohort": "core30"
+    },
+    {
+      "id": "h03",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "time_bucket"
+      ],
+      "question": "2025 年每个月的累计销售额是多少？",
+      "gold_sql": "WITH m AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym) SELECT ym, ROUND(SUM(amt) OVER (ORDER BY ym), 2) AS cum_amt FROM m ORDER BY ym",
+      "note": "累计值 = 年初到当月的销售额",
+      "cohort": "core30"
+    },
+    {
+      "id": "h04",
+      "difficulty": "hard",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "ratio",
+        "yoy"
+      ],
+      "question": "2025 年各渠道的销售额相比 2024 年同比增长了多少？请给出渠道、2024 销售额、2025 销售额和增长率（百分比）。",
+      "gold_sql": "SELECT c.channel_name, ROUND(SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END), 2) AS amt_2024, ROUND(SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2025 THEN o.pay_amount ELSE 0 END), 2) AS amt_2025, ROUND((SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2025 THEN o.pay_amount ELSE 0 END) - SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END)) / SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END) * 100, 2) AS yoy_pct FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') GROUP BY c.channel_name ORDER BY amt_2025 DESC",
+      "note": "四个字段顺序固定：渠道、2024、2025、增长率",
+      "cohort": "core30"
+    },
+    {
+      "id": "h05",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "subquery",
+        "business_rule"
+      ],
+      "question": "2025 年的订单中，用户相邻两次有效下单之间间隔天数的中位数是多少？",
+      "gold_sql": "WITH o AS (SELECT user_id, order_time, LAG(order_time) OVER (PARTITION BY user_id ORDER BY order_time) AS prev_time FROM orders WHERE status IN ('已支付', '已发货', '已完成')) SELECT ROUND(percentile_cont(0.5) WITHIN GROUP (ORDER BY date_diff('day', prev_time, order_time)), 1) AS median_gap_days FROM o WHERE prev_time IS NOT NULL AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "note": "同用户同日多单的间隔为 0；中位数按天算",
+      "cohort": "core30"
+    },
+    {
+      "id": "h06",
+      "difficulty": "hard",
+      "tags": [
+        "join",
+        "group",
+        "ratio",
+        "null_handling",
+        "business_rule"
+      ],
+      "question": "2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（占比为百分比数值；会员等级缺失的用户归为「未知」）",
+      "gold_sql": "SELECT COALESCE(u.member_level, '未知') AS member_level, COUNT(*) AS order_cnt, ROUND(SUM(o.pay_amount), 2) AS amt, ROUND(SUM(o.pay_amount) * 100.0 / SUM(SUM(o.pay_amount)) OVER (), 2) AS pct FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY member_level ORDER BY amt DESC",
+      "note": "member_level 有 NULL，必须 COALESCE 成「未知」，否则会丢行；占比 × 100",
+      "cohort": "core30"
+    },
+    {
+      "id": "h07",
+      "difficulty": "hard",
+      "tags": [
+        "left_join",
+        "anti_pattern",
+        "business_rule"
+      ],
+      "question": "2025 年下过单、但在 2025 年的订单里一次都没有支付成功的用户有多少个？",
+      "gold_sql": "SELECT COUNT(*) AS user_cnt FROM (SELECT o.user_id FROM orders o LEFT JOIN payments p ON p.order_id = o.order_id AND p.pay_status = '成功' WHERE o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY o.user_id HAVING COUNT(p.payment_id) = 0) t",
+      "note": "判定范围是 2025 年的订单：该用户 2025 年所有订单都没有成功支付记录；历史订单不看",
+      "cohort": "core30"
+    },
+    {
+      "id": "h08",
+      "difficulty": "hard",
+      "tags": [
+        "group",
+        "having",
+        "time_bucket",
+        "business_rule"
+      ],
+      "question": "2025 年每个月的复购用户数是多少？（当月有效订单不少于 2 笔的用户）",
+      "gold_sql": "WITH m AS (SELECT strftime(order_time, '%Y-%m') AS ym, user_id, COUNT(*) AS c FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym, user_id) SELECT ym, COUNT(*) AS repeat_user_cnt FROM m WHERE c >= 2 GROUP BY ym ORDER BY ym",
+      "note": "按月判断复购，不是全年的复购用户",
+      "cohort": "core30"
+    },
+    {
+      "id": "m13",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "ratio",
+        "left_join",
+        "business_rule"
+      ],
+      "question": "2025 年各渠道的销售额、退款金额和退款率分别是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回四列：渠道、销售额、退款金额、退款率）",
+      "gold_sql": "WITH gmv AS ( SELECT channel_id, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY channel_id ), rf AS ( SELECT o.channel_id, SUM(r.refund_amount) AS amt FROM refunds r JOIN orders o ON o.order_id = r.order_id WHERE r.status = '已完成' AND r.refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' GROUP BY o.channel_id ) SELECT c.channel_name, ROUND(g.amt, 2), ROUND(COALESCE(rf.amt, 0), 2), ROUND(COALESCE(rf.amt, 0) / g.amt * 100, 2) FROM gmv g JOIN channels c ON c.channel_id = g.channel_id LEFT JOIN rf ON rf.channel_id = g.channel_id ORDER BY 2 DESC",
+      "note": "退款额按退款时间归 2025；没有退款的渠道要补 0（LEFT JOIN）",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m14",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额和下单用户数分别是多少？（返回三列：省份、销售额、下单用户数，忽略省份为空的用户）",
+      "gold_sql": "SELECT u.province, ROUND(SUM(o.pay_amount), 2) AS gmv, COUNT(DISTINCT o.user_id) AS user_cnt FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' AND u.province IS NOT NULL GROUP BY u.province ORDER BY gmv DESC",
+      "note": "province 有 NULL，必须显式排除",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m15",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "conditional_agg"
+      ],
+      "question": "2025 年各品类中有销量的在售 SKU 数、销量件数和销售额分别是多少？（返回四列：品类、在售 SKU 数、销量件数、销售额）",
+      "gold_sql": "SELECT p.category, COUNT(DISTINCT CASE WHEN p.is_online THEN p.product_id END) AS online_sku_cnt, SUM(oi.quantity) AS units, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY amt DESC",
+      "note": "SKU 数只数 is_online=TRUE 的，且限定 2025 年有销量",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m16",
+      "difficulty": "medium",
+      "tags": [
+        "subquery",
+        "group",
+        "null_handling"
+      ],
+      "question": "2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效订单不少于 2 笔的用户；返回两列：会员等级、复购用户数；会员等级缺失归为「未知」）",
+      "gold_sql": "WITH repeat_users AS ( SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id HAVING COUNT(*) >= 2 ) SELECT COALESCE(u.member_level, '未知') AS member_level, COUNT(*) AS repeat_user_cnt FROM repeat_users r JOIN users u ON u.user_id = r.user_id GROUP BY 1 ORDER BY 2 DESC",
+      "note": "member_level 有 NULL，归「未知」",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m17",
+      "difficulty": "medium",
+      "tags": [
+        "payment",
+        "group",
+        "aggregate"
+      ],
+      "question": "2025 年各支付方式的成功支付笔数、金额和平均每笔金额分别是多少？（返回四列：支付方式、笔数、金额、平均每笔金额）",
+      "gold_sql": "SELECT pay_method, COUNT(*) AS cnt, ROUND(SUM(pay_amount), 2) AS amt, ROUND(AVG(pay_amount), 2) AS avg_amt FROM payments WHERE pay_status = '成功' AND pay_time >= TIMESTAMP '2025-01-01' AND pay_time < TIMESTAMP '2026-01-01' GROUP BY pay_method ORDER BY amt DESC",
+      "note": "按支付流水口径，只算成功",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m18",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "aggregate"
+      ],
+      "question": "2025 年各渠道的有效订单数和客单价分别是多少？（返回三列：渠道、有效订单数、客单价）",
+      "gold_sql": "SELECT c.channel_name, COUNT(*) AS order_cnt, ROUND(AVG(o.pay_amount), 2) AS aov FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY c.channel_name ORDER BY aov DESC",
+      "note": "客单价 = AVG(pay_amount)",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m19",
+      "difficulty": "medium",
+      "tags": [
+        "join",
+        "group",
+        "top_n"
+      ],
+      "question": "2025 年销售额排名前 10 的商品是哪些？请给出商品名称、品类、销量件数和销售额。",
+      "gold_sql": "SELECT p.product_name, p.category, SUM(oi.quantity) AS units, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name, p.category ORDER BY amt DESC, p.product_name LIMIT 10",
+      "note": "返回四列；同额时用商品名做次序保证稳定",
+      "cohort": "ext20"
+    },
+    {
+      "id": "m20",
+      "difficulty": "medium",
+      "tags": [
+        "subquery",
+        "join",
+        "null_handling"
+      ],
+      "question": "2025 年各城市的新客数分别是多少？（新客 = 该用户第一次下有效订单发生在 2025 年；返回两列：城市、新客数，忽略城市为空）",
+      "gold_sql": "WITH first_order AS ( SELECT user_id, MIN(order_time) AS first_time FROM orders WHERE status IN ('已支付', '已发货', '已完成') GROUP BY user_id ) SELECT u.city, COUNT(*) AS new_user_cnt FROM first_order f JOIN users u ON u.user_id = f.user_id WHERE f.first_time >= TIMESTAMP '2025-01-01' AND f.first_time < TIMESTAMP '2026-01-01' AND u.city IS NOT NULL GROUP BY u.city ORDER BY 2 DESC",
+      "note": "先在全量历史里算首单时间，再按 2025 过滤",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h09",
+      "difficulty": "hard",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "yoy",
+        "null_handling"
+      ],
+      "question": "2025 年各省份的销售额相比 2024 年同比增长了多少？请给出省份、2024 销售额、2025 销售额和增长率（百分比），忽略省份为空的用户。",
+      "gold_sql": "SELECT u.province, ROUND(SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END), 2) AS amt_2024, ROUND(SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2025 THEN o.pay_amount ELSE 0 END), 2) AS amt_2025, ROUND((SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2025 THEN o.pay_amount ELSE 0 END) - SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END)) / SUM(CASE WHEN EXTRACT(year FROM o.order_time) = 2024 THEN o.pay_amount ELSE 0 END) * 100, 2) AS yoy_pct FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND (o.order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' OR o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') AND u.province IS NOT NULL GROUP BY u.province ORDER BY amt_2025 DESC",
+      "note": "四个字段顺序固定：省份、2024、2025、增长率",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h10",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "join",
+        "time_bucket"
+      ],
+      "question": "2025 年各品类每月的销售额，以及该月及其前两个月（共 3 个月）的移动平均销售额分别是多少？（返回四列：品类、月份、当月销售额、3 个月移动平均；按品类、月份排序）",
+      "gold_sql": "WITH m AS ( SELECT p.category, strftime(o.order_time, '%Y-%m') AS ym, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1, 2 ) SELECT category, ym, ROUND(amt, 2) AS amt, ROUND(AVG(amt) OVER (PARTITION BY category ORDER BY ym ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS ma3 FROM m ORDER BY category, ym",
+      "note": "窗口按品类分区、按月份排序，取当前行及前两行",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h11",
+      "difficulty": "hard",
+      "tags": [
+        "subquery",
+        "ratio",
+        "business_rule"
+      ],
+      "question": "2025 年新客的销售额占 2025 年总销售额的百分之多少？（新客 = 该用户第一次下有效订单发生在 2025 年；返回一个百分比数值）",
+      "gold_sql": "WITH first_order AS ( SELECT user_id, MIN(order_time) AS first_time FROM orders WHERE status IN ('已支付', '已发货', '已完成') GROUP BY user_id ), new_users AS ( SELECT user_id FROM first_order WHERE first_time >= TIMESTAMP '2025-01-01' AND first_time < TIMESTAMP '2026-01-01' ) SELECT ROUND( (SELECT SUM(o.pay_amount) FROM orders o JOIN new_users n ON n.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') / (SELECT SUM(pay_amount) FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') * 100, 2) AS new_user_gmv_pct",
+      "note": "分子分母都只算 2025 年有效订单",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h12",
+      "difficulty": "hard",
+      "tags": [
+        "ratio",
+        "group",
+        "having",
+        "business_rule"
+      ],
+      "question": "2025 年的复购率是多少？（复购率 = 有效订单不少于 2 笔的用户数 / 下单用户数 × 100，返回一个百分比数值）",
+      "gold_sql": "WITH u AS ( SELECT user_id, COUNT(*) AS c FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id ) SELECT ROUND(COUNT(*) FILTER (WHERE c >= 2) * 100.0 / COUNT(*), 2) AS repeat_rate_pct FROM u",
+      "note": "分母是 2025 年有下单的用户数，不是全部注册用户",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h13",
+      "difficulty": "hard",
+      "tags": [
+        "join",
+        "subquery",
+        "ratio",
+        "order_by_limit"
+      ],
+      "question": "2025 年退款率最高的前 3 个商品品类是哪些？（退款率 = 该品类分摊到的退款金额 / 该品类销售额 × 100；退款金额按订单内各品类的明细金额占比分摊；返回四列：品类、销售额、退款金额、退款率）",
+      "gold_sql": "WITH item_cat AS ( SELECT oi.order_id, p.category, SUM(oi.item_amount) AS cat_amt FROM order_items oi JOIN products p ON p.product_id = oi.product_id GROUP BY 1, 2 ), order_amt AS ( SELECT order_id, SUM(cat_amt) AS amt FROM item_cat GROUP BY order_id ), alloc AS ( SELECT ic.category, r.refund_amount * ic.cat_amt / oa.amt AS refund_amt FROM refunds r JOIN item_cat ic ON ic.order_id = r.order_id JOIN order_amt oa ON oa.order_id = r.order_id WHERE r.status = '已完成' AND r.refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' ), rf AS ( SELECT category, SUM(refund_amt) AS amt FROM alloc GROUP BY 1 ), gmv AS ( SELECT p.category, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ) SELECT g.category, ROUND(g.amt, 2), ROUND(COALESCE(rf.amt, 0), 2), ROUND(COALESCE(rf.amt, 0) / g.amt * 100, 2) AS refund_rate_pct FROM gmv g LEFT JOIN rf ON rf.category = g.category ORDER BY refund_rate_pct DESC LIMIT 3",
+      "note": "多品类订单的退款要按明细金额占比分摊，不能整单归给一个品类",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h14",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "self_join",
+        "rank"
+      ],
+      "question": "各渠道 2025 年的销售额排名与 2024 年相比分别是第几名？（返回三列：渠道、2024 年排名、2025 年排名，按 2025 年排名升序）",
+      "gold_sql": "WITH y AS ( SELECT c.channel_name, EXTRACT(year FROM o.order_time) AS yr, SUM(o.pay_amount) AS amt FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND (o.order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' OR o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') GROUP BY 1, 2 ), r AS ( SELECT channel_name, yr, amt, RANK() OVER (PARTITION BY yr ORDER BY amt DESC) AS rk FROM y ) SELECT a.channel_name, a.rk AS rank_2024, b.rk AS rank_2025 FROM r a JOIN r b ON a.channel_name = b.channel_name WHERE a.yr = 2024 AND b.yr = 2025 ORDER BY rank_2025",
+      "note": "排名要在各年内部各自排，不能跨年一起排",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h15",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "subquery",
+        "aggregate"
+      ],
+      "question": "2025 年首次下有效订单的用户，从首单到第二单平均相隔多少整天？（间隔按整天向下取整计算；只算 2025 年首单且至少下过两单的用户；返回一个天数，保留 1 位小数）",
+      "gold_sql": "WITH ranked AS (SELECT user_id, order_time, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time) AS rn FROM orders WHERE status IN ('已支付','已发货','已完成')), pairs AS (SELECT user_id, MAX(CASE WHEN rn = 1 THEN order_time END) AS t1, MAX(CASE WHEN rn = 2 THEN order_time END) AS t2 FROM ranked GROUP BY user_id) SELECT ROUND(AVG(FLOOR(date_diff('second', t1, t2) / 86400.0)), 1) AS avg_gap_days FROM pairs WHERE t2 IS NOT NULL AND t1 >= TIMESTAMP '2025-01-01' AND t1 < TIMESTAMP '2026-01-01'",
+      "note": "首单和第二单要从全量历史里取，不能先按 2025 过滤",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h16",
+      "difficulty": "hard",
+      "tags": [
+        "join",
+        "ratio",
+        "null_handling",
+        "business_rule"
+      ],
+      "question": "2025 年各会员等级的人均订单数分别是多少？（人均订单数 = 有效订单数 / 该等级 2025 年有下单的用户数；返回四列：会员等级、订单数、用户数、人均订单数，会员等级缺失归为「未知」）",
+      "gold_sql": "SELECT COALESCE(u.member_level, '未知') AS member_level, COUNT(*) AS order_cnt, COUNT(DISTINCT o.user_id) AS user_cnt, ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT o.user_id), 2) AS orders_per_user FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ORDER BY orders_per_user DESC",
+      "note": "分母是「2025 年有下单的用户数」，不是该等级全部注册用户",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h17",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "left_join",
+        "time_bucket",
+        "ratio"
+      ],
+      "question": "2025 年每月的累计销售额和累计退款率分别是多少？（累计退款率 = 年初到当月的已完成退款金额 / 年初到当月的销售额 × 100；返回四列：月份、累计销售额、累计退款金额、累计退款率）",
+      "gold_sql": "WITH g AS ( SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1 ), r AS ( SELECT strftime(refund_time, '%Y-%m') AS ym, SUM(refund_amount) AS amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' GROUP BY 1 ) SELECT g.ym, ROUND(SUM(g.amt) OVER (ORDER BY g.ym), 2) AS cum_gmv, ROUND(SUM(COALESCE(r.amt, 0)) OVER (ORDER BY g.ym), 2) AS cum_refund, ROUND(SUM(COALESCE(r.amt, 0)) OVER (ORDER BY g.ym) / SUM(g.amt) OVER (ORDER BY g.ym) * 100, 2) AS cum_refund_rate FROM g LEFT JOIN r ON r.ym = g.ym ORDER BY g.ym",
+      "note": "累计是年初到当月，不是滚动窗口；无退款月份补 0",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h18",
+      "difficulty": "hard",
+      "tags": [
+        "conditional_agg",
+        "join",
+        "yoy",
+        "top_n"
+      ],
+      "question": "2025 年销售额同比增幅最高的前 3 个商品品类是哪些？（返回四列：品类、2024 销售额、2025 销售额、同比增幅百分比）",
+      "gold_sql": "WITH y AS ( SELECT p.category, EXTRACT(year FROM o.order_time) AS yr, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND (o.order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' OR o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01') GROUP BY 1, 2 ), piv AS ( SELECT category, SUM(CASE WHEN yr = 2024 THEN amt ELSE 0 END) AS amt_2024, SUM(CASE WHEN yr = 2025 THEN amt ELSE 0 END) AS amt_2025 FROM y GROUP BY 1 ) SELECT category, ROUND(amt_2024, 2), ROUND(amt_2025, 2), ROUND((amt_2025 - amt_2024) / amt_2024 * 100, 2) AS yoy_pct FROM piv ORDER BY yoy_pct DESC LIMIT 3",
+      "note": "同比按品类各自计算，再取增幅前三",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h19",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "join",
+        "ratio",
+        "group"
+      ],
+      "question": "2025 年各渠道的已完成退款中，各种退款原因各有多少笔、占该渠道退款的百分之多少？（返回三列：渠道、退款原因、笔数、占比）",
+      "gold_sql": "SELECT c.channel_name, r.reason, COUNT(*) AS cnt, ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY c.channel_name), 2) AS pct FROM refunds r JOIN orders o ON o.order_id = r.order_id JOIN channels c ON c.channel_id = o.channel_id WHERE r.status = '已完成' AND r.refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' GROUP BY 1, 2 ORDER BY c.channel_name, cnt DESC",
+      "note": "占比的分母是同一渠道内的退款笔数",
+      "cohort": "ext20"
+    },
+    {
+      "id": "h20",
+      "difficulty": "hard",
+      "tags": [
+        "window",
+        "join",
+        "pivot",
+        "top_n"
+      ],
+      "question": "2025 年各品类销量最高的商品，与前一名之外的「第二名」差距是多少？请给出品类、第一名商品、第一名销售额、第二名销售额和两者差额。",
+      "gold_sql": "WITH s AS ( SELECT p.category, p.product_name, SUM(oi.item_amount) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY 1, 2 ), r AS ( SELECT category, product_name, amt, ROW_NUMBER() OVER (PARTITION BY category ORDER BY amt DESC, product_name) AS rn FROM s ) SELECT a.category, a.product_name AS top1_product, ROUND(a.amt, 2) AS top1_amt, ROUND(COALESCE(b.amt, 0), 2) AS top2_amt, ROUND(a.amt - COALESCE(b.amt, 0), 2) AS gap FROM r a LEFT JOIN r b ON b.category = a.category AND b.rn = 2 WHERE a.rn = 1 ORDER BY gap DESC",
+      "note": "组内取前两名再自连接，不是全局取前二",
+      "cohort": "ext20"
+    }
+  ],
+  "revisions": [
+    {
+      "from": "v1",
+      "reason": "v1 首轮全量评测后，10 道失败题里有 6 道的失败原因是题目没有约定输出列数或单位，不是模型能力问题。只修改题面表述，业务口径与 gold SQL 一律未动。",
+      "changes": [
+        {
+          "id": "e10",
+          "before": "2025 年销售额最高的商品品类是哪个？",
+          "after": "2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销售额）"
+        },
+        {
+          "id": "m04",
+          "before": "2025 年销售额排名前 5 的商品是哪些？",
+          "after": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。"
+        },
+        {
+          "id": "m07",
+          "before": "2025 年各品类的毛利率是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100）",
+          "after": "2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100，返回三列：品类、销售额、毛利率）"
+        },
+        {
+          "id": "m10",
+          "before": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100）",
+          "after": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回两列：月份、退款率）"
+        },
+        {
+          "id": "m11",
+          "before": "2025 年客单价最高的前 5 个城市是哪些？（只统计有效订单数不少于 30 单的城市）",
+          "after": "2025 年客单价最高的前 5 个城市是哪些？请给出城市、订单数和客单价。（只统计有效订单数不少于 30 单的城市）"
+        },
+        {
+          "id": "h01",
+          "before": "2025 年每月销售额的环比增长率是多少？",
+          "after": "2025 年每月销售额的环比增长率（百分比数值，保留 2 位小数）是多少？"
+        },
+        {
+          "id": "h02",
+          "before": "2025 年每个品类中销售额最高的商品分别是哪个？",
+          "after": "2025 年每个品类中销售额最高的商品分别是哪个？请给出品类、商品名称和销售额。"
+        },
+        {
+          "id": "h06",
+          "before": "2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（会员等级缺失的用户归为「未知」）",
+          "after": "2025 年各会员等级的订单数、销售额和销售额占比分别是多少？（占比为百分比数值；会员等级缺失的用户归为「未知」）"
+        },
+        {
+          "id": "h07",
+          "before": "2025 年下过单但从未支付成功的用户有多少个？",
+          "after": "2025 年下过单、但在 2025 年的订单里一次都没有支付成功的用户有多少个？"
+        }
+      ]
+    },
+    {
+      "from": "v2.0",
+      "reason": "v2.0 首轮 50 题评测中，7 道失败里有 3 道的根因是题面/语义层没有约定口径，模型给出了另一种同样合理的解释。其中 h13 的「品类销售额」属于语义层缺失，改为在 BUSINESS_RULES 里补第 8 条（全库生效），而不是逐题打补丁。",
+      "changes": [
+        {
+          "id": "m16",
+          "before": "2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效订单不少于 2 笔的用户；返回两列：会员等级、复购用户数）",
+          "after": "2025 年各会员等级的复购用户数分别是多少？（复购用户 = 2025 年有效订单不少于 2 笔的用户；返回两列：会员等级、复购用户数；会员等级缺失归为「未知」）"
+        },
+        {
+          "id": "h15",
+          "before": "2025 年首次下有效订单的用户，从首单到第二单平均相隔多少天？（只算 2025 年首单且至少下过两单的用户；返回一个天数，保留 1 位小数）",
+          "after": "2025 年首次下有效订单的用户，从首单到第二单平均相隔多少整天？（间隔按整天向下取整计算；只算 2025 年首单且至少下过两单的用户；返回一个天数，保留 1 位小数）"
+        }
+      ],
+      "prompt_change": "BUSINESS_RULES 新增第 8 条：品类/商品维度销售额用 item_amount 汇总，避免 join 扇出"
+    },
+    {
+      "from": "v2.1",
+      "reason": "h15 的题面写的是「间隔按整天向下取整」，但 gold 用的是 date_diff('day')（统计跨过的自然日边界），两者会给出不同答案——题面与 gold 自相矛盾，错在 gold。已改为按秒差整除 86400 取整，与题面一致。本题题面未变，因此 prompt 缓存仍命中。",
+      "changes": [
+        {
+          "id": "h15",
+          "old_gold": "WITH ranked AS ( SELECT user_id, order_time, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time) AS rn FROM orders WHERE status IN ('已支付', '已发货', '已完成') ), pairs AS ( SELECT user_id, MAX(CASE WHEN rn = 1 THEN order_time END) AS t1, MAX(CASE WHEN rn = 2 THEN order_time END) AS t2 FROM ranked GROUP BY user_id ) SELECT ROUND(AVG(date_diff('day', t1, t2)), 1) AS avg_gap_days FROM pairs WHERE t2 IS NOT NULL AND t1 >= TIMESTAMP '2025-01-01' AND t1 < TIMESTAMP '2026-01-01'",
+          "new_gold": "WITH ranked AS (SELECT user_id, order_time, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time) AS rn FROM orders WHERE status IN ('已支付','已发货','已完成')), pairs AS (SELECT user_id, MAX(CASE WHEN rn = 1 THEN order_time END) AS t1, MAX(CASE WHEN rn = 2 THEN order_time END) AS t2 FROM ranked GROUP BY user_id) SELECT ROUND(AVG(FLOOR(date_diff('second', t1, t2) / 86400.0)), 1) AS avg_gap_days FROM pairs WHERE t2 IS NOT NULL AND t1 >= TIMESTAMP '2025-01-01' AND t1 < TIMESTAMP '2026-01-01'"
+        }
+      ],
+      "pending": "h13 的「已退款订单整单退款是否计入品类退款额」仍未约定，两种解释都成立，留到 v2.3 一次性补口径。"
+    }
+  ],
+  "cohorts": {
+    "core30": "v1.1 的 30 道题，与前期 83~90% 的跑分直接可比",
+    "ext20": "v2.0 新增的 20 道难题"
+  }
+}

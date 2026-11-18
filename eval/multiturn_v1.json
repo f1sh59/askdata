@@ -1,0 +1,307 @@
+{
+  "version": "mt1.0",
+  "generated_by": "scripts/build_multiturn.py",
+  "note": "三种机械变换：换年份 / 不限时间 / 换 TOP-N。每条追加题的标答都由基础题标答变换得到。",
+  "pairs": [
+    {
+      "id": "mt01",
+      "base_id": "e03",
+      "base_question": "2025 年的销售额（GMV）是多少？",
+      "base_gold_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01'",
+      "gold_rows": 1,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "easy"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt02",
+      "base_id": "e07",
+      "base_question": "2025 年有效订单的平均订单金额是多少？",
+      "base_gold_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01'",
+      "gold_rows": 1,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "easy"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt03",
+      "base_id": "e09",
+      "base_question": "2025 年有多少个不同用户下过有效订单？",
+      "base_gold_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01'",
+      "gold_rows": 1,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "easy"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt04",
+      "base_id": "e10",
+      "base_question": "2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销售额）",
+      "base_gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY amt DESC LIMIT 1",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.category ORDER BY amt DESC LIMIT 1",
+      "gold_rows": 1,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "easy"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt05",
+      "base_id": "m01",
+      "base_question": "2025 年每个月的销售额分别是多少？",
+      "base_gold_sql": "SELECT strftime(order_time, '%Y-%m') AS ym, ROUND(SUM(pay_amount), 2) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym ORDER BY ym",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT strftime(order_time, '%Y-%m') AS ym, ROUND(SUM(pay_amount), 2) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' GROUP BY ym ORDER BY ym",
+      "gold_rows": 12,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt06",
+      "base_id": "m04",
+      "base_question": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。",
+      "base_gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "gold_rows": 5,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt07",
+      "base_id": "m05",
+      "base_question": "2025 年各渠道的有效订单数和销售额分别是多少？",
+      "base_gold_sql": "SELECT c.channel_name, COUNT(*) AS order_cnt, ROUND(SUM(o.pay_amount), 2) AS amt FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY c.channel_name ORDER BY amt DESC",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT c.channel_name, COUNT(*) AS order_cnt, ROUND(SUM(o.pay_amount), 2) AS amt FROM orders o JOIN channels c ON c.channel_id = o.channel_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY c.channel_name ORDER BY amt DESC",
+      "gold_rows": 5,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt08",
+      "base_id": "m07",
+      "base_question": "2025 年各品类的销售额和毛利率分别是多少？（毛利率 =（销售额 - 成本）/ 销售额 × 100，返回三列：品类、销售额、毛利率）",
+      "base_gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS revenue, ROUND((SUM(oi.item_amount) - SUM(p.cost * oi.quantity)) / SUM(oi.item_amount) * 100, 2) AS gross_margin_pct FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY revenue DESC",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS revenue, ROUND((SUM(oi.item_amount) - SUM(p.cost * oi.quantity)) / SUM(oi.item_amount) * 100, 2) AS gross_margin_pct FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2024-01-01' AND o.order_time < TIMESTAMP '2025-01-01' GROUP BY p.category ORDER BY revenue DESC",
+      "gold_rows": 5,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt09",
+      "base_id": "m08",
+      "base_question": "2025 年下过 2 笔及以上有效订单的用户有多少个？",
+      "base_gold_sql": "SELECT COUNT(*) AS repeat_user_cnt FROM (SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY user_id HAVING COUNT(*) >= 2) t",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "SELECT COUNT(*) AS repeat_user_cnt FROM (SELECT user_id FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' GROUP BY user_id HAVING COUNT(*) >= 2) t",
+      "gold_rows": 1,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt10",
+      "base_id": "m10",
+      "base_question": "2025 年每个月的退款率是多少？（退款率 = 已完成退款金额 / 销售额 × 100，返回两列：月份、退款率）",
+      "base_gold_sql": "WITH gmv AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym), rf AS (SELECT strftime(refund_time, '%Y-%m') AS ym, SUM(refund_amount) AS amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2025-01-01' AND refund_time < TIMESTAMP '2026-01-01' GROUP BY ym) SELECT g.ym, ROUND(COALESCE(r.amt, 0) / g.amt * 100, 2) AS refund_rate_pct FROM gmv g LEFT JOIN rf r ON r.ym = g.ym ORDER BY g.ym",
+      "followup": "那换成 2024 年呢？",
+      "gold_sql": "WITH gmv AS (SELECT strftime(order_time, '%Y-%m') AS ym, SUM(pay_amount) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2024-01-01' AND order_time < TIMESTAMP '2025-01-01' GROUP BY ym), rf AS (SELECT strftime(refund_time, '%Y-%m') AS ym, SUM(refund_amount) AS amt FROM refunds WHERE status = '已完成' AND refund_time >= TIMESTAMP '2024-01-01' AND refund_time < TIMESTAMP '2025-01-01' GROUP BY ym) SELECT g.ym, ROUND(COALESCE(r.amt, 0) / g.amt * 100, 2) AS refund_rate_pct FROM gmv g LEFT JOIN rf r ON r.ym = g.ym ORDER BY g.ym",
+      "gold_rows": 12,
+      "kind": "swap_year",
+      "tags": [
+        "swap_year",
+        "medium"
+      ],
+      "note": "把时间范围整体平移到上一年"
+    },
+    {
+      "id": "mt11",
+      "base_id": "e03",
+      "base_question": "2025 年的销售额（GMV）是多少？",
+      "base_gold_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT ROUND(SUM(pay_amount), 2) AS gmv FROM orders WHERE status IN ('已支付', '已发货', '已完成')",
+      "gold_rows": 1,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "easy"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt12",
+      "base_id": "e07",
+      "base_question": "2025 年有效订单的平均订单金额是多少？",
+      "base_gold_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT ROUND(AVG(pay_amount), 2) AS aov FROM orders WHERE status IN ('已支付', '已发货', '已完成')",
+      "gold_rows": 1,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "easy"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt13",
+      "base_id": "e09",
+      "base_question": "2025 年有多少个不同用户下过有效订单？",
+      "base_gold_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01'",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT COUNT(DISTINCT user_id) AS user_cnt FROM orders WHERE status IN ('已支付', '已发货', '已完成')",
+      "gold_rows": 1,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "easy"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt14",
+      "base_id": "e10",
+      "base_question": "2025 年销售额最高的商品品类是哪个？它的销售额是多少？（返回两列：品类、销售额）",
+      "base_gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.category ORDER BY amt DESC LIMIT 1",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT p.category, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') GROUP BY p.category ORDER BY amt DESC LIMIT 1",
+      "gold_rows": 1,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "easy"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt15",
+      "base_id": "m01",
+      "base_question": "2025 年每个月的销售额分别是多少？",
+      "base_gold_sql": "SELECT strftime(order_time, '%Y-%m') AS ym, ROUND(SUM(pay_amount), 2) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') AND order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY ym ORDER BY ym",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT strftime(order_time, '%Y-%m') AS ym, ROUND(SUM(pay_amount), 2) AS amt FROM orders WHERE status IN ('已支付', '已发货', '已完成') GROUP BY ym ORDER BY ym",
+      "gold_rows": 24,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "medium"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt16",
+      "base_id": "m04",
+      "base_question": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。",
+      "base_gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "followup": "那不限时间呢？把库里的全部时间都算上。",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "gold_rows": 5,
+      "kind": "drop_time",
+      "tags": [
+        "drop_time",
+        "medium"
+      ],
+      "note": "去掉时间范围，口径不变"
+    },
+    {
+      "id": "mt17",
+      "base_id": "m04",
+      "base_question": "2025 年销售额排名前 5 的商品是哪些？请给出商品名称和销售额。",
+      "base_gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 5",
+      "followup": "那只要前 3 名呢？",
+      "gold_sql": "SELECT p.product_name, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name ORDER BY amt DESC, p.product_name LIMIT 3",
+      "gold_rows": 3,
+      "kind": "swap_limit",
+      "tags": [
+        "swap_limit",
+        "medium"
+      ],
+      "note": "排名范围从前 5 收窄到前 3"
+    },
+    {
+      "id": "mt18",
+      "base_id": "m11",
+      "base_question": "2025 年客单价最高的前 5 个城市是哪些？请给出城市、订单数和客单价。（只统计有效订单数不少于 30 单的城市）",
+      "base_gold_sql": "SELECT u.city, COUNT(*) AS order_cnt, ROUND(AVG(o.pay_amount), 2) AS aov FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' AND u.city IS NOT NULL GROUP BY u.city HAVING COUNT(*) >= 30 ORDER BY aov DESC, u.city LIMIT 5",
+      "followup": "那只要前 3 名呢？",
+      "gold_sql": "SELECT u.city, COUNT(*) AS order_cnt, ROUND(AVG(o.pay_amount), 2) AS aov FROM orders o JOIN users u ON u.user_id = o.user_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND o.order_time < TIMESTAMP '2026-01-01' AND u.city IS NOT NULL GROUP BY u.city HAVING COUNT(*) >= 30 ORDER BY aov DESC, u.city LIMIT 3",
+      "gold_rows": 3,
+      "kind": "swap_limit",
+      "tags": [
+        "swap_limit",
+        "medium"
+      ],
+      "note": "排名范围从前 5 收窄到前 3"
+    },
+    {
+      "id": "mt19",
+      "base_id": "m06",
+      "base_question": "用户数最多的前 10 个省份是哪些？分别有多少用户？",
+      "base_gold_sql": "SELECT province, COUNT(*) AS user_cnt FROM users WHERE province IS NOT NULL GROUP BY province ORDER BY user_cnt DESC, province LIMIT 10",
+      "followup": "那只要前 5 名呢？",
+      "gold_sql": "SELECT province, COUNT(*) AS user_cnt FROM users WHERE province IS NOT NULL GROUP BY province ORDER BY user_cnt DESC, province LIMIT 5",
+      "gold_rows": 5,
+      "kind": "swap_limit",
+      "tags": [
+        "swap_limit",
+        "medium"
+      ],
+      "note": "排名范围从前 10 收窄到前 5"
+    },
+    {
+      "id": "mt20",
+      "base_id": "m19",
+      "base_question": "2025 年销售额排名前 10 的商品是哪些？请给出商品名称、品类、销量件数和销售额。",
+      "base_gold_sql": "SELECT p.product_name, p.category, SUM(oi.quantity) AS units, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name, p.category ORDER BY amt DESC, p.product_name LIMIT 10",
+      "followup": "那只要前 5 名呢？",
+      "gold_sql": "SELECT p.product_name, p.category, SUM(oi.quantity) AS units, ROUND(SUM(oi.item_amount), 2) AS amt FROM order_items oi JOIN orders o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id WHERE o.status IN ('已支付', '已发货', '已完成') AND o.order_time >= TIMESTAMP '2025-01-01' AND order_time < TIMESTAMP '2026-01-01' GROUP BY p.product_name, p.category ORDER BY amt DESC, p.product_name LIMIT 5",
+      "gold_rows": 5,
+      "kind": "swap_limit",
+      "tags": [
+        "swap_limit",
+        "medium"
+      ],
+      "note": "排名范围从前 10 收窄到前 5"
+    }
+  ]
+}
