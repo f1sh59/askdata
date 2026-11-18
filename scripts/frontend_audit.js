@@ -107,7 +107,7 @@ global.clearTimeout = () => {};
 let src = fs.readFileSync("web/app.js", "utf8");
 src += `\n;globalThis.__t = { renderAnswer, rankingList, lineChart, renderAttribution, classifyFailure,
   loadMultiturn, setupMultiturn, runCompare, setupCompare, ensureQuick, composeQuestion, state,
-  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML, refreshKeyState };`;
+  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML, refreshKeyState, renderSettings };`;
 eval(src);
 const T = globalThis.__t;
 
@@ -188,11 +188,22 @@ check("空对话占位 · 可复原", T.emptyThreadHTML().includes("还没有对
 T.state.apiKey = "";
 T.state.serverKey = false;
 T.refreshKeyState();
-check("Key 状态 · 未配置时提示配置", (els["#key-text"].textContent || "").includes("未配置"), els["#key-text"].textContent);
-check("Key 状态 · 未配置时配置栏自动展开", els["#key-bar"].hidden === false);
+check("Key 状态 · 未配置时顶栏徽章警示", (els["#key-text"].textContent || "").includes("未配置"), els["#key-text"].textContent);
+check("Key 状态 · 未配置时顶部提示条出现", els["#key-alert"].hidden === false);
 T.state.serverKey = true;
 T.refreshKeyState();
 check("Key 状态 · 服务端已配时收敛", (els["#key-text"].textContent || "").includes("服务端"), els["#key-text"].textContent);
+check("Key 状态 · 已配好后提示条收起", els["#key-alert"].hidden === true);
+
+/* ---------- 3e. 设置页 ---------- */
+T.state.overview = { tables: 68, questions: 50, model: "deepseek-chat", dataset_version: "v2.2" };
+T.state.topK = 8;
+T.state.sessionTurns = 2;
+T.renderSettings();
+check("设置页 · 服务状态填好了", (els["#set-tables"].textContent || "").includes("68"), els["#set-tables"].textContent);
+check("设置页 · 会话轮数显示", (els["#set-session"].textContent || "").includes("2 轮"), els["#set-session"].textContent);
+check("设置页 · Key 状态有说明", Boolean(els["#key-state"].textContent));
+check("设置页 · 召回数量与状态同步", String(T.state.topK) === String(8));
 
 /* ---------- 4. 澄清卡片的提示 ---------- */
 const hintsHtml = T.renderHints(load("hints"));

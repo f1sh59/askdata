@@ -7,6 +7,7 @@ const PAGES = {
   guard: { idx: "04", en: "GUARD", title: "安全闸", desc: "模型写的 SQL 不会直接执行。先过 AST 白名单、强制 LIMIT、超时熔断、行级权限。" },
   clarify: { idx: "05", en: "CLARIFY", title: "澄清", desc: "该问就问，不该问别问。两边都要测——一个永远反问的系统也能拿 100 分。" },
   about: { idx: "06", en: "ABOUT", title: "说明", desc: "这个项目到底在干什么，以及那些数字是怎么来的。" },
+  settings: { idx: "07", en: "SETTINGS", title: "设置", desc: "模型 Key、外观、召回数量、会话——所有需要配置的东西都在这一页。" },
 };
 
 const state = {
@@ -192,6 +193,7 @@ function setPage(name) {
   if (name === "clarify") ensureClarify();
   if (name === "dict") ensureDict();
   if (name === "about") renderAbout();
+  if (name === "settings") renderSettings();
 }
 
 /* ---------------- API ---------------- */
@@ -211,99 +213,144 @@ async function api(path, options = {}) {
     throw new Error("需要访问令牌");
   }
   if (data.need_api_key) {
-    showKeyBar(data.error);
+    setPage("settings");
     throw new Error(data.error || "需要配置模型 API Key");
   }
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
 }
 
-/* ---------------- 模型 API Key ---------------- */
-
-function showKeyBar(message) {
-  const bar = $("#key-bar");
-  if (!bar) return;
-  bar.hidden = false;
-  if (message) $("#key-msg").textContent = message;
-  $("#key-input").focus();
-}
+/* ---------------- 模型 Key（状态 + 设置页联动） ---------------- */
 
 /* 配置状态决定"要不要打扰用户"：
-   没配 Key → 徽章变成醒目的警示色，配置栏直接铺开
-   配好了  → 收起来，只留一个小徽章 */
+   没配 Key → 顶栏徽章醒目、页面顶部提示条出现、设置页说清怎么配
+   配好了  → 全部收敛，只剩一个绿点 */
 function refreshKeyState() {
-  const bar = $("#key-bar");
   const chip = $("#key-toggle");
-  if (!chip) return;
-
+  const alert = $("#key-alert");
   const local = Boolean(state.apiKey);
   const server = Boolean(state.serverKey);
   const ready = local || server;
 
-  chip.classList.toggle("warn", !ready);
-  chip.classList.toggle("ok", ready);
-  const text = $("#key-text");
-  if (text) {
-    text.textContent = ready
+  if (chip) {
+    chip.classList.toggle("warn", !ready);
+    chip.classList.toggle("ok", ready);
+    const text = $("#key-text");
+    if (text) {
+      text.textContent = ready ? (local ? "Key 已配置" : "Key（服务端）") : "未配置 Key";
+    }
+    chip.title = ready
       ? local
-        ? `Key 已配置`
-        : `Key（服务端）`
-      : "未配置 Key";
+        ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（点击修改）`
+        : "服务端已配置 API Key（点击可换成本地 Key）"
+      : "还没有模型 API Key，提问会失败——点这里去设置";
   }
-  chip.title = ready
-    ? local
-      ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（点击修改）`
-      : "服务端已配置 API Key（点击可换成本地 Key）"
-    : "还没有模型 API Key，提问会失败——点这里配置";
 
-  if (bar) {
-    bar.classList.toggle("is-warn", !ready);
-    $("#key-msg").textContent = local
-      ? `已配置（${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}），只存在这台浏览器里`
+  if (alert) alert.hidden = ready;
+
+  // 设置页上的状态文案
+  const keyState = $("#key-state");
+  if (keyState) {
+    keyState.textContent = local
+      ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（浏览器本地）`
       : server
-        ? "服务端已配置，这里可以填自己的 Key 覆盖它"
-        : "还没有 Key，提问会失败。粘贴后保存即可，只存在这台浏览器里";
+        ? "服务端已配置，这里填可覆盖"
+        : "还没有配置，提问会失败";
   }
-
-  // 没配好时把配置栏直接铺开，不指望用户去点那个按钮
-  if (!ready) bar.hidden = false;
+  const input = $("#set-key-input");
+  if (input && local) input.placeholder = "已保存，输入新的 Key 可直接替换";
+  if (input && !local) input.placeholder = "sk-...（DeepSeek 或任何 OpenAI 兼容服务）";
 }
 
-function bindKeyBar() {
-  state.apiKey = localStorage.getItem("askdata-api-key") || "";
-  refreshKeyState();
-  // 支持 ?key=1 直接展开，方便把"去配 key"的链接发给别人
-  if (new URLSearchParams(location.search).get("key") === "1") showKeyBar();
+/* ---------------- 设置页 ---------------- */
 
-  $("#key-toggle").onclick = () => {
-    const bar = $("#key-bar");
-    bar.hidden = !bar.hidden;
-    if (!bar.hidden) $("#key-input").focus();
+function renderSettings() {
+  const o = state.overview || {};
+  const set = (id, value) => {
+    const el = $(id);
+    if (el) el.textContent = value;
   };
 
-  $("#key-save").onclick = () => {
-    const value = ($("#key-input").value || "").trim();
+  // 外观
+  const theme = document.documentElement.dataset.theme || "light";
+  $$("#seg-theme button").forEach((b) => b.classList.toggle("is-on", b.dataset.theme === theme));
+  const scale = document.documentElement.dataset.scale || "std";
+  $$("#seg-scale button").forEach((b) => b.classList.toggle("is-on", b.dataset.scale === scale));
+
+  // 模型
+  set("#set-model", o.model || "—");
+  const slider = $("#set-topk");
+  if (slider) {
+    slider.value = state.topK;
+    set("#set-topk-val", state.topK);
+  }
+  refreshKeyState();
+
+  // 会话
+  set("#set-session", state.sessionTurns ? `已记住 ${state.sessionTurns} 轮` : "新会话（还没有上下文）");
+
+  // 服务状态
+  set("#set-tables", o.tables != null ? `${o.tables} 张` : "—");
+  set("#set-questions", o.questions != null ? `${o.questions} 道` : "—");
+  set("#set-version", o.dataset_version || "—");
+  set("#set-auth", state.token ? "已带访问令牌" : "服务端未开启（内网演示）");
+  set("#set-policy", "未开启（服务端未设 ASKDATA_ROW_POLICY）");
+}
+
+function bindSettings() {
+  // 主题：设置页里也能切，和顶栏按钮共用同一份状态
+  $$("#seg-theme button").forEach((b) => {
+    b.onclick = () => {
+      applyTheme(b.dataset.theme);
+      renderSettings();
+    };
+  });
+  $$("#seg-scale button").forEach((b) => {
+    b.onclick = () => {
+      applyScale(b.dataset.scale);
+      renderSettings();
+    };
+  });
+
+  // 召回数量：和「问数」页的滑块是同一个值
+  const slider = $("#set-topk");
+  if (slider) {
+    slider.oninput = () => {
+      state.topK = Number(slider.value);
+      $("#set-topk-val").textContent = state.topK;
+      const mirror = $("#topk");
+      if (mirror) {
+        mirror.value = state.topK;
+        $("#topk-val").textContent = state.topK;
+      }
+    };
+  }
+
+  // 保存后不隐藏输入框：随时可以改成新的 Key
+  $("#set-key-save").onclick = () => {
+    const value = ($("#set-key-input").value || "").trim();
     if (!value) {
-      $("#key-msg").textContent = "先填入 Key 再保存";
+      toast("先填入 Key 再保存");
       return;
     }
     state.apiKey = value;
     localStorage.setItem("askdata-api-key", value);
-    $("#key-input").value = "";
+    $("#set-key-input").value = "";
     refreshKeyState();
     toast("已保存模型 Key，可以提问了");
   };
 
-  $("#key-clear").onclick = () => {
+  $("#set-key-clear").onclick = () => {
     state.apiKey = "";
     localStorage.removeItem("askdata-api-key");
+    $("#set-key-input").value = "";
     refreshKeyState();
-    toast("已清除模型 Key");
+    toast("已清除本地保存的 Key");
   };
 
-  $("#key-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") $("#key-save").click();
-  });
+  $("#set-session-clear").onclick = () => clearSession();
+  $("#key-alert-go").onclick = () => setPage("settings");
+  $("#key-toggle").onclick = () => setPage("settings");
 }
 
 /* ---------------- 访问令牌 ---------------- */
@@ -951,7 +998,7 @@ async function askStream(payload, loadingCard) {
     // 流式接口在缺 key 时会退回普通 JSON，这里要读出来给用户看
     const detail = await res.json().catch(() => ({}));
     if (detail.need_api_key) {
-      showKeyBar(detail.error);
+      setPage("settings");
       throw new Error(detail.error || "需要配置模型 API Key");
     }
     throw new Error(detail.error || "请求被拒绝");
@@ -1039,9 +1086,10 @@ function ensureSession() {
 }
 
 function updateSessionChip(turns) {
+  const n = Number(turns) || 0;
+  state.sessionTurns = n;
   const chip = $("#session-chip");
   if (!chip) return;
-  const n = Number(turns) || 0;
   chip.textContent = n ? `已记住 ${n} 轮` : "新会话";
   chip.classList.toggle("has-turns", n > 0);
 }
@@ -2110,7 +2158,7 @@ async function boot() {
   }
 
   bindAuth();
-  bindKeyBar();
+  bindSettings();
   bindAsk();
   ensureQuick();
   const initial = (location.hash || "#ask").slice(1);

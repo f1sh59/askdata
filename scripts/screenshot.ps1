@@ -55,7 +55,8 @@ $pages = [ordered]@{
     "eval"    = "#eval"
     "guard"   = "#guard"
     "clarify" = "#clarify"
-    "about"   = "#about"
+    "about"    = "#about"
+    "settings" = "#settings"
 }
 
 if ($Only.Count -gt 0) {

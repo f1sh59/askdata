@@ -1271,3 +1271,78 @@ html[data-scale="lg"] .msg-user { font-size: 14.5px; }
   background: color-mix(in srgb, #f59e0b 10%, transparent);
 }
 .key-bar.is-warn .auth-title { color: #92400e; }
+
+/* ---------------- 设置页 ---------------- */
+
+.settings-grid {
+  display: grid; gap: 18px; padding-bottom: 24px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 1100px) {
+  /* 固定两列：三列会出现"最后一张卡孤零零占一行"的排版 */
+  .settings-grid { grid-template-columns: 1fr 1fr; }
+}
+/* 卡片按内容高度排，不要被拉成一样高——那样短卡片里会空一大块 */
+.settings-grid { align-items: start; }
+@media (min-width: 1100px) {
+  /* 模型和服务状态信息量大，占满整行；外观与会话并排。
+     用 order 重排而不是改 DOM 顺序：HTML 里的顺序更符合"先看外观"的直觉。 */
+  .settings-grid > .set-card:nth-child(1) { order: 2; }  /* 外观 */
+  .settings-grid > .set-card:nth-child(2) { order: 1; grid-column: span 2; }  /* 模型 */
+  .settings-grid > .set-card:nth-child(3) { order: 3; }  /* 会话 */
+  .settings-grid > .set-card:nth-child(4) { order: 4; grid-column: span 2; }  /* 服务状态 */
+}
+.set-card { padding: 18px 20px; }
+.set-row { padding: 12px 0; border-top: 1px solid var(--line); }
+.set-card .set-row:first-of-type { border-top: none; padding-top: 4px; }
+.set-label {
+  font-size: 12.5px; color: var(--ink); font-weight: 600;
+  display: flex; flex-direction: column; gap: 3px; margin-bottom: 9px;
+}
+.set-label em { font-style: normal; font-weight: 400; font-size: 11.5px; color: var(--dim); }
+.set-value { font-size: 12.5px; color: var(--muted); }
+.set-hint { margin: 8px 0 0; font-size: 11.5px; color: var(--dim); line-height: 1.7; }
+
+.set-key { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.set-key input { flex: 1; min-width: 200px; }
+
+.set-slider { display: flex; align-items: center; gap: 12px; }
+.set-slider input[type="range"] { flex: 1; accent-color: var(--accent); }
+.set-slider .set-value { min-width: 28px; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 分段选择器 */
+.seg {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: var(--surface-sunken); border: 1px solid var(--line); border-radius: 999px;
+}
+.seg button {
+  border: none; background: transparent; cursor: pointer;
+  padding: 6px 18px; border-radius: 999px;
+  font-size: 12.5px; font-family: inherit; color: var(--muted);
+  transition: background .15s ease, color .15s ease;
+}
+.seg button:hover { color: var(--ink); }
+.seg button.is-on {
+  background: var(--surface); color: var(--accent); font-weight: 600;
+  box-shadow: 0 1px 3px rgba(16, 20, 24, .08);
+}
+
+/* 顶部"还没配 Key"的提示条 */
+.key-alert {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 14px; padding: 10px 14px;
+  border-radius: var(--r);
+  border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent);
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  font-size: 12.5px; color: color-mix(in srgb, #92400e 90%, var(--ink));
+}
+.key-alert[hidden] { display: none; }
+
+
+/* 服务状态这类"键 → 值"的行，横着排，省高度 */
+.set-row.inline {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 9px 0;
+}
+.set-row.inline .set-label { margin: 0; font-weight: 400; color: var(--muted); }
+.set-row.inline .set-value { color: var(--ink); font-variant-numeric: tabular-nums; }

@@ -130,6 +130,7 @@ python -m askdata.server --port 8777
 | 问数 | 评测 |
 |---|---|
 | ![问数](docs/shots/ask-light.png) | ![评测](docs/shots/eval-light.png) |
+| ![设置](docs/shots/settings-light.png) |
 
 | 数据字典 | 安全闸 |
 |---|---|

@@ -25,6 +25,7 @@
       <button class="nav-item" data-page="guard"><span class="idx">04</span><span class="nav-label">安全闸<em>Guard</em></span></button>
       <button class="nav-item" data-page="clarify"><span class="idx">05</span><span class="nav-label">澄清<em>Clarify</em></span></button>
       <button class="nav-item" data-page="about"><span class="idx">06</span><span class="nav-label">说明<em>About</em></span></button>
+      <button class="nav-item" data-page="settings"><span class="idx">07</span><span class="nav-label">设置<em>Settings</em></span></button>
     </nav>
 
     <div class="rail-foot">
@@ -35,13 +36,9 @@
   </aside>
 
   <main class="main">
-    <div class="auth-bar key-bar" id="key-bar" hidden>
-      <span class="auth-title">模型 API Key</span>
-      <input type="password" id="key-input" placeholder="sk-...（DeepSeek 或任何 OpenAI 兼容服务）" autocomplete="off" />
-      <button class="btn btn-primary" id="key-save">保存</button>
-      <button class="btn btn-ghost" id="key-clear">清除</button>
-      <a class="key-help" href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">去哪里拿 Key ↗</a>
-      <span class="auth-msg" id="key-msg">只存在这台浏览器里，不会上传或写进仓库</span>
+    <div class="key-alert" id="key-alert" hidden>
+      <span>还没有配置模型 API Key，提问会失败。</span>
+      <button class="btn btn-ghost" id="key-alert-go">去设置</button>
     </div>
     <div class="auth-bar" id="auth-bar" hidden>
       <span class="auth-title">需要访问令牌</span>
@@ -321,6 +318,79 @@
     <!-- ============ 06 ABOUT ============ -->
     <section class="page" id="page-about">
       <div class="about-grid" id="about"></div>
+    </section>
+
+    <!-- ============ 07 SETTINGS ============ -->
+    <section class="page" id="page-settings">
+      <div class="settings-grid">
+
+        <div class="panel set-card">
+          <div class="panel-head"><span class="eyebrow">外观</span></div>
+          <div class="set-row">
+            <div class="set-label">主题<em>立即生效，存在这台浏览器</em></div>
+            <div class="seg" id="seg-theme">
+              <button data-theme="light">浅色</button>
+              <button data-theme="dark">深色</button>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-label">字号<em>影响正文与表格</em></div>
+            <div class="seg" id="seg-scale">
+              <button data-scale="std">标准</button>
+              <button data-scale="lg">大</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel set-card span-2">
+          <div class="panel-head"><span class="eyebrow">模型</span></div>
+          <div class="set-row">
+            <div class="set-label">API Key<em id="key-state">—</em></div>
+            <div class="set-key">
+              <input type="password" id="set-key-input" placeholder="sk-...（DeepSeek 或任何 OpenAI 兼容服务）" autocomplete="off" />
+              <button class="btn btn-primary" id="set-key-save">保存</button>
+              <button class="btn btn-ghost" id="set-key-clear">清除</button>
+            </div>
+            <p class="set-hint">
+              只存在这台浏览器的 localStorage，随请求头传给服务端：不写文件、不进镜像、不打日志。
+              <a class="key-help" href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">去哪里拿 Key ↗</a>
+            </p>
+          </div>
+          <div class="set-row">
+            <div class="set-label">模型<em>服务端启动时决定</em></div>
+            <div class="set-value" id="set-model">—</div>
+          </div>
+          <div class="set-row">
+            <div class="set-label">召回表数量<em>越少越省钱，太少可能漏掉要用的表</em></div>
+            <div class="set-slider">
+              <input type="range" id="set-topk" min="3" max="30" step="1" />
+              <span class="set-value" id="set-topk-val">8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel set-card">
+          <div class="panel-head"><span class="eyebrow">会话</span></div>
+          <div class="set-row">
+            <div class="set-label">当前会话<em>上下文存在服务端，刷新页面不会丢</em></div>
+            <div class="set-value" id="set-session">—</div>
+          </div>
+          <div class="set-row">
+            <div class="set-label">清空对话<em>同时清掉服务端记住的历史</em></div>
+            <button class="btn btn-ghost" id="set-session-clear">清空对话</button>
+          </div>
+        </div>
+
+        <div class="panel set-card span-2">
+          <div class="panel-head"><span class="eyebrow">服务状态</span></div>
+          <div class="set-row inline"><div class="set-label">数据表</div><div class="set-value" id="set-tables">—</div></div>
+          <div class="set-row inline"><div class="set-label">评测题</div><div class="set-value" id="set-questions">—</div></div>
+          <div class="set-row inline"><div class="set-label">数据集版本</div><div class="set-value" id="set-version">—</div></div>
+          <div class="set-row inline"><div class="set-label">鉴权</div><div class="set-value" id="set-auth">—</div></div>
+          <div class="set-row inline"><div class="set-label">行级权限</div><div class="set-value" id="set-policy">—</div></div>
+        </div>
+
+      </div>
     </section>
 
     <footer class="page-foot">

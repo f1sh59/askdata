@@ -31,6 +31,7 @@ docs/shots/*
 !docs/shots/guard-light.png
 !docs/shots/ask-dark.png
 !docs/shots/key-panel.png
+!docs/shots/settings-light.png
 # 运行产物：日志、PID、临时诊断文件
 /*.log
 /*.err
