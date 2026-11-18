@@ -1,0 +1,77 @@
+name: eval
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: "评测策略"
+        default: "llm-linked"
+        type: choice
+        options: [template, llm, llm-linked]
+      top_k:
+        description: "召回表数量"
+        default: "15"
+
+jobs:
+  # 不需要 API key：跑单测 + 校验评测集 gold SQL 可执行且非空
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Build deterministic dataset
+        run: python scripts/build_db.py --verify
+      - name: Validate eval set
+        run: python -m askdata.cli validate
+      - name: Unit tests
+        run: python -m unittest discover -s tests -t .
+
+  # 需要 DEEPSEEK_API_KEY，手动触发；跑完把报告当 artifact 传上来
+  online:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r requirements.txt
+      - name: Build deterministic dataset
+        run: python scripts/build_db.py
+      - name: Run eval
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python -m askdata.cli eval \
+            --strategy "${{ inputs.strategy }}" \
+            --top-k "${{ inputs.top_k }}" | tee out.txt
+          echo "JSON_PATH=$(grep '^json=' out.txt | cut -d= -f2)" >> "$GITHUB_ENV"
+
+      # 回归闸门：低于阈值就挂掉，避免"改了一版 prompt 结果更差还合进去"
+      - name: Regression gate
+        run: |
+          python - <<'PY'
+          import json, os, sys
+
+          payload = json.load(open(os.environ["JSON_PATH"], encoding="utf-8"))
+          ex = payload["execution_accuracy"]
+          threshold = 0.85
+          print(f"EX = {ex:.1%}  (threshold {threshold:.0%})")
+          sys.exit(0 if ex >= threshold else 1)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: |
+            reports/*.md
+            reports/*.json

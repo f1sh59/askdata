@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: 单测 + 评测集 + 验收
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      # 数据库不进仓库（体积大且可重建），CI 里用固定种子现场造
+      - name: 造数据库
+        run: python scripts/build_db.py
+
+      # 1) 单元测试：96 个，纯逻辑，秒级
+      - name: 单元测试
+        run: python -m unittest discover -s tests -t . -v
+
+      # 2) 评测集自检：每道题的 gold SQL 都必须能跑通且有结果
+      - name: 校验评测集
+        run: python -m askdata.cli validate
+
+      # 3) 安全回归：50 条注入必须全拦、10 条正常必须全放
+      - name: 安全闸回归
+        run: python -m askdata.cli attack
+
+      # 4) 接口验收：起真实服务，逐项检查接口（不调模型，零成本）
+      - name: 启动服务
+        run: |
+          python -m askdata.server --port 8777 > server.log 2>&1 &
+          echo $! > server.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8777/api/overview > /dev/null; then
+              echo "服务已就绪"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "服务启动超时"; cat server.log; exit 1
+
+      - name: 接口验收
+        run: python scripts/acceptance.py --skip-llm
+
+      # 5) 前端渲染验收：抓真实接口快照，在 DOM 模拟里跑渲染函数
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 抓接口快照
+        run: python scripts/fetch_snapshots.py http://127.0.0.1:8777
+
+      - name: 前端渲染验收
+        run: node scripts/frontend_audit.js
+
+      # 6) 并发压测：默认跳过调模型的部分，只验"不串结果 + 不死锁"
+      - name: 并发压测
+        run: python scripts/stress_test.py --skip-ask
+
+      - name: 失败时留下服务日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log
+          path: server.log
+          if-no-files-found: ignore
+
+      - name: 关闭服务
+        if: always()
+        run: |
+          if [ -f server.pid ]; then kill "$(cat server.pid)" || true; fi
