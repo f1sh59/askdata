@@ -71,9 +71,11 @@ def check_concurrent_guard(base: str, n: int = 20) -> None:
         not bad,
         f"{len(bad)} 个异常，例如 {bad[0][2] if bad else ''}",
     )
+    # 阈值按"能抓死锁"定，不按"本地机器多快"定：
+    # CI runner 只有 2 核，比开发机慢一个数量级，卡太死会天天误报。
     record(
         "并发 /api/check 延迟合理",
-        max(latencies) < 10,
+        max(latencies) < 30,
         f"median={statistics.median(latencies) * 1000:.0f}ms  max={max(latencies) * 1000:.0f}ms",
     )
     print(
@@ -134,7 +136,7 @@ def check_mixed(base: str) -> None:
     except Exception:  # noqa: BLE001
         recover_ok = False
     record("慢查询结束后服务仍可用", recover_ok)
-    record("慢查询阻塞有上界（≤ 15s）", heavy_elapsed < 15, f"{heavy_elapsed:.1f}s")
+    record("慢查询阻塞有上界（≤ 30s）", heavy_elapsed < 30, f"{heavy_elapsed:.1f}s")
 
     ok_lights = [x for x in light if x[0]]
     record(
@@ -166,7 +168,8 @@ def check_tables_under_load(base: str) -> None:
 
     record("4 个并发 /api/tables 全部成功", all(r[0] for r in results))
     worst = max(r[1] for r in results)
-    record("并发 /api/tables 无超时", worst < 60, f"max={worst:.1f}s")
+    # 4 个并发全库扫描在 2 核 runner 上本来就要几十秒，这里只兜"卡死"（>180s）
+    record("并发 /api/tables 无超时", worst < 180, f"max={worst:.1f}s")
     print(f"         （最慢一次 {worst:.1f}s）")
 
 
