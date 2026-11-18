@@ -1381,5 +1381,15 @@ html[data-scale="lg"] .topbar { position: sticky; }
   white-space: nowrap;
   direction: ltr;
 }
-.set-key, .key-form { min-width: 0; }
-.set-key input { min-width: 0; }
+/* 输入框 / 已保存行都要撑满整行——它们是 .set-key 的 flex 子项，
+   不给 flex-grow 就会缩成内容宽度，右边空一大片。 */
+.set-key > .key-form,
+.set-key > .key-saved {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.set-key input,
+.key-form input {
+  flex: 1 1 auto;
+  min-width: 160px;
+}
