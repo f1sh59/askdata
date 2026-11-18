@@ -24,6 +24,7 @@ const state = {
   sessionId: null,
   token: '',
   apiKey: '',
+  serverKey: false,
   year: null,
   dim: null,
   metric: null,
@@ -227,23 +228,50 @@ function showKeyBar(message) {
   $("#key-input").focus();
 }
 
+/* 配置状态决定"要不要打扰用户"：
+   没配 Key → 徽章变成醒目的警示色，配置栏直接铺开
+   配好了  → 收起来，只留一个小徽章 */
 function refreshKeyState() {
   const bar = $("#key-bar");
-  const tip = $("#key-toggle");
-  const has = Boolean(state.apiKey);
-  if (tip) {
-    tip.classList.toggle("is-on", has);
-    tip.title = has ? "模型 Key 已配置（点击修改）" : "配置模型 API Key";
+  const chip = $("#key-toggle");
+  if (!chip) return;
+
+  const local = Boolean(state.apiKey);
+  const server = Boolean(state.serverKey);
+  const ready = local || server;
+
+  chip.classList.toggle("warn", !ready);
+  chip.classList.toggle("ok", ready);
+  const text = $("#key-text");
+  if (text) {
+    text.textContent = ready
+      ? local
+        ? `Key 已配置`
+        : `Key（服务端）`
+      : "未配置 Key";
   }
-  if (bar) $("#key-msg").textContent = has
-    ? `已配置（${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}），只存在这台浏览器里`
-    : "只存在这台浏览器里，不会上传或写进仓库";
+  chip.title = ready
+    ? local
+      ? `已配置 ${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}（点击修改）`
+      : "服务端已配置 API Key（点击可换成本地 Key）"
+    : "还没有模型 API Key，提问会失败——点这里配置";
+
+  if (bar) {
+    bar.classList.toggle("is-warn", !ready);
+    $("#key-msg").textContent = local
+      ? `已配置（${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}），只存在这台浏览器里`
+      : server
+        ? "服务端已配置，这里可以填自己的 Key 覆盖它"
+        : "还没有 Key，提问会失败。粘贴后保存即可，只存在这台浏览器里";
+  }
+
+  // 没配好时把配置栏直接铺开，不指望用户去点那个按钮
+  if (!ready) bar.hidden = false;
 }
 
 function bindKeyBar() {
   state.apiKey = localStorage.getItem("askdata-api-key") || "";
   refreshKeyState();
-  if (!state.apiKey) $("#key-bar").hidden = true;
   // 支持 ?key=1 直接展开，方便把"去配 key"的链接发给别人
   if (new URLSearchParams(location.search).get("key") === "1") showKeyBar();
 
@@ -2044,6 +2072,9 @@ async function boot() {
       api("/api/reports"),
     ]);
     Object.assign(state, { overview, questions, attacks, reports });
+    // overview.model 为「（未配置 API Key）」说明服务端也没有可用密钥
+    state.serverKey = !String(overview.model || "").includes("未配置");
+    refreshKeyState();
 
     // 数据范围单独取，失败也不该拖垮整页
     try {

@@ -1227,3 +1227,47 @@ html[data-scale="lg"] .msg-user { font-size: 14.5px; }
   border-bottom: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .key-help:hover { border-bottom-style: solid; }
+
+/* ---------------- 模型 Key 状态徽章 ---------------- */
+
+.key-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 12px;
+  border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--muted);
+  font-size: 12px; font-family: inherit; cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.key-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); flex: 0 0 auto; }
+
+/* 没配 Key：橙色 + 轻微呼吸，让人一眼看到 */
+.key-chip.warn {
+  color: #92400e;
+  border-color: color-mix(in srgb, #f59e0b 55%, transparent);
+  background: color-mix(in srgb, #f59e0b 16%, transparent);
+  font-weight: 600;
+}
+.key-chip.warn .key-dot {
+  background: #d97706;
+  box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 60%, transparent);
+  animation: keyPulse 2.2s ease-out infinite;
+}
+@keyframes keyPulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, #f59e0b 55%, transparent); }
+  70%  { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .key-chip.warn .key-dot { animation: none; }
+}
+
+/* 配好了：低调的绿点 */
+.key-chip.ok { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.key-chip.ok .key-dot { background: var(--accent); }
+
+/* 配置栏未就绪时的警示底 */
+.key-bar.is-warn {
+  border-color: color-mix(in srgb, #f59e0b 45%, transparent);
+  background: color-mix(in srgb, #f59e0b 10%, transparent);
+}
+.key-bar.is-warn .auth-title { color: #92400e; }

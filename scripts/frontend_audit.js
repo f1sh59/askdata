@@ -107,7 +107,7 @@ global.clearTimeout = () => {};
 let src = fs.readFileSync("web/app.js", "utf8");
 src += `\n;globalThis.__t = { renderAnswer, rankingList, lineChart, renderAttribution, classifyFailure,
   loadMultiturn, setupMultiturn, runCompare, setupCompare, ensureQuick, composeQuestion, state,
-  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML };`;
+  renderHints, highlightSQL, statusOf, mtReason, tablesOf, initTheme, setPage, appendAssistant, issuesHTML, updateSessionChip, emptyThreadHTML, refreshKeyState };`;
 eval(src);
 const T = globalThis.__t;
 
@@ -183,6 +183,16 @@ check("会话提示 · 显示轮数", (els["#session-chip"].textContent || "").i
 T.updateSessionChip(0);
 check("会话提示 · 归零显示新会话", (els["#session-chip"].textContent || "").includes("新会话"));
 check("空对话占位 · 可复原", T.emptyThreadHTML().includes("还没有对话"));
+
+/* ---------- 3d. 模型 Key 状态 ---------- */
+T.state.apiKey = "";
+T.state.serverKey = false;
+T.refreshKeyState();
+check("Key 状态 · 未配置时提示配置", (els["#key-text"].textContent || "").includes("未配置"), els["#key-text"].textContent);
+check("Key 状态 · 未配置时配置栏自动展开", els["#key-bar"].hidden === false);
+T.state.serverKey = true;
+T.refreshKeyState();
+check("Key 状态 · 服务端已配时收敛", (els["#key-text"].textContent || "").includes("服务端"), els["#key-text"].textContent);
 
 /* ---------- 4. 澄清卡片的提示 ---------- */
 const hintsHtml = T.renderHints(load("hints"));
