@@ -950,14 +950,14 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ---------------- 字号档位 ---------------- */
 
-html[data-scale="lg"] body { font-size: 16px; }
-html[data-scale="lg"] .result-table,
-html[data-scale="lg"] .sqlblock,
-html[data-scale="lg"] .schema-table { font-size: 13.5px; }
-html[data-scale="lg"] .small,
-html[data-scale="lg"] .panel-hint,
-html[data-scale="lg"] .metric-sub { font-size: 13px; }
-html[data-scale="lg"] .msg-user { font-size: 14.5px; }
+/* 这套界面的字号全是写死的 px，改 body 的 font-size 几乎看不出来。
+   与其把几百处 px 改成 rem，直接用 zoom 整体放大——所见即所得，
+   而且折行、表格宽度这些都会跟着一起变。 */
+html[data-scale="lg"] body { zoom: 1.14; }
+html[data-scale="lg"] .grain { display: none; }   /* 纹理层放大后会糊 */
+
+/* 顶栏那两个图标按钮不跟着放大，否则会顶出边界 */
+html[data-scale="lg"] .topbar { position: sticky; }
 
 /* ---------------- 排名榜 ---------------- */
 
@@ -1346,3 +1346,21 @@ html[data-scale="lg"] .msg-user { font-size: 14.5px; }
 }
 .set-row.inline .set-label { margin: 0; font-weight: 400; color: var(--muted); }
 .set-row.inline .set-value { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Key 的「已保存」态：显示脱敏值，想换再点修改 */
+.key-saved {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border-radius: var(--r-sm);
+}
+.key-saved[hidden] { display: none; }
+.key-saved code {
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-size: 12.5px; color: var(--accent); letter-spacing: .02em;
+}
+.key-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.key-form[hidden] { display: none; }
+.key-form input { flex: 1; min-width: 220px; }
+#key-cancel[hidden] { display: none; }

@@ -26,6 +26,7 @@ const state = {
   token: '',
   apiKey: '',
   serverKey: false,
+  editingKey: false,
   year: null,
   dim: null,
   metric: null,
@@ -257,9 +258,21 @@ function refreshKeyState() {
         ? "服务端已配置，这里填可覆盖"
         : "还没有配置，提问会失败";
   }
-  const input = $("#set-key-input");
-  if (input && local) input.placeholder = "已保存，输入新的 Key 可直接替换";
-  if (input && !local) input.placeholder = "sk-...（DeepSeek 或任何 OpenAI 兼容服务）";
+  // 有本地 Key 且不在编辑态 → 显示脱敏后的值，而不是一个空输入框
+  const saved = $("#key-saved");
+  const form = $("#key-form");
+  const masked = $("#key-masked");
+  const editing = !local || state.editingKey;
+  if (saved) saved.hidden = editing;
+  if (form) form.hidden = !editing;
+  if (masked && local) {
+    masked.textContent = `${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}`;
+  }
+  const cancel = $("#key-cancel");
+  if (cancel) {
+    cancel.hidden = !state.editingKey;
+    cancel.classList.toggle("show", state.editingKey);
+  }
 }
 
 /* ---------------- 设置页 ---------------- */
@@ -326,7 +339,6 @@ function bindSettings() {
     };
   }
 
-  // 保存后不隐藏输入框：随时可以改成新的 Key
   $("#set-key-save").onclick = () => {
     const value = ($("#set-key-input").value || "").trim();
     if (!value) {
@@ -334,14 +346,28 @@ function bindSettings() {
       return;
     }
     state.apiKey = value;
+    state.editingKey = false;
     localStorage.setItem("askdata-api-key", value);
     $("#set-key-input").value = "";
     refreshKeyState();
-    toast("已保存模型 Key，可以提问了");
+    toast("已保存，问数时会用这个 Key");
+  };
+
+  $("#key-edit").onclick = () => {
+    state.editingKey = true;
+    refreshKeyState();
+    $("#set-key-input").focus();
+  };
+
+  $("#key-cancel").onclick = () => {
+    state.editingKey = false;
+    $("#set-key-input").value = "";
+    refreshKeyState();
   };
 
   $("#set-key-clear").onclick = () => {
     state.apiKey = "";
+    state.editingKey = false;
     localStorage.removeItem("askdata-api-key");
     $("#set-key-input").value = "";
     refreshKeyState();

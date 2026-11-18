@@ -205,6 +205,19 @@ check("设置页 · 会话轮数显示", (els["#set-session"].textContent || "")
 check("设置页 · Key 状态有说明", Boolean(els["#key-state"].textContent));
 check("设置页 · 召回数量与状态同步", String(T.state.topK) === String(8));
 
+/* 保存之后要显示脱敏的 Key，而不是空输入框 */
+T.state.apiKey = "sk-demo-b10f4c7e2a9d599b";
+T.state.editingKey = false;
+T.refreshKeyState();
+check("Key 保存后 · 显示脱敏值", (els["#key-masked"].textContent || "").includes("…"), els["#key-masked"].textContent);
+check("Key 保存后 · 隐藏输入框", els["#key-form"].hidden === true);
+check("Key 保存后 · 已保存行可见", els["#key-saved"].hidden === false);
+
+/* 点「修改」要能回到编辑态 */
+T.state.editingKey = true;
+T.refreshKeyState();
+check("Key 点修改 · 回到编辑态", els["#key-form"].hidden === false && els["#key-cancel"].hidden === false);
+
 /* ---------- 4. 澄清卡片的提示 ---------- */
 const hintsHtml = T.renderHints(load("hints"));
 check("澄清提示 · 可点击口径", hintsHtml.includes("rule-line"));

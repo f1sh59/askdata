@@ -347,9 +347,16 @@
           <div class="set-row">
             <div class="set-label">API Key<em id="key-state">—</em></div>
             <div class="set-key">
-              <input type="password" id="set-key-input" placeholder="sk-...（DeepSeek 或任何 OpenAI 兼容服务）" autocomplete="off" />
-              <button class="btn btn-primary" id="set-key-save">保存</button>
-              <button class="btn btn-ghost" id="set-key-clear">清除</button>
+              <div class="key-saved" id="key-saved" hidden>
+                <code id="key-masked">—</code>
+                <button class="btn btn-ghost" id="key-edit">修改</button>
+                <button class="btn btn-ghost" id="set-key-clear">清除</button>
+              </div>
+              <div class="key-form" id="key-form">
+                <input type="password" id="set-key-input" placeholder="sk-...（DeepSeek 或任何 OpenAI 兼容服务）" autocomplete="off" />
+                <button class="btn btn-primary" id="set-key-save">保存</button>
+                <button class="btn btn-ghost" id="key-cancel" hidden>取消</button>
+              </div>
             </div>
             <p class="set-hint">
               只存在这台浏览器的 localStorage，随请求头传给服务端：不写文件、不进镜像、不打日志。
