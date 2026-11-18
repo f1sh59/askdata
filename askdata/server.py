@@ -258,7 +258,15 @@ def main(argv: list[str] | None = None) -> int:
 
     print("[web] 正在加载 schema 与召回索引 ...", flush=True)
     pipeline()
-    server = ThreadingHTTPServer((args.host, args.port), Handler)
+
+    class Server(ThreadingHTTPServer):
+        # socketserver 默认 listen backlog 只有 5。
+        # 20 个并发请求就能把它打爆：Windows 上多半表现为偶发变慢，
+        # Linux 上是直接 RST（客户端看到 Connection reset）——CI 就是这么挂的。
+        request_queue_size = 128
+        daemon_threads = True
+
+    server = Server((args.host, args.port), Handler)
     mode = "可写（支持导入）" if _WRITABLE else "只读（导入已关闭）"
     print(f"[web] askdata 已启动: http://{args.host}:{args.port}  模式：{mode}", flush=True)
     if _WRITABLE:
