@@ -244,6 +244,8 @@ function bindKeyBar() {
   state.apiKey = localStorage.getItem("askdata-api-key") || "";
   refreshKeyState();
   if (!state.apiKey) $("#key-bar").hidden = true;
+  // 支持 ?key=1 直接展开，方便把"去配 key"的链接发给别人
+  if (new URLSearchParams(location.search).get("key") === "1") showKeyBar();
 
   $("#key-toggle").onclick = () => {
     const bar = $("#key-bar");

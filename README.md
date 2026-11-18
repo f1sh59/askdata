@@ -73,6 +73,11 @@ pwsh scripts/deploy.ps1 -Stop     # 停止
 
 好处是：换个人用、换台机器用，各自填自己的 Key，服务端不用重启，也不用共享一份密钥。
 
+![配置 API Key](docs/shots/key-panel.png)
+
+也可以直接把 `?key=1` 拼在地址后面，把「去填 Key」的链接发给别人：
+`http://<主机>:8777/?key=1`
+
 **方式二：服务端配置（推荐给部署者）**
 
 ```bash
