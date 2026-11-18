@@ -1393,3 +1393,41 @@ html[data-scale="lg"] .topbar { position: sticky; }
   flex: 1 1 auto;
   min-width: 160px;
 }
+
+/* ---------------- 图标系统 ---------------- */
+
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* 所有图标统一：线性描边、跟随文字颜色、尺寸用 em 便于缩放 */
+.ic {
+  width: 1em; height: 1em; flex: 0 0 auto;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.125em;
+}
+
+/* 侧栏导航图标 */
+.nav-ic {
+  width: 15px; height: 15px; margin-right: 9px;
+  color: var(--dim); transition: color .15s ease;
+}
+.nav-item:hover .nav-ic { color: var(--muted); }
+.nav-item.is-active .nav-ic { color: var(--accent); }
+
+/* 面板标题前的图标 */
+.eyebrow .ic {
+  width: 13px; height: 13px; margin-right: 6px;
+  color: var(--dim); vertical-align: -0.15em;
+}
+
+/* 顶栏统计 chips 的小图标 */
+.chip-ic { width: 12px; height: 12px; margin-right: 5px; color: var(--dim); }
+.chip.accent .chip-ic { color: var(--accent); }
+
+/* 空对话占位：用图标替代原来的符号 */
+.empty-mark .ic { width: 34px; height: 34px; stroke-width: 1.2; color: var(--line-strong, #c9c4b8); }
+
+/* 输入区标题与发送按钮的图标 */
+.field-label { display: flex; align-items: center; gap: 6px; }
+.field-label .ic { width: 13px; height: 13px; color: var(--dim); }
+#send .ic { width: 13px; height: 13px; margin-right: 6px; }

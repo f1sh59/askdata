@@ -2192,11 +2192,13 @@ async function boot() {
       overview.schema_chars?.toLocaleString() || "—"
     } 字符 schema`;
 
-    $("#topbar-chips").innerHTML = `
-      <span class="chip"><b>${overview.tables}</b> 张表</span>
-      <span class="chip"><b>${overview.questions}</b> 道题</span>
-      <span class="chip accent">安全闸 开</span>
-      <span class="chip">${esc(overview.model)}</span>`;
+  const chip = (icon, text, cls = "") =>
+    `<span class="chip ${cls}"><svg class="ic chip-ic"><use href="#${icon}"/></svg>${text}</span>`;
+  $("#topbar-chips").innerHTML =
+    chip("i-table", `<b>${overview.tables}</b> 张表`) +
+    chip("i-list", `<b>${overview.questions}</b> 道题`) +
+    chip("i-guard", "安全闸 开", "accent") +
+    chip("i-chip", esc(overview.model));
 
     const clarifyReport = reports.find((r) => r.kind === "clarify");
     const closedReport = reports.find((r) => r.kind === "closed");

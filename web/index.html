@@ -7,6 +7,84 @@
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+<!-- 图标精灵：全部内联 SVG，不引外部图标库，离线也能用、不会闪空 -->
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-ask" viewBox="0 0 24 24">
+    <path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z" />
+    <path d="M9.6 9.2a2.4 2.4 0 0 1 4.7.6c0 1.6-2.3 1.8-2.3 3.2" />
+    <circle cx="12" cy="15" r=".7" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="i-dict" viewBox="0 0 24 24">
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+    <path d="M3.5 9.5h17M9 9.5v10M15 9.5v10" />
+  </symbol>
+  <symbol id="i-eval" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.5" />
+    <circle cx="12" cy="12" r="4.5" />
+    <circle cx="12" cy="12" r=".9" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="i-guard" viewBox="0 0 24 24">
+    <path d="M12 3.2 19 6v5.6c0 4-3 7.3-7 8.7-4-1.4-7-4.7-7-8.7V6z" />
+    <path d="M9 12.2l2.1 2.1 4-4.2" />
+  </symbol>
+  <symbol id="i-clarify" viewBox="0 0 24 24">
+    <path d="M4 6.5h9M4 12h6M4 17.5h4" />
+    <path d="M15.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.9.4-1.4 1-1.4 1.9" />
+    <circle cx="17.7" cy="17.4" r=".8" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="i-about" viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 11v5.5" />
+    <circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24">
+    <path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h9M17 17h3" />
+    <circle cx="15" cy="7" r="2" />
+    <circle cx="8.5" cy="12" r="2" />
+    <circle cx="15" cy="17" r="2" />
+  </symbol>
+  <symbol id="i-table" viewBox="0 0 24 24">
+    <rect x="4" y="5" width="16" height="14" rx="1.6" />
+    <path d="M4 9.5h16M9.5 9.5v9.5" />
+  </symbol>
+  <symbol id="i-list" viewBox="0 0 24 24">
+    <path d="M8 7h11M8 12h11M8 17h7" />
+    <circle cx="4.6" cy="7" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="4.6" cy="12" r=".9" fill="currentColor" stroke="none" />
+    <circle cx="4.6" cy="17" r=".9" fill="currentColor" stroke="none" />
+  </symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24">
+    <rect x="7" y="7" width="10" height="10" rx="2" />
+    <path d="M10 3.5v3M14 3.5v3M10 17.5v3M14 17.5v3M3.5 10h3M3.5 14h3M17.5 10h3M17.5 14h3" />
+  </symbol>
+  <symbol id="i-key" viewBox="0 0 24 24">
+    <circle cx="8" cy="12" r="3.6" />
+    <path d="M11.6 12H20M17 12v3M14 12v2.4" />
+  </symbol>
+  <symbol id="i-history" viewBox="0 0 24 24">
+    <path d="M4.6 12a7.4 7.4 0 1 0 2.2-5.3" />
+    <path d="M4 4.6v3.6h3.6" />
+    <path d="M12 8.4V12l2.6 1.6" />
+  </symbol>
+  <symbol id="i-db" viewBox="0 0 24 24">
+    <ellipse cx="12" cy="6.4" rx="7" ry="2.8" />
+    <path d="M5 6.4v11.2c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8V6.4" />
+    <path d="M5 12c0 1.5 3.1 2.8 7 2.8s7-1.3 7-2.8" />
+  </symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24">
+    <rect x="5.5" y="10.5" width="13" height="9" rx="2" />
+    <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+  </symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24">
+    <path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z" />
+    <path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" />
+  </symbol>
+  <symbol id="i-send" viewBox="0 0 24 24">
+    <path d="M4 12 20 4.5 16.5 20 12 14.5z" />
+    <path d="M12 14.5 20 4.5" />
+  </symbol>
+</svg>
+
   <div class="grain" aria-hidden="true"></div>
 
   <aside class="rail">
@@ -19,13 +97,13 @@
     </div>
 
     <nav class="nav" id="nav">
-      <button class="nav-item is-active" data-page="ask"><span class="idx">01</span><span class="nav-label">问数<em>Ask</em></span></button>
-      <button class="nav-item" data-page="dict"><span class="idx">02</span><span class="nav-label">数据字典<em>Schema</em></span></button>
-      <button class="nav-item" data-page="eval"><span class="idx">03</span><span class="nav-label">评测<em>Eval</em></span></button>
-      <button class="nav-item" data-page="guard"><span class="idx">04</span><span class="nav-label">安全闸<em>Guard</em></span></button>
-      <button class="nav-item" data-page="clarify"><span class="idx">05</span><span class="nav-label">澄清<em>Clarify</em></span></button>
-      <button class="nav-item" data-page="about"><span class="idx">06</span><span class="nav-label">说明<em>About</em></span></button>
-      <button class="nav-item" data-page="settings"><span class="idx">07</span><span class="nav-label">设置<em>Settings</em></span></button>
+      <button class="nav-item is-active" data-page="ask"><svg class="ic nav-ic"><use href="#i-ask"/></svg><span class="idx">01</span><span class="nav-label">问数<em>Ask</em></span></button>
+      <button class="nav-item" data-page="dict"><svg class="ic nav-ic"><use href="#i-dict"/></svg><span class="idx">02</span><span class="nav-label">数据字典<em>Schema</em></span></button>
+      <button class="nav-item" data-page="eval"><svg class="ic nav-ic"><use href="#i-eval"/></svg><span class="idx">03</span><span class="nav-label">评测<em>Eval</em></span></button>
+      <button class="nav-item" data-page="guard"><svg class="ic nav-ic"><use href="#i-guard"/></svg><span class="idx">04</span><span class="nav-label">安全闸<em>Guard</em></span></button>
+      <button class="nav-item" data-page="clarify"><svg class="ic nav-ic"><use href="#i-clarify"/></svg><span class="idx">05</span><span class="nav-label">澄清<em>Clarify</em></span></button>
+      <button class="nav-item" data-page="about"><svg class="ic nav-ic"><use href="#i-about"/></svg><span class="idx">06</span><span class="nav-label">说明<em>About</em></span></button>
+      <button class="nav-item" data-page="settings"><svg class="ic nav-ic"><use href="#i-settings"/></svg><span class="idx">07</span><span class="nav-label">设置<em>Settings</em></span></button>
     </nav>
 
     <div class="rail-foot">
@@ -67,7 +145,7 @@
       <div class="ask-grid">
         <div class="col-main">
           <div class="composer panel">
-            <label class="field-label" for="q">你的问题</label>
+            <label class="field-label" for="q"><svg class="ic"><use href="#i-ask"/></svg>你的问题</label>
             <textarea id="q" rows="2" placeholder="例：各渠道的销售额分别是多少？"></textarea>
             <div class="composer-foot">
               <span class="composer-meta">
@@ -75,13 +153,13 @@
                 <span class="session-chip" id="session-chip" title="上下文保存在服务端，刷新页面不会丢">新会话</span>
                 <button class="btn btn-ghost" id="clear-session" title="清空服务端记住的对话上下文">清空对话</button>
               </span>
-              <button class="btn btn-primary" id="send"><span>发送</span><span class="kbd">↵</span></button>
+              <button class="btn btn-primary" id="send"><svg class="ic"><use href="#i-send"/></svg><span>发送</span><span class="kbd">↵</span></button>
             </div>
           </div>
 
           <div class="panel quick" id="quick">
             <div class="quick-head">
-              <span class="eyebrow">快捷提问</span>
+              <span class="eyebrow"><svg class="ic"><use href="#i-spark"/></svg>快捷提问</span>
               <span class="panel-hint" id="quick-range"></span>
             </div>
             <div class="quick-row">
@@ -103,7 +181,7 @@
           </div>
           <div class="thread" id="thread">
             <div class="empty" id="thread-empty">
-              <div class="empty-mark">⌁</div>
+              <div class="empty-mark"><svg class="ic"><use href="#i-spark"/></svg></div>
               <p>还没有对话。上面随便问一句试试。</p>
               <p class="dim">它可能会反问你，也可能会给你一张表。</p>
             </div>
@@ -113,7 +191,7 @@
         <aside class="col-side">
           <div class="panel side-panel">
             <div class="panel-head">
-              <span class="eyebrow">RETRIEVAL</span>
+              <span class="eyebrow"><svg class="ic"><use href="#i-table"/></svg>RETRIEVAL</span>
               <span class="panel-hint" id="retrieval-hint">等待提问</span>
             </div>
             <div class="retrieval" id="retrieval">
@@ -122,12 +200,12 @@
           </div>
 
           <div class="panel side-panel">
-            <div class="panel-head"><span class="eyebrow">最近提问</span><span class="panel-hint" id="history-count"></span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-history"/></svg>最近提问</span><span class="panel-hint" id="history-count"></span></div>
             <div class="history" id="history"><p class="dim small">问过的题会存在本地，点一下可以重问。</p></div>
           </div>
 
           <div class="panel side-panel">
-            <div class="panel-head"><span class="eyebrow">CONFIG</span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-settings"/></svg>CONFIG</span></div>
             <label class="slider-row">
               <span>召回表数量 <b class="num" id="topk-val">8</b></span>
               <input type="range" id="topk" min="3" max="20" value="8" step="1" />
@@ -136,7 +214,7 @@
           </div>
 
           <div class="panel side-panel explain">
-            <div class="panel-head"><span class="eyebrow">这一页在干什么</span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-about"/></svg>这一页在干什么</span></div>
             <ol class="steps">
               <li><b>召回</b>：从 <span id="explain-total">—</span> 张表里挑出相关的几张</li>
               <li><b>判定</b>：信息够不够？不够就反问</li>
@@ -152,7 +230,7 @@
     <section class="page" id="page-dict">
       <div class="panel import-panel">
         <div class="panel-head">
-          <span class="eyebrow">导入数据</span>
+          <span class="eyebrow"><svg class="ic"><use href="#i-db"/></svg>导入数据</span>
           <span class="panel-hint">CSV / TSV / JSON · 导入后可以直接提问</span>
         </div>
 
@@ -186,7 +264,7 @@
 
       <div class="dict-grid">
         <div class="panel dict-list">
-          <div class="panel-head"><span class="eyebrow">表清单</span><span class="panel-hint" id="dict-count"></span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-dict"/></svg>表清单</span><span class="panel-hint" id="dict-count"></span></div>
           <input type="text" id="dict-search" placeholder="搜索表名 / 注释…" />
           <div class="dict-items" id="dict-items"></div>
         </div>
@@ -200,7 +278,7 @@
     <section class="page" id="page-eval">
       <div class="panel trend-panel">
         <div class="panel-head">
-          <span class="eyebrow">评测历史</span>
+          <span class="eyebrow"><svg class="ic"><use href="#i-eval"/></svg>评测历史</span>
           <span class="panel-hint" id="trend-hint"></span>
         </div>
         <div class="trend" id="trend"></div>
@@ -208,7 +286,7 @@
 
       <div class="eval-head">
         <div class="panel report-picker">
-          <span class="eyebrow">选择一份评测报告</span>
+          <span class="eyebrow"><svg class="ic"><use href="#i-list"/></svg>选择一份评测报告</span>
           <select id="report-select"></select>
           <p class="dim small" id="report-meta"></p>
         </div>
@@ -226,13 +304,13 @@
       </div>
 
       <div class="panel" id="attrib-panel">
-        <div class="panel-head"><span class="eyebrow">失败归因</span><span class="panel-hint" id="attrib-hint"></span></div>
+        <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-clarify"/></svg>失败归因</span><span class="panel-hint" id="attrib-hint"></span></div>
         <div class="attrib-bars" id="attrib-bars"></div>
         <div class="attrib-list" id="attrib-list"></div>
       </div>
 
       <div class="panel">
-        <div class="panel-head"><span class="eyebrow">两次评测对比</span><span class="panel-hint">看改动到底动了哪几题</span></div>
+        <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-eval"/></svg>两次评测对比</span><span class="panel-hint">看改动到底动了哪几题</span></div>
         <div class="compare-pick">
           <select id="cmp-a"></select>
           <span class="arch-arrow">→</span>
@@ -243,12 +321,12 @@
       </div>
 
       <div class="panel">
-        <div class="panel-head"><span class="eyebrow">逐题明细</span><span class="panel-hint" id="q-detail-hint"></span></div>
+        <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-list"/></svg>逐题明细</span><span class="panel-hint" id="q-detail-hint"></span></div>
         <div class="qtable" id="qtable"></div>
       </div>
 
       <div class="panel" id="mt-panel">
-        <div class="panel-head"><span class="eyebrow">多轮对话</span><span class="panel-hint" id="mt-hint"></span></div>
+        <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-history"/></svg>多轮对话</span><span class="panel-hint" id="mt-hint"></span></div>
         <div class="compare-pick">
           <select id="mt-select"></select>
         </div>
@@ -276,18 +354,18 @@
           </div>
 
           <div class="panel">
-            <div class="panel-head"><span class="eyebrow">注入用例</span><span class="panel-hint" id="attack-hint"></span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-guard"/></svg>注入用例</span><span class="panel-hint" id="attack-hint"></span></div>
             <div class="attack-grid" id="attack-grid"></div>
           </div>
         </div>
 
         <aside class="col-side">
           <div class="panel side-panel">
-            <div class="panel-head"><span class="eyebrow">判定</span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-guard"/></svg>判定</span></div>
             <div class="verdict" id="verdict"><p class="dim small">输入一段 SQL，看它过不过得了四道闸。</p></div>
           </div>
           <div class="panel side-panel explain">
-            <div class="panel-head"><span class="eyebrow">四道闸</span></div>
+            <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-guard"/></svg>四道闸</span></div>
             <ol class="steps">
               <li><b>AST 白名单</b>：单条 + 查询 + 普通表名</li>
               <li><b>强制 LIMIT</b>：没写就补 1000</li>
@@ -305,11 +383,11 @@
       <div class="metric-row" id="clarify-metrics"></div>
       <div class="clarify-grid">
         <div class="panel">
-          <div class="panel-head"><span class="eyebrow">15 道含糊题</span><span class="panel-hint">点一行看它怎么问</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-clarify"/></svg>15 道含糊题</span><span class="panel-hint">点一行看它怎么问</span></div>
           <div class="vague-list" id="vague-list"></div>
         </div>
         <div class="panel">
-          <div class="panel-head"><span class="eyebrow">它实际会怎么反问</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-ask"/></svg>它实际会怎么反问</span></div>
           <div class="clarify-detail" id="clarify-detail"><p class="dim small">左边点一行。</p></div>
         </div>
       </div>
@@ -325,7 +403,7 @@
       <div class="settings-grid">
 
         <div class="panel set-card">
-          <div class="panel-head"><span class="eyebrow">外观</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-spark"/></svg>外观</span></div>
           <div class="set-row">
             <div class="set-label">主题<em>立即生效，存在这台浏览器</em></div>
             <div class="seg" id="seg-theme">
@@ -343,7 +421,7 @@
         </div>
 
         <div class="panel set-card span-2">
-          <div class="panel-head"><span class="eyebrow">模型</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-chip"/></svg>模型</span></div>
           <div class="set-row">
             <div class="set-label">API Key<em id="key-state">—</em></div>
             <div class="set-key">
@@ -377,7 +455,7 @@
         </div>
 
         <div class="panel set-card">
-          <div class="panel-head"><span class="eyebrow">会话</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-history"/></svg>会话</span></div>
           <div class="set-row">
             <div class="set-label">当前会话<em>上下文存在服务端，刷新页面不会丢</em></div>
             <div class="set-value" id="set-session">—</div>
@@ -389,7 +467,7 @@
         </div>
 
         <div class="panel set-card span-2">
-          <div class="panel-head"><span class="eyebrow">服务状态</span></div>
+          <div class="panel-head"><span class="eyebrow"><svg class="ic"><use href="#i-db"/></svg>服务状态</span></div>
           <div class="set-row inline"><div class="set-label">数据表</div><div class="set-value" id="set-tables">—</div></div>
           <div class="set-row inline"><div class="set-label">评测题</div><div class="set-value" id="set-questions">—</div></div>
           <div class="set-row inline"><div class="set-label">数据集版本</div><div class="set-value" id="set-version">—</div></div>
