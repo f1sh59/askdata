@@ -30,7 +30,7 @@ jobs:
       - name: 造数据库
         run: python scripts/build_db.py
 
-      # 1) 单元测试：96 个，纯逻辑，秒级
+      # 1) 单元测试：134 个，纯逻辑，秒级
       - name: 单元测试
         run: python -m unittest discover -s tests -t . -v
 

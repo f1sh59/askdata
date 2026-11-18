@@ -2,7 +2,7 @@
 
 <!-- CI 徽章在第一次 push 后会自动变色；绿色代表全流程通过 -->
 [![CI](https://github.com/f1sh59/askdata/actions/workflows/ci.yml/badge.svg)](https://github.com/f1sh59/askdata/actions/workflows/ci.yml)
-![tests](https://img.shields.io/badge/tests-135%20passed-brightgreen)
+![tests](https://img.shields.io/badge/tests-134%20passed-brightgreen)
 ![acceptance](https://img.shields.io/badge/acceptance-48%20checks-blue)
 ![python](https://img.shields.io/badge/python-3.12%2B-blue)
 ![deps](https://img.shields.io/badge/runtime%20deps-2-lightgrey)
@@ -56,6 +56,35 @@ Windows 上还有一键脚本（会自动检查环境、建库、起服务，并
 pwsh scripts/deploy.ps1           # 启动
 pwsh scripts/deploy.ps1 -Stop     # 停止
 ```
+
+## 配置模型 API Key
+
+不需要先建 `.env` 才能用界面——**两种方式任选**：
+
+**方式一：界面里填（推荐给使用者）**
+
+打开页面 → 右上角 `API` → 粘贴 Key → 保存。
+
+```
+只存在这台浏览器的 localStorage 里
+每次请求通过 X-API-Key 头带给服务端
+服务端只用于当次调用，不落盘、不写日志、不进镜像
+```
+
+好处是：换个人用、换台机器用，各自填自己的 Key，服务端不用重启，也不用共享一份密钥。
+
+**方式二：服务端配置（推荐给部署者）**
+
+```bash
+cp .env.example .env      # 填入 DEEPSEEK_API_KEY
+python -m askdata.server --port 8777
+```
+
+配好之后所有人共用这一份 Key，界面上的 `API` 按钮就不再是必须的。
+
+> 两种方式可以并存：请求头带了 Key 就用请求头的，没带才用服务端环境变量。
+> 都没有时接口返回 `400` 且带 `need_api_key: true`，界面会自动弹出配置栏，
+> 而不是报一个看不懂的 500。
 
 ## 架构
 
