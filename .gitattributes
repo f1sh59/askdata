@@ -1,0 +1,20 @@
+# 统一行尾：仓库里一律 LF。
+# 不加这个文件的话，Windows 上 core.autocrlf=true 会把 shell 脚本 checkout 成 CRLF，
+# 容器里 /bin/sh 直接报 "bad interpreter: no such file or directory"，而且极难排查。
+
+* text=auto eol=lf
+
+# shell 脚本必须是 LF，否则容器里跑不起来
+*.sh text eol=lf
+
+# PowerShell 脚本保持 LF（PS 5.1 能读），但 BOM 是脚本自己带的，别让 git 动
+*.ps1 text eol=lf
+
+# 二进制：不要做任何行尾或编码转换
+*.png binary
+*.jpg binary
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.duckdb binary
+*.wal binary
