@@ -1,7 +1,7 @@
 # askdata · 中文 Text2SQL 问数 Agent
 
-<!-- 把下面徽章里的 YOUR_GITHUB_USER 换成你自己的账号，push 后 CI 徽章才会变色 -->
-[![CI](https://github.com/YOUR_GITHUB_USER/askdata/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USER/askdata/actions/workflows/ci.yml)
+<!-- 把下面徽章里的 f1sh59 换成你自己的账号，push 后 CI 徽章才会变色 -->
+[![CI](https://github.com/f1sh59/askdata/actions/workflows/ci.yml/badge.svg)](https://github.com/f1sh59/askdata/actions/workflows/ci.yml)
 ![tests](https://img.shields.io/badge/tests-135%20passed-brightgreen)
 ![acceptance](https://img.shields.io/badge/acceptance-48%20checks-blue)
 ![python](https://img.shields.io/badge/python-3.12%2B-blue)
