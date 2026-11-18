@@ -34,4 +34,10 @@ docs/shots/*
 /*.log
 /*.err
 /.server.pid
-/*.txt
+# 注意：不要写 /*.txt —— 会连 requirements.txt 一起忽略掉。
+# 表现是 CI 里 `pip install -r requirements.txt` 找不到文件、10 秒内失败，
+# 而且从报错里完全看不出是 .gitignore 干的。
+/perr.txt
+/plog.txt
+/s8799.log
+/s8799.err
