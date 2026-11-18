@@ -50,3 +50,8 @@ def authorized(header_value: str | None, expected: str | None = None) -> bool:
 def row_policy_enabled() -> bool:
     """是否强制所有查询套行级权限。"""
     return (os.environ.get("ASKDATA_ROW_POLICY") or "").strip().lower() in {"1", "true", "yes", "on"}
+
+def configured_api_key() -> str | None:
+    """服务端是否已经配好模型密钥（.env 或环境变量）。"""
+    key = (os.environ.get("DEEPSEEK_API_KEY") or "").strip()
+    return key or None

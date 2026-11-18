@@ -76,7 +76,22 @@ class Pipeline:
         except RuntimeError:
             return "（未配置 API Key）"
 
-    def _llm_client(self) -> DeepSeekClient:
+    def _llm_client(self, api_key: str | None = None) -> DeepSeekClient:
+        """取模型客户端。
+
+        密钥可以按请求传进来（界面里填的那种），也可以走环境变量。
+        按密钥缓存，避免每个请求都新建连接池；但绝不把密钥写进任何文件。
+        """
+        if api_key:
+            cache = getattr(self, "_llm_by_key", None)
+            if cache is None:
+                cache = {}
+                self._llm_by_key = cache
+            client = cache.get(api_key)
+            if client is None:
+                client = DeepSeekClient(api_key=api_key)
+                cache[api_key] = client
+            return client
         if self._llm is None:
             self._llm = DeepSeekClient()
         return self._llm
@@ -290,6 +305,7 @@ class Pipeline:
         history: list[dict] | None = None,
         session_id: str | None = None,
         on_stage: Callable[[dict], None] | None = None,
+        api_key: str | None = None,
     ) -> dict:
         stages: list[Stage] = []
         started = time.perf_counter()
@@ -325,7 +341,7 @@ class Pipeline:
             if looks_like_followup(question):
                 t0 = time.perf_counter()
                 try:
-                    client = self._llm_client()
+                    client = self._llm_client(api_key)
                     response = client.chat(
                         REWRITE_SYSTEM,
                         REWRITE_TEMPLATE.format(
@@ -365,7 +381,7 @@ class Pipeline:
 
         t0 = time.perf_counter()
         try:
-            client = self._llm_client()
+            client = self._llm_client(api_key)
             response = client.chat(SYSTEM_PROMPT, prompt, temperature=0.0, max_tokens=1024)
         except RuntimeError as exc:
             return {

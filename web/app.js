@@ -23,6 +23,7 @@ const state = {
   dialog: [],
   sessionId: null,
   token: '',
+  apiKey: '',
   year: null,
   dim: null,
   metric: null,
@@ -197,6 +198,7 @@ function setPage(name) {
 function authHeaders(extra = {}) {
   const headers = { "Content-Type": "application/json", ...extra };
   if (state.token) headers.Authorization = `Bearer ${state.token}`;
+  if (state.apiKey) headers["X-API-Key"] = state.apiKey;
   return headers;
 }
 
@@ -207,8 +209,71 @@ async function api(path, options = {}) {
     showAuthBar();
     throw new Error("需要访问令牌");
   }
+  if (data.need_api_key) {
+    showKeyBar(data.error);
+    throw new Error(data.error || "需要配置模型 API Key");
+  }
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data;
+}
+
+/* ---------------- 模型 API Key ---------------- */
+
+function showKeyBar(message) {
+  const bar = $("#key-bar");
+  if (!bar) return;
+  bar.hidden = false;
+  if (message) $("#key-msg").textContent = message;
+  $("#key-input").focus();
+}
+
+function refreshKeyState() {
+  const bar = $("#key-bar");
+  const tip = $("#key-toggle");
+  const has = Boolean(state.apiKey);
+  if (tip) {
+    tip.classList.toggle("is-on", has);
+    tip.title = has ? "模型 Key 已配置（点击修改）" : "配置模型 API Key";
+  }
+  if (bar) $("#key-msg").textContent = has
+    ? `已配置（${state.apiKey.slice(0, 6)}…${state.apiKey.slice(-4)}），只存在这台浏览器里`
+    : "只存在这台浏览器里，不会上传或写进仓库";
+}
+
+function bindKeyBar() {
+  state.apiKey = localStorage.getItem("askdata-api-key") || "";
+  refreshKeyState();
+  if (!state.apiKey) $("#key-bar").hidden = true;
+
+  $("#key-toggle").onclick = () => {
+    const bar = $("#key-bar");
+    bar.hidden = !bar.hidden;
+    if (!bar.hidden) $("#key-input").focus();
+  };
+
+  $("#key-save").onclick = () => {
+    const value = ($("#key-input").value || "").trim();
+    if (!value) {
+      $("#key-msg").textContent = "先填入 Key 再保存";
+      return;
+    }
+    state.apiKey = value;
+    localStorage.setItem("askdata-api-key", value);
+    $("#key-input").value = "";
+    refreshKeyState();
+    toast("已保存模型 Key，可以提问了");
+  };
+
+  $("#key-clear").onclick = () => {
+    state.apiKey = "";
+    localStorage.removeItem("askdata-api-key");
+    refreshKeyState();
+    toast("已清除模型 Key");
+  };
+
+  $("#key-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $("#key-save").click();
+  });
 }
 
 /* ---------------- 访问令牌 ---------------- */
@@ -851,6 +916,15 @@ async function askStream(payload, loadingCard) {
   if (res.status === 401) {
     showAuthBar();
     throw new Error("需要访问令牌");
+  }
+  if (res.status === 400) {
+    // 流式接口在缺 key 时会退回普通 JSON，这里要读出来给用户看
+    const detail = await res.json().catch(() => ({}));
+    if (detail.need_api_key) {
+      showKeyBar(detail.error);
+      throw new Error(detail.error || "需要配置模型 API Key");
+    }
+    throw new Error(detail.error || "请求被拒绝");
   }
   if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
 
@@ -2003,6 +2077,7 @@ async function boot() {
   }
 
   bindAuth();
+  bindKeyBar();
   bindAsk();
   ensureQuick();
   const initial = (location.hash || "#ask").slice(1);

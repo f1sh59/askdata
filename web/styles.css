@@ -1209,3 +1209,14 @@ html[data-scale="lg"] .msg-user { font-size: 14.5px; }
   flex: 1; min-width: 220px; padding: 7px 10px; font-size: 12.5px;
 }
 .auth-msg { color: var(--dim); font-size: 11.5px; }
+
+/* ---------------- 模型 Key 配置 ---------------- */
+
+.key-bar { border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent); }
+.key-bar .auth-title { color: var(--accent); }
+.theme-toggle.is-on {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+}

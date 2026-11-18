@@ -18,7 +18,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from . import config
-from .auth import authorized
+from .auth import authorized, configured_api_key
 from .service import Pipeline
 
 WEB_DIR = config.ROOT / "web"
@@ -61,6 +61,10 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---------------- 流式问数（SSE） ----------------
 
+    def _request_api_key(self) -> str | None:
+        """界面里填的模型密钥随请求头过来，不落盘、不打日志。"""
+        return (self.headers.get("X-API-Key") or "").strip() or None
+
     def _stream_ask(self, payload: dict) -> None:
         """把每个阶段实时推给前端，最后再推完整结果。
 
@@ -71,6 +75,15 @@ class Handler(BaseHTTPRequestHandler):
         if not question:
             return self._error("问题不能为空")
         session_id = str(payload.get("session_id") or "") or None
+        if not (self._request_api_key() or configured_api_key()):
+            return self._json(
+                {
+                    "ok": False,
+                    "error": "还没有配置模型 API Key：点右上角「API」填入，或在 .env 里设置 DEEPSEEK_API_KEY",
+                    "need_api_key": True,
+                },
+                400,
+            )
 
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
@@ -96,6 +109,7 @@ class Handler(BaseHTTPRequestHandler):
                 answer=payload.get("answer"),
                 session_id=session_id,
                 on_stage=lambda stage: frame("stage", stage),
+                api_key=self._request_api_key(),
             )
             frame("result", result)
         except BrokenPipeError:
@@ -173,6 +187,15 @@ class Handler(BaseHTTPRequestHandler):
                 question = str(payload.get("question") or "").strip()
                 if not question:
                     return self._error("问题不能为空")
+                if not (self._request_api_key() or configured_api_key()):
+                    return self._json(
+                        {
+                            "ok": False,
+                            "error": "还没有配置模型 API Key：点右上角「API」填入，或在 .env 里设置 DEEPSEEK_API_KEY",
+                            "need_api_key": True,
+                        },
+                        400,
+                    )
                 history = payload.get("history") or []
                 if not isinstance(history, list):
                     history = []
@@ -186,6 +209,7 @@ class Handler(BaseHTTPRequestHandler):
                         answer=payload.get("answer"),
                         history=history or None,
                         session_id=str(payload.get("session_id") or "") or None,
+                        api_key=self._request_api_key(),
                     )
                 )
             if parsed.path == "/api/check":
@@ -201,7 +225,10 @@ class Handler(BaseHTTPRequestHandler):
                     return self._error("内容不能为空")
                 if len(text) > 4_000_000:
                     return self._error("文本太大，请控制在 4MB 以内")
-                return self._json(pipeline().import_preview(text, payload.get("options") or {}))
+                result = pipeline().import_preview(text, payload.get("options") or {})
+                # 解析失败是"请求内容有问题"，不是成功响应；统一用 400，
+                # 免得前端和服务端对同一类错误有两种理解。
+                return self._json(result, 200 if result.get("ok") is not False else 400)
             if parsed.path == "/api/session/clear":
                 sid = str(payload.get("session_id") or "").strip()
                 cleared = pipeline().sessions.clear(sid or None)
@@ -219,11 +246,10 @@ class Handler(BaseHTTPRequestHandler):
                     return self._error("内容不能为空")
                 if not columns:
                     return self._error("缺少列定义")
-                return self._json(
-                    pipeline().import_commit(
-                        text, name, columns, payload.get("options") or {}
-                    )
+                result = pipeline().import_commit(
+                    text, name, columns, payload.get("options") or {}
                 )
+                return self._json(result, 200 if result.get("ok") is not False else 400)
             return self._error("未知接口", 404)
         except Exception as exc:  # noqa: BLE001
             self._error(f"{type(exc).__name__}: {exc}", 500)

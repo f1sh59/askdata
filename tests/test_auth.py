@@ -89,5 +89,40 @@ class GuardApiContractTest(unittest.TestCase):
         self.assertIn("policy", inspect.signature(SqlGuard.__init__).parameters)
         self.assertNotIn("policy", inspect.signature(SqlGuard.check).parameters)
 
+class ApiKeyTest(unittest.TestCase):
+    """服务端密钥检测 + 按请求传 key 时的客户端缓存。"""
+
+    def test_no_key_configured(self) -> None:
+        os.environ.pop("DEEPSEEK_API_KEY", None)
+        self.assertIsNone(auth.configured_api_key())
+
+    def test_blank_key_is_not_configured(self) -> None:
+        os.environ["DEEPSEEK_API_KEY"] = "   "
+        try:
+            self.assertIsNone(auth.configured_api_key())
+        finally:
+            os.environ.pop("DEEPSEEK_API_KEY", None)
+
+    def test_key_is_detected(self) -> None:
+        os.environ["DEEPSEEK_API_KEY"] = "sk-test"
+        try:
+            self.assertEqual(auth.configured_api_key(), "sk-test")
+        finally:
+            os.environ.pop("DEEPSEEK_API_KEY", None)
+
+    def test_client_is_cached_per_key(self) -> None:
+        """同一个 key 复用客户端；换 key 必须换客户端，否则会用错密钥。"""
+        from askdata.service import Pipeline
+
+        pipe = Pipeline.__new__(Pipeline)   # 不建数据库连接，只测缓存逻辑
+        pipe._llm = None
+        a1 = pipe._llm_client("sk-aaa")
+        a2 = pipe._llm_client("sk-aaa")
+        b1 = pipe._llm_client("sk-bbb")
+        self.assertIs(a1, a2)
+        self.assertIsNot(a1, b1)
+        self.assertEqual(a1.api_key, "sk-aaa")
+        self.assertEqual(b1.api_key, "sk-bbb")
+
 if __name__ == "__main__":
     unittest.main()
