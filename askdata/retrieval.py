@@ -56,7 +56,7 @@ class BM25:
 
     def scores(self, query: list[str]) -> list[float]:
         out = []
-        for tf, dl in zip(self._tf, self._dl):
+        for tf, dl in zip(self._tf, self._dl, strict=True):
             total = 0.0
             for term in query:
                 freq = tf.get(term)

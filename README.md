@@ -91,6 +91,65 @@ python -m askdata.server --port 8777
 > 都没有时接口返回 `400` 且带 `need_api_key: true`，界面会自动弹出配置栏，
 > 而不是报一个看不懂的 500。
 
+## 工程规范与可观测性
+
+一个人做项目最容易糊弄自己的地方是"能跑就行"。这一节是把它拉到能被别人接手的水准。
+
+### 三道质量门（本地一条命令）
+
+```bash
+make check      # = make lint + make typecheck + make test-cov
+```
+
+| 门 | 工具 | 现状 |
+|---|---|---|
+| 代码风格 | `ruff` | 全绿（含 `tests/` `scripts/`） |
+| 类型检查 | `mypy` | 26 个源文件 0 错误 |
+| 测试 + 覆盖率 | `pytest` + `coverage` | 覆盖率门槛 58%（棘轮，只升不降） |
+
+配置全在 `pyproject.toml`：项目元数据、依赖、`[project.scripts]` 入口、
+ruff / mypy / pytest / coverage 的规则。`pip install -e ".[dev]"` 一次装齐。
+
+### 探针与指标
+
+```bash
+curl localhost:8777/health    # 存活：进程在就行
+curl localhost:8777/ready     # 就绪：还要数据库真的能查
+curl localhost:8777/metrics   # Prometheus 文本格式
+```
+
+`/ready` 不是简单的 `return 200`——它会真的执行一条 `SELECT 1`，
+避免"容器在、但查询全挂"还继续接流量。
+
+指标包含：请求数（按方法/路由/状态码）、耗时直方图、业务事件计数。
+没有引第三方库，Prometheus 文本格式自己拼——**零依赖是设计约束**。
+
+### 请求 ID 与结构化日志
+
+每个响应都带 `X-Request-Id`，同一个 ID 会出现在这一条请求的日志里：
+
+```bash
+ASKDATA_LOG=json python -m askdata.server
+# {"ts":1763..., "level":"info", "event":"http_request",
+#  "request_id":"d9388ec68aa2", "method":"GET", "route":"/api/overview",
+#  "status":200, "ms":3.1}
+```
+
+### 限流
+
+按客户端 IP 的令牌桶，默认 20 req/s、突发 60。超限返回 `429` + `Retry-After`。
+
+> 默认值是按"打开一个页面会并发 5~8 个接口"定的。第一版设的 5/s 一上线就把
+> 正常的页面加载挡了——限流阈值必须按真实调用模式定，不能拍脑袋。
+
+### 统一错误码
+
+```json
+{"ok": false, "error": "问题不能为空", "code": "bad_request"}
+```
+
+前端只展示 `error` 文案，接入方按 `code` 分支，不用去匹配中文。
+
 ## 架构
 
 ```

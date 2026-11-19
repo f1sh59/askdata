@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
 
 from .schema import BUSINESS_RULES
 from .strategies.llm import extract_sql
@@ -236,7 +236,7 @@ def render_markdown(
     guessed = sum(1 for r in results if r.status == "guessed")
     avg_cov = sum(r.coverage for r in results) / total if total else 0.0
 
-    over_asked = [q for q, c in zip(control_questions, controls) if c.asked]
+    over_asked = [q for q, c in zip(control_questions, controls, strict=True) if c.asked]
     over_rate = len(over_asked) / len(controls) if controls else 0.0
 
     lines: list[str] = []

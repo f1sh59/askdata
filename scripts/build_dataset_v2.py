@@ -103,7 +103,7 @@ EXT20 = [
     q(
         "m17", "medium", ["payment", "group", "aggregate"],
         "2025 年各支付方式的成功支付笔数、金额和平均每笔金额分别是多少？（返回四列：支付方式、笔数、金额、平均每笔金额）",
-        f"""
+        """
         SELECT pay_method, COUNT(*) AS cnt, ROUND(SUM(pay_amount), 2) AS amt, ROUND(AVG(pay_amount), 2) AS avg_amt
         FROM payments
         WHERE pay_status = '成功' AND pay_time >= TIMESTAMP '2025-01-01' AND pay_time < TIMESTAMP '2026-01-01'

@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from decimal import Decimal
 
+from askdata.config import DEFAULT_QUESTIONS
 from askdata.db import QueryResult
 from askdata.models import load_dataset
 from askdata.scoring import (
@@ -16,7 +17,6 @@ from askdata.scoring import (
     normalize_value,
     score,
 )
-from askdata.config import DEFAULT_QUESTIONS
 
 
 def make(rows: list[tuple], columns: list[str] | None = None, error: str | None = None) -> QueryResult:

@@ -6,9 +6,11 @@ SQL 有没有过安全闸、执行花了多久。所以这里的返回值刻意�
 
 from __future__ import annotations
 
+import contextlib
 import json
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -43,6 +45,8 @@ class Pipeline:
         self.writable = writable
         self.sandbox = Sandbox(db_path, timeout_s=8.0, read_only=not writable)
         self.sessions = SessionStore()
+        self._revenue_cache: float | None = None
+        self._policy_flag: bool | None = None
         self.tables = schema.introspect(self.sandbox)
         self.index = TableIndex(self.tables)
         self._llm: DeepSeekClient | None = None
@@ -111,7 +115,7 @@ class Pipeline:
                 if sampled.ok:
                     sample_columns = sampled.columns
                     sample_rows = [[_cell(v) for v in row] for row in sampled.rows]
-            except Exception:  # noqa: BLE001 - 字典页拿不到样例也不该整页崩
+            except Exception:
                 pass
             out.append(
                 {
@@ -272,11 +276,11 @@ class Pipeline:
 
     def _policy_default(self) -> bool:
         """环境变量 ASKDATA_ROW_POLICY 打开时，所有查询都套行级权限。"""
-        if not hasattr(self, "_policy_flag"):
+        if self._policy_flag is None:
             from .auth import row_policy_enabled
 
             self._policy_flag = row_policy_enabled()
-        return self._policy_flag
+        return bool(self._policy_flag)
 
     def _total_revenue(self) -> float | None:
         """全库有效订单的实付总额，给结果校验做量级参考。
@@ -314,10 +318,8 @@ class Pipeline:
             """记一个阶段；有流式回调就顺手推给前端，让进度实时可见。"""
             stages.append(stage)
             if on_stage is not None:
-                try:
+                with contextlib.suppress(Exception):
                     on_stage(stage.as_dict())
-                except Exception:  # noqa: BLE001 - 推送失败不该影响问数本身
-                    pass
 
         # 会话历史以服务端为准：客户端只要带一个 session_id 就够了。
         # 客户端仍可以传 history（兼容/replay 场景），但服务端有记录时优先用服务端的——
@@ -649,7 +651,7 @@ def _tables_of(sql: str) -> list[str]:
         return sorted(
             {t.name for t in tree.find_all(exp.Table) if t.name and t.name not in cte_names}
         )
-    except Exception:  # noqa: BLE001 - 解析失败就退化成正则
+    except Exception:
         import re
 
         names = set()

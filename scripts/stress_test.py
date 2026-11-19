@@ -58,7 +58,7 @@ def check_concurrent_guard(base: str, n: int = 20) -> None:
             # 改写后的 SQL 里应该出现这个请求自己的数字；串了就会是别人的
             ok = data.get("verdict") == "allowed" and f"SELECT {i}" in rewritten
             return ok, elapsed, rewritten[:70]
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return False, time.perf_counter() - started, f"{type(exc).__name__}: {exc}"
 
     with ThreadPoolExecutor(max_workers=n) as pool:
@@ -93,7 +93,7 @@ def check_mixed(base: str) -> None:
     1. 阻塞是有上界的（沙箱 8s 超时会打断查询）；
     2. 被打断之后连接还能继续用（不会整个服务卡死）。
     """
-    HEAVY = "SELECT COUNT(*) FROM orders a, orders b, orders c"  # 三表笛卡尔积，必然超时
+    heavy_sql = "SELECT COUNT(*) FROM orders a, orders b, orders c"  # 三表笛卡尔积，必然超时
     stop = threading.Event()
     light: list[tuple[bool, float]] = []
 
@@ -104,7 +104,7 @@ def check_mixed(base: str) -> None:
             try:
                 data = post(base, "/api/check", {"sql": f"SELECT {i} AS g"}, timeout=120)
                 light.append((data.get("verdict") == "allowed", time.perf_counter() - started))
-            except Exception:  # noqa: BLE001
+            except Exception:
                 light.append((False, time.perf_counter() - started))
             i += 1
             time.sleep(0.05)
@@ -117,9 +117,9 @@ def check_mixed(base: str) -> None:
     started = time.perf_counter()
     heavy_err = ""
     try:
-        heavy = post(base, "/api/check", {"sql": HEAVY}, timeout=120)
+        heavy = post(base, "/api/check", {"sql": heavy_sql}, timeout=120)
         heavy_ok = heavy.get("verdict") == "allowed"
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         heavy_ok = False
         heavy_err = str(exc)
     heavy_elapsed = time.perf_counter() - started
@@ -133,7 +133,7 @@ def check_mixed(base: str) -> None:
     try:
         after = post(base, "/api/check", {"sql": "SELECT 1 AS after"})
         recover_ok = after.get("verdict") == "allowed"
-    except Exception:  # noqa: BLE001
+    except Exception:
         recover_ok = False
     record("慢查询结束后服务仍可用", recover_ok)
     record("慢查询阻塞有上界（≤ 30s）", heavy_elapsed < 30, f"{heavy_elapsed:.1f}s")
@@ -160,7 +160,7 @@ def check_tables_under_load(base: str) -> None:
         try:
             data = get(base, "/api/tables", timeout=300)
             return isinstance(data, list) and len(data) > 0, time.perf_counter() - started
-        except Exception:  # noqa: BLE001
+        except Exception:
             return False, time.perf_counter() - started
 
     with ThreadPoolExecutor(max_workers=4) as pool:

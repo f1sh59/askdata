@@ -25,7 +25,7 @@ def paired_bootstrap(
     """对两个等长序列做配对 bootstrap，返回差值（a - b）的均值与 95% 区间。"""
     if len(a) != len(b):
         raise ValueError("配对 bootstrap 要求两组长度一致")
-    diffs = [x - y for x, y in zip(a, b)]
+    diffs = [x - y for x, y in zip(a, b, strict=True)]
     if not diffs:
         raise ValueError("空输入")
 

@@ -9,7 +9,8 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Callable, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 from ..llm import DeepSeekClient, LLMResponse
 from ..models import Question
@@ -113,7 +114,7 @@ class LLMStrategy:
         self._bank = example_bank
         self._fewshot = fewshot
         self.last_examples: list[str] = []
-        self.usage = {
+        self.usage: dict[str, Any] = {
             "model": self.model,
             "calls": 0,
             "cache_hits": 0,

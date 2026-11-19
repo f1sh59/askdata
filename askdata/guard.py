@@ -88,7 +88,7 @@ class SqlGuard:
             if type(table.this).__name__ != "Identifier":
                 raise SqlGuardError(f"不允许表函数：{table.name or type(table.this).__name__}")
 
-        root = self._apply_policy(root)
+        root = self._apply_policy(root)  # type: ignore[arg-type]
         root = self._enforce_limit(root)
         return root.sql(dialect="duckdb")
 
@@ -114,9 +114,9 @@ class SqlGuard:
 
         return root
 
-    def _enforce_limit(self, root: exp.Expression) -> exp.Expression:
+    def _enforce_limit(self, root: exp.Select | exp.Expression) -> exp.Expression:
         """没有 LIMIT 的查询补一个，防止一条 SELECT 把整个库拉出来。"""
         existing = root.args.get("limit")
         if existing is not None:
             return root
-        return root.limit(self.max_rows)
+        return root.limit(self.max_rows)  # type: ignore[union-attr]

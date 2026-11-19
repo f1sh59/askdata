@@ -13,8 +13,10 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import duckdb
 
@@ -80,7 +82,7 @@ class Sandbox:
                 elapsed_ms=(time.perf_counter() - started) * 1000,
                 truncated=truncated,
             )
-        except Exception as exc:  # noqa: BLE001 - 任何失败都要变成一条评测结果
+        except Exception as exc:
             message = (
                 f"查询超时（>{self._timeout_s:g}s），已中断"
                 if timed_out.is_set()
@@ -93,7 +95,9 @@ class Sandbox:
         finally:
             timer.cancel()
 
-    def execute_trusted(self, sql: str, rows: list[tuple] | None = None) -> QueryResult:
+    def execute_trusted(
+        self, sql: str, rows: Sequence[Sequence[Any]] | None = None
+    ) -> QueryResult:
         """给服务端受信代码用：跳过 AST 闸门（导入建表、批量插入）。
 
         只有服务内部调用，绝不接受来自模型或用户的原始 SQL。
@@ -106,7 +110,7 @@ class Sandbox:
                 self._con.execute(sql)
             columns = [d[0] for d in (self._con.description or [])]
             return QueryResult(columns, [], None, (time.perf_counter() - started) * 1000)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return QueryResult(
                 [], [], f"{type(exc).__name__}: {exc}", (time.perf_counter() - started) * 1000
             )
@@ -114,7 +118,7 @@ class Sandbox:
     def close(self) -> None:
         self._con.close()
 
-    def __enter__(self) -> "Sandbox":
+    def __enter__(self) -> Sandbox:
         return self
 
     def __exit__(self, *exc_info: object) -> None:

@@ -62,7 +62,7 @@ def main() -> None:
         try:
             rows = conn.execute(sql).fetchall()
             return True, len(rows), ""
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             return False, 0, str(exc)[:100]
 
     pairs: list[dict] = []

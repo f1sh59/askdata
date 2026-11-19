@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import unittest
 from pathlib import Path
@@ -78,10 +79,8 @@ class TimeoutTest(unittest.TestCase):
     def tearDownClass(cls) -> None:
         for suffix in ("", ".wal"):
             candidate = Path(str(cls.db_path) + suffix)
-            try:
+            with contextlib.suppress(OSError):
                 candidate.unlink(missing_ok=True)
-            except OSError:
-                pass
 
     def test_heavy_query_is_interrupted(self) -> None:
         sandbox = Sandbox(self.db_path, timeout_s=0.5)

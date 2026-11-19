@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import urllib.error
 import urllib.request
@@ -79,10 +80,8 @@ def run() -> int:
         payload = json.dumps({"sql": sql}).encode()
         status, body = request("/api/check", method="POST", body=payload)
         verdict = ""
-        try:
+        with contextlib.suppress(json.JSONDecodeError):
             verdict = json.loads(body).get("verdict", "")
-        except json.JSONDecodeError:
-            pass
         case(f"危险 SQL 被拦：{sql[:28]}…", status == 200 and verdict == "blocked", f"{status} {verdict}")
 
     # 10) 导入垃圾数据

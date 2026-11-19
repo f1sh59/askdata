@@ -102,6 +102,14 @@ class Experiment:
         }
 
 
+
+def _as_float(value: object) -> float:
+    """把 run.extra 里的任意值转成 float，转不了就当 0。"""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0.0
+
 def _pct(value: float) -> str:
     return f"{value * 100:.1f}%"
 
@@ -136,7 +144,7 @@ def render_markdown(experiment: Experiment) -> str:
         add(
             f"| {idx} | {_pct(run.ex)} | {run.correct}/{run.total} "
             f"| {run.extra.get('prompt_tokens', 0):,} "
-            f"| {run.extra.get('latency_ms', 0) / 1000:.1f}s "
+            f"| {_as_float(run.extra.get('latency_ms')) / 1000:.1f}s "
             f"| {run.extra.get('api_errors', 0)} |"
         )
     add("")

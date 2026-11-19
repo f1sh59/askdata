@@ -83,7 +83,7 @@ class MultiTurnReport:
         rates = self.multiturn_rates
         return sum(r["ex"] for r in rates) / len(rates) if rates else 0.0
 
-    def by_kind(self) -> list[tuple[str, int, int, float]]:
+    def by_kind(self) -> list[tuple[str, int, float, float]]:
         """每个变换类型的通过率（按平均值向上取整为整数票）。"""
         kinds: dict[str, list[float]] = {}
         if not self.multiturn:
@@ -92,9 +92,9 @@ class MultiTurnReport:
             kinds.setdefault(pair.kind, [])
             hits = sum(1 for run in self.multiturn if run[idx].outcome.is_correct)
             kinds[pair.kind].append(hits / len(self.multiturn))
-        out = []
+        out: list[tuple[str, int, float, float]] = []
         for kind, values in kinds.items():
-            out.append((kind, len(values), sum(values), sum(values) / len(values)))
+            out.append((kind, len(values), float(sum(values)), sum(values) / len(values)))
         return sorted(out, key=lambda x: x[3], reverse=True)
 
     def as_dict(self) -> dict[str, Any]:
@@ -233,7 +233,7 @@ def render_markdown(report: MultiTurnReport) -> str:
         "| 类型 | 条数 | 平均通过 |",
         "|---|---|---|",
     ]
-    for kind, n, _, rate in report.by_kind():
-        lines.append(f"| {kind} | {n} | {rate * 100:.0f}% |")
+    for kind, n, _, pass_rate in report.by_kind():
+        lines.append(f"| {kind} | {n} | {pass_rate * 100:.0f}% |")
     lines.append("")
     return "\n".join(lines)

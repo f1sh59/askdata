@@ -149,7 +149,7 @@ def render(tables: list[TableInfo]) -> str:
             lines.append("样例数据：")
             for row in table.samples:
                 cells = ", ".join(
-                    f"{c}={_scalar(v)}" for c, v in zip(sample_cols, row)
+                    f"{c}={_scalar(v)}" for c, v in zip(sample_cols, row, strict=True)
                 )
                 lines.append(f"- {cells}")
         blocks.append("\n".join(lines))

@@ -24,11 +24,14 @@ from .clarify import (
     load_closed_loop,
     load_vague,
     render_closed_markdown,
-    render_markdown as render_clarify,
     run_closed_loop,
 )
+from .clarify import (
+    render_markdown as render_clarify,
+)
 from .db import Sandbox
-from .experiment import Experiment, render_markdown as render_experiment
+from .experiment import Experiment
+from .experiment import render_markdown as render_experiment
 from .models import load_dataset
 from .report import render_markdown, to_dict
 from .retrieval import TableIndex
@@ -206,7 +209,7 @@ def cmd_clarify(args: argparse.Namespace) -> int:
                     for r in vague_results
                 ],
                 "control": [
-                    {"id": q.id, "asked": c.asked} for q, c in zip(controls, control_results)
+                    {"id": q.id, "asked": c.asked} for q, c in zip(controls, control_results, strict=True)
                 ],
                 "usage": llm.usage,
             },
@@ -289,7 +292,8 @@ def cmd_closed(args: argparse.Namespace) -> int:
 
 
 def cmd_multiturn(args: argparse.Namespace) -> int:
-    from .multiturn import load_pairs, render_markdown as render_mt, run_multiturn
+    from .multiturn import load_pairs, run_multiturn
+    from .multiturn import render_markdown as render_mt
     from .service import Pipeline
 
     version, pairs = load_pairs(args.pairs)

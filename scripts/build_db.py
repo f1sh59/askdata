@@ -304,7 +304,7 @@ def _decoy_value(rng: random.Random, column: str, data_type: str) -> object:
 def build_decoys(conn: duckdb.DuckDBPyConnection) -> int:
     """造 60 张与本项目无关但结构合法的表，用来模拟真实数仓的 schema 规模。"""
     rng = random.Random(DECOY_SEED)
-    for name, comment, columns, n_rows in DECOY_TABLES:
+    for name, _comment, columns, n_rows in DECOY_TABLES:
         ddl = ", ".join(f'"{col}" {typ}' for col, typ in columns)
         conn.execute(f'CREATE TABLE "{name}" ({ddl})')
         rows = [
@@ -327,7 +327,7 @@ def _imported_table_count() -> int | None:
         ).fetchone()[0]
         con.close()
         return int(count)
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
 

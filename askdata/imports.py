@@ -63,7 +63,7 @@ def detect_delimiter(text: str) -> str:
         return csv.Sniffer().sniff(sample, delimiters=",;\t|").delimiter
     except csv.Error:
         counts = {d: sample.count(d) for d in [",", "\t", ";", "|"]}
-        best = max(counts, key=counts.get)
+        best = max(counts, key=lambda d: counts[d])
         return best if counts[best] else ","
 
 
@@ -83,7 +83,7 @@ def parse_payload(text: str) -> tuple[list[str], list[list[object]]]:
             raise ValueError("JSON 数组里每个元素都必须是对象")
         headers: list[str] = []
         for item in data:
-            for key in item.keys():
+            for key in item:
                 if key not in headers:
                     headers.append(key)
         rows = [[item.get(h) for h in headers] for item in data]
@@ -170,9 +170,10 @@ def infer_type(values: list[object], options: dict[str, bool]) -> str:
     if options.get("parse_dates") and all(parse_date(str(v)) is not None for v in present):
         return "DATE"
 
-    if all(str(v).strip().lower() in {"true", "false", "是", "否", "y", "n", "0", "1"} for v in present):
-        if len({str(v).strip().lower() for v in present}) <= 2:
-            return "BOOLEAN"
+    boolean_like = {"true", "false", "是", "否", "y", "n", "0", "1"}
+    lowered = {str(v).strip().lower() for v in present}
+    if lowered and lowered <= boolean_like and len(lowered) <= 2:
+        return "BOOLEAN"
 
     return "VARCHAR"
 
@@ -188,12 +189,16 @@ def convert_value(value: object, sql_type: str, options: dict[str, bool]) -> obj
     if sql_type == "BIGINT":
         cleaned = clean_number(text) if options.get("clean_numbers") else text
         try:
+            if cleaned is None:
+                raise TypeError("空值")
             return int(float(cleaned))
         except (TypeError, ValueError):
             return None
     if sql_type == "DOUBLE":
         cleaned = clean_number(text) if options.get("clean_numbers") else text
         try:
+            if cleaned is None:
+                raise TypeError("空值")
             return float(cleaned)
         except (TypeError, ValueError):
             return None
@@ -350,5 +355,5 @@ def build_rows(
 
     out = []
     for row in rows:
-        out.append([convert_value(row[i], spec["type"], opts) for i, spec in zip(positions, chosen)])
+        out.append([convert_value(row[i], spec["type"], opts) for i, spec in zip(positions, chosen, strict=True)])
     return [c["name"] for c in chosen], out
