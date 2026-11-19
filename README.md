@@ -160,6 +160,29 @@ python scripts/load_test.py --levels 1,4,8,16,32 --duration 6
 报告会自动生成到 `reports/perf_<时间戳>.md`，结论是**按数据算出来的**，
 不是写死的：脚本会判断"到没到拐点"，吞吐和延迟任一项恶化就会改口径。
 
+## 容器化
+
+多阶段构建：builder 里装依赖，runtime 只搬 venv。
+
+```bash
+docker compose up -d --build
+# 国内网络装依赖慢/失败：
+docker build --build-arg PIP_INDEX_URL=https://mirrors.huaweicloud.com/repository/pypi/simple -t askdata .
+```
+
+三个刻意的设计：
+
+| 决定 | 原因 |
+|---|---|
+| 最终镜像里**没有 pip** | 少一个能改运行环境的口子，攻击面更小 |
+| **非 root 运行**（uid 10001） | 容器被攻破时拿不到 root，也改不了 `/app` 里的代码 |
+| 健康检查打 `/ready` 而不是 `/health` | 后者只看进程活着；前者会真的查一次库，避免"容器在、查询全挂"还接流量 |
+
+> **验证状态**：这台机器上 Docker 容器网络被限制（容器里连 pypi 都 SSL EOF），
+> 本地只有 Windows 版 wheel，Linux 镜像装依赖这步没法离线跑通。
+> `FROM` 解析和构建阶段语法已验证（能走到 pip 那一步），
+> 完整的 `docker compose up --build` 需要在有外网的环境跑一次。
+
 ## 工程规范与可观测性
 
 一个人做项目最容易糊弄自己的地方是"能跑就行"。这一节是把它拉到能被别人接手的水准。
