@@ -1,13 +1,18 @@
 # 本机开发 / CI / Docker 三套用法
 
-.PHONY: help install db test validate attack serve accept ci docker-build docker-up clean
+.PHONY: help install install-dev db test test-cov lint typecheck check validate attack serve accept ci docker-build docker-up clean
 
 PY := python
 
 help:
-	@echo "make install       安装依赖"
+	@echo "make install       安装运行时依赖"
+	@echo "make install-dev   安装开发工具（ruff / mypy / pytest / pytest-cov）"
 	@echo "make db            生成数据库（固定种子，可重复）"
-	@echo "make test          单元测试（96 个）"
+	@echo "make test          pytest 全量测试"
+	@echo "make test-cov      测试 + 覆盖率（有门槛）"
+	@echo "make lint          ruff 静态检查"
+	@echo "make typecheck     mypy 类型检查"
+	@echo "make check         lint + typecheck + test（提交前跑这个）"
 	@echo "make validate      校验评测集（50 题 gold SQL 全部可执行）"
 	@echo "make attack        安全闸回归（50 拦 + 10 放）"
 	@echo "make serve         本地起服务（http://127.0.0.1:8777）"
@@ -18,11 +23,27 @@ help:
 install:
 	$(PY) -m pip install -r requirements.txt
 
+# 开发工具链：lint + 类型 + 测试 + 覆盖率
+install-dev:
+	$(PY) -m pip install ruff mypy pytest pytest-cov
+
 db:
 	$(PY) scripts/build_db.py
 
 test:
-	$(PY) -m unittest discover -s tests -t . -v
+	$(PY) -m pytest -q
+
+test-cov:
+	$(PY) -m pytest --cov --cov-report=term-missing -q
+
+lint:
+	$(PY) -m ruff check askdata tests scripts
+
+typecheck:
+	$(PY) -m mypy
+
+# 提交前的门槛：任何一条挂了都别提交
+check: lint typecheck test-cov
 
 validate:
 	$(PY) -m askdata.cli validate
@@ -37,7 +58,7 @@ accept:
 	$(PY) scripts/acceptance.py --skip-llm
 
 # 和 .github/workflows/ci.yml 等价的本地版本：提交前跑一遍，别等 CI 告诉你
-ci: db test validate attack
+ci: lint typecheck test-cov db validate attack
 	@echo "==> 起服务跑接口验收"
 	@$(PY) -m askdata.server --port 8777 > /tmp/askdata-ci.log 2>&1 & \
 	pid=$$!; \
@@ -57,5 +78,5 @@ docker-up:
 	@echo "启动后访问 http://127.0.0.1:8777"
 
 clean:
-	rm -rf tmp_acceptance .cache
+	rm -rf tmp_acceptance .cache .coverage htmlcov
 	find . -name "__pycache__" -type d -prune -exec rm -rf {} +

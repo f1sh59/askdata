@@ -24,15 +24,24 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: 安装依赖
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install ruff mypy pytest pytest-cov
 
       # 数据库不进仓库（体积大且可重建），CI 里用固定种子现场造
       - name: 造数据库
         run: python scripts/build_db.py
 
-      # 1) 单元测试：134 个，纯逻辑，秒级
-      - name: 单元测试
-        run: python -m unittest discover -s tests -t . -v
+      # 1) 静态检查：lint 和类型各一道门，挂任何一道都不往下走
+      - name: 代码风格（ruff）
+        run: python -m ruff check askdata tests scripts
+
+      - name: 类型检查（mypy）
+        run: python -m mypy
+
+      # 2) 测试 + 覆盖率：门槛写在 pyproject.toml 里
+      - name: 单元测试 + 覆盖率
+        run: python -m pytest --cov --cov-report=term-missing -q
 
       # 2) 评测集自检：每道题的 gold SQL 都必须能跑通且有结果
       - name: 校验评测集

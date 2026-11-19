@@ -46,3 +46,11 @@ docs/shots/*
 # 本地草稿：不随仓库发布
 docs/draft-*
 scripts/make_docs_personal.py
+
+# ---- 工具缓存与产物 ----
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
