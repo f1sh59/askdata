@@ -148,6 +148,23 @@ make pr     # = CI 的 quick
 make ci     # = CI 的 full
 ```
 
+## 安全
+
+四道 SQL 闸门之外，服务层还有三条：
+
+| 措施 | 作用 | 位置 |
+|---|---|---|
+| 安全响应头 | `nosniff` / `X-Frame-Options: DENY` / `Referrer-Policy` / CSP | 每个响应 |
+| 请求体上限 | 4MB，超出返回 `413 payload_too_large` | POST 入口 |
+| 按 IP 限流 | 令牌桶，超限 `429` + `Retry-After` | 中间件 |
+
+CSP 里 `script-src` 限制为 `'self'`（外部脚本注入进不来），
+`style-src` 放开 `unsafe-inline` 是因为前端是零构建单文件、没有 nonce 机制——
+这条限制写在文档里，不假装它不存在。
+
+请求体超限时**先把数据丢弃式读掉再回 413**：
+直接回 413 就关连接的话，客户端还在往回写，会拿到「连接被重置」而不是错误码。
+
 ## 性能
 
 `scripts/load_test.py` 打 `/api/check`（SQL 安全闸，不调模型），量的是**服务端自身**的开销。

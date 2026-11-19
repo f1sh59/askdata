@@ -33,6 +33,23 @@ _PIPELINE_LOCK = threading.Lock()
 _WRITABLE = True
 LIMITER = RateLimiter.from_env()
 
+# 安全响应头：不依赖反向代理，应用自己带。
+# CSP 允许 inline style —— 前端是零构建的单文件，没有 nonce 机制；
+# 但 script-src 限制为 'self'，外部脚本注入仍然进不来。
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": (
+        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self'; connect-src 'self'; frame-ancestors 'none'"
+    ),
+}
+
+# 请求体上限。导入接口要传整份 CSV（4MB），其余接口 1MB 绰绰有余。
+# 不设上限的话，一个超长 JSON 就能把进程内存吃干净。
+MAX_BODY_BYTES = 4_000_000
+
 
 def pipeline() -> Pipeline:
     global _PIPELINE
@@ -108,6 +125,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Request-Id", self.request_id)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for name, value in SECURITY_HEADERS.items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 
@@ -324,8 +343,20 @@ class Handler(BaseHTTPRequestHandler):
 
     def _route_post(self) -> None:
         parsed = urlparse(self.path)
-        length = int(self.headers.get("Content-Length") or 0)
-        raw = self.rfile.read(length) if length else b"{}"
+        raw_body = int(self.headers.get("Content-Length") or 0)
+        if raw_body > MAX_BODY_BYTES:
+            # 直接回 413 然后关连接，客户端会因为"还在往回写"而拿到连接重置。
+            # 所以先把超出的部分**丢弃式**读掉（分块读、不保留），再回响应：
+            # 内存占用仍然有上界，但客户端能拿到干净的 413。
+            drain = min(raw_body, MAX_BODY_BYTES + 4 * 1024 * 1024)
+            while drain > 0:
+                chunk = self.rfile.read(min(65536, drain))
+                if not chunk:
+                    break
+                drain -= len(chunk)
+            self.close_connection = True
+            return self._error(f"请求体太大（上限 {MAX_BODY_BYTES // 1000} KB）", 413)
+        raw = self.rfile.read(raw_body) if raw_body else b"{}"
         try:
             payload = json.loads(raw or b"{}")
         except json.JSONDecodeError:

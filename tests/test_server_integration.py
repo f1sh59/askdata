@@ -369,6 +369,36 @@ class ServerIntegrationTest(unittest.TestCase):
         self.assertIn('"ok": false', body)
 
 
+    # ---- 安全响应头与请求体上限 ----
+
+    def test_security_headers_present(self) -> None:
+        """不依赖反向代理，应用自己带安全头。"""
+        _, _, headers = self._get("/api/overview")
+        self.assertEqual(headers.get("X-Content-Type-Options"), "nosniff")
+        self.assertEqual(headers.get("X-Frame-Options"), "DENY")
+        csp = headers.get("Content-Security-Policy", "")
+        self.assertIn("frame-ancestors 'none'", csp)
+        self.assertIn("script-src 'self'", csp)
+
+    def test_oversized_body_is_rejected(self) -> None:
+        from askdata.server import MAX_BODY_BYTES
+
+        payload = json.dumps({"question": "x" * (MAX_BODY_BYTES + 1000)}).encode()
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{self.port}/api/ask",
+            data=payload,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                self.fail(f"应当被拒绝，实际 {resp.status}")
+        except urllib.error.HTTPError as exc:
+            self.assertEqual(exc.code, 413)
+            body = json.loads(exc.read().decode("utf-8"))
+            self.assertEqual(body["code"], "payload_too_large")
+
+
 class ServerMainTest(unittest.TestCase):
     """main() 的参数解析——不起服务，只验入口。"""
 

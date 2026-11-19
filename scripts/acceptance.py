@@ -347,6 +347,18 @@ def check_observability(base: str) -> None:
         html = raw if isinstance(raw, str) else raw.decode("utf-8", "replace")
         record("文档 · /docs 页面可打开", status == 200 and "askdata API" in html, f"{status}")
 
+        # 安全响应头：不依赖反向代理
+        req = urllib.request.Request(base + "/api/overview", method="GET")
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            h = resp.headers
+            record(
+                "安全头 · nosniff / DENY / CSP",
+                h.get("X-Content-Type-Options") == "nosniff"
+                and h.get("X-Frame-Options") == "DENY"
+                and "script-src 'self'" in (h.get("Content-Security-Policy") or ""),
+                f"{h.get('X-Frame-Options')}",
+            )
+
         try:
             status, raw = post(base, "/api/ask", {"question": "  "})
             payload = json.loads(raw if isinstance(raw, str) else raw.decode("utf-8"))
