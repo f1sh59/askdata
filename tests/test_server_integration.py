@@ -306,6 +306,79 @@ class ServerIntegrationTest(unittest.TestCase):
         self.assertFalse(payload["executed"]["ok"])
         self.assertTrue(payload["executed"]["error"])
 
+    # ---- SSE 流式 ----
+
+    def _stub_llm(self):
+        from askdata.llm import LLMResponse
+
+        class Stub:
+            def chat(self, system, prompt, **kwargs):
+                return LLMResponse(
+                    '{"need_clarification": false, "sql": "SELECT COUNT(*) AS c FROM orders"}',
+                    prompt_tokens=10,
+                    completion_tokens=5,
+                )
+
+        return Stub()
+
+    def test_stream_emits_stages_result_and_done(self) -> None:
+        original_client = self.pipeline._llm_client
+        self.pipeline._llm_client = lambda api_key=None: self._stub_llm()  # type: ignore[method-assign]
+        try:
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{self.port}/api/ask/stream",
+                data=json.dumps({"question": "一共有多少订单"}).encode(),
+                method="POST",
+                headers={"Content-Type": "application/json", "Accept": "text/event-stream"},
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                body = resp.read().decode("utf-8", "replace")
+                content_type = resp.headers.get("Content-Type", "")
+        finally:
+            self.pipeline._llm_client = original_client  # type: ignore[method-assign]
+
+        self.assertIn("text/event-stream", content_type)
+        events = [line[7:] for line in body.splitlines() if line.startswith("event: ")]
+        self.assertIn("open", events)
+        self.assertIn("stage", events)
+        self.assertIn("result", events)
+        self.assertIn("done", events)
+        # 收尾帧必须是最后一个，客户端靠它判断流结束
+        self.assertEqual(events[-1], "done")
+
+    def test_stream_reports_error_as_event(self) -> None:
+        def boom(api_key=None):
+            raise RuntimeError("上游炸了")
+
+        original_client = self.pipeline._llm_client
+        self.pipeline._llm_client = boom  # type: ignore[method-assign]
+        try:
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{self.port}/api/ask/stream",
+                data=json.dumps({"question": "有多少订单"}).encode(),
+                method="POST",
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                body = resp.read().decode("utf-8", "replace")
+        finally:
+            self.pipeline._llm_client = original_client  # type: ignore[method-assign]
+
+        # ask() 内部把 RuntimeError 转成 ok=false，所以这里是 result 而不是 error 帧
+        self.assertIn("event: result", body)
+        self.assertIn('"ok": false', body)
+
+
+class ServerMainTest(unittest.TestCase):
+    """main() 的参数解析——不起服务，只验入口。"""
+
+    def test_help_exits_zero(self) -> None:
+        from askdata.server import main
+
+        with self.assertRaises(SystemExit) as ctx:
+            main(["--help"])
+        self.assertEqual(ctx.exception.code, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

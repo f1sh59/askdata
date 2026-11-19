@@ -465,7 +465,19 @@ def main(argv: list[str] | None = None) -> int:
     p_mt.set_defaults(func=cmd_multiturn)
 
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except FileNotFoundError as exc:
+        # 题库、报告这类文件不存在时，给人话而不是一串 Traceback
+        print(f"[ERROR] 找不到文件：{exc.filename}", file=sys.stderr)
+        return 2
+    except json.JSONDecodeError as exc:
+        print(f"[ERROR] JSON 格式不对：{exc}", file=sys.stderr)
+        return 2
+    except RuntimeError as exc:
+        # 典型场景：没配 DEEPSEEK_API_KEY
+        print(f"[ERROR] {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
