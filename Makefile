@@ -1,6 +1,6 @@
 # 本机开发 / CI / Docker 三套用法
 
-.PHONY: help install install-dev db test test-cov lint typecheck check validate attack serve accept ci load docker-build docker-up clean
+.PHONY: help install install-dev db test test-cov lint typecheck check pr validate attack serve accept ci load docker-build docker-up clean
 
 PY := python
 
@@ -13,6 +13,7 @@ help:
 	@echo "make lint          ruff 静态检查"
 	@echo "make typecheck     mypy 类型检查"
 	@echo "make check         lint + typecheck + test（提交前跑这个）"
+	@echo "make pr            和 CI 的 quick 任务等价（PR 上跑的那套）"
 	@echo "make validate      校验评测集（50 题 gold SQL 全部可执行）"
 	@echo "make attack        安全闸回归（50 拦 + 10 放）"
 	@echo "make serve         本地起服务（http://127.0.0.1:8777）"
@@ -45,6 +46,9 @@ typecheck:
 
 # 提交前的门槛：任何一条挂了都别提交
 check: lint typecheck test-cov
+
+# 和 CI 的 quick job 等价：PR 上跑的就是这三步，1~2 分钟
+pr: lint typecheck test-cov
 
 validate:
 	$(PY) -m askdata.cli validate
