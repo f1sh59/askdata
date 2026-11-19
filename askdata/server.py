@@ -9,16 +9,20 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import mimetypes
+import signal
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from . import config
 from .auth import authorized, configured_api_key
+from .observability import METRICS, log_enabled, log_event, new_request_id
+from .ratelimit import RateLimiter
 from .service import Pipeline
 
 WEB_DIR = config.ROOT / "web"
@@ -26,6 +30,7 @@ WEB_DIR = config.ROOT / "web"
 _PIPELINE: Pipeline | None = None
 _PIPELINE_LOCK = threading.Lock()
 _WRITABLE = True
+LIMITER = RateLimiter.from_env()
 
 
 def pipeline() -> Pipeline:
@@ -36,17 +41,70 @@ def pipeline() -> Pipeline:
         return _PIPELINE
 
 
+def _code_for(status: int) -> str:
+    """HTTP 状态码 → 机器可读的错误码。"""
+    return {
+        400: "bad_request",
+        401: "unauthorized",
+        403: "forbidden",
+        404: "not_found",
+        413: "payload_too_large",
+        429: "rate_limited",
+        500: "internal_error",
+    }.get(status, "error")
+
+
+def _readiness() -> dict:
+    """就绪探针：不只回 200，还要确认数据库真的能查。
+
+    K8s 用 /health 判断要不要重启容器，用 /ready 判断要不要往里导流量。
+    后者如果只看进程活着，会出现"容器在、但查询全挂"还继续接流量的情况。
+    """
+    checks: dict[str, object] = {}
+    ready = True
+    try:
+        pipe = pipeline()
+        result = pipe.sandbox.run("SELECT 1 AS ok")
+        checks["database"] = "ok" if result.ok else f"error: {result.error}"
+        ready = ready and result.ok
+    except Exception as exc:
+        checks["database"] = f"error: {type(exc).__name__}"
+        ready = False
+    checks["tables"] = len(getattr(pipeline(), "tables", []) or [])
+    checks["model"] = pipeline()._client_model()
+    return {"ok": ready, "status": "ready" if ready else "not_ready", "checks": checks}
+
+
 class Handler(BaseHTTPRequestHandler):
-    server_version = "askdata/0.1"
+    request_id: str = "-"
+    server_version = "askdata/1.0"
+
+    # 在途请求计数：优雅停机时靠它判断"还有没有活没干完"
+    _inflight = 0
+    _inflight_lock = threading.Lock()
+
+    @classmethod
+    def wait_inflight(cls, timeout: float = 8.0) -> int:
+        """等在途请求归零，返回等到了几个。超时就返回剩余数量。"""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            with cls._inflight_lock:
+                if cls._inflight == 0:
+                    return 0
+            time.sleep(0.05)
+        with cls._inflight_lock:
+            return cls._inflight
 
     # ---------------- 基础 ----------------
 
-    def log_message(self, fmt: str, *args) -> None:  # noqa: A003
+    def log_message(self, fmt: str, *args) -> None:
         sys.stderr.write(f"[web] {fmt % args}\n")
 
     def _send(self, status: int, body: bytes, content_type: str) -> None:
+        self._last_status = status
         self.send_response(status)
         self.send_header("Content-Type", content_type)
+        self.send_header("X-Request-Id", self.request_id)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
@@ -56,10 +114,24 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=False, default=str).encode("utf-8")
         self._send(status, body, "application/json; charset=utf-8")
 
-    def _error(self, message: str, status: int = 400) -> None:
-        self._json({"ok": False, "error": message}, status)
+    def _error(self, message: str, status: int = 400, code: str | None = None) -> None:
+        """统一的错误响应：ok=false + error 文案 + 机器可读的 code。
+
+        前端只看 error 文案，接入方按 code 分支，不用去匹配中文字符串。
+        """
+        self._json({"ok": False, "error": message, "code": code or _code_for(status)}, status)
 
     # ---------------- 流式问数（SSE） ----------------
+
+    def _json_result(self, result: dict) -> None:
+        """业务层返回 ok=false 时，补上机器可读的 code 并用 400。
+
+        之前导入失败只回 {"ok": false, "error": ...}，和 _error() 出去的
+        响应结构不一致——接入方按 code 分支就会漏掉这种错误。
+        """
+        if result.get("ok") is False:
+            return self._json({**result, "code": result.get("code") or "bad_request"}, 400)
+        return self._json(result)
 
     def _request_api_key(self) -> str | None:
         """界面里填的模型密钥随请求头过来，不落盘、不打日志。"""
@@ -81,6 +153,7 @@ class Handler(BaseHTTPRequestHandler):
                     "ok": False,
                     "error": "还没有配置模型 API Key：点右上角「API」填入，或在 .env 里设置 DEEPSEEK_API_KEY",
                     "need_api_key": True,
+                    "code": "bad_request",
                 },
                 400,
             )
@@ -97,7 +170,7 @@ class Handler(BaseHTTPRequestHandler):
 
         def frame(event: str, data: object) -> None:
             body = json.dumps(data, ensure_ascii=False, default=str)
-            self.wfile.write(f"event: {event}\ndata: {body}\n\n".encode("utf-8"))
+            self.wfile.write(f"event: {event}\ndata: {body}\n\n".encode())
             self.wfile.flush()
 
         try:
@@ -114,22 +187,94 @@ class Handler(BaseHTTPRequestHandler):
             frame("result", result)
         except BrokenPipeError:
             return  # 客户端断开，安静收场
-        except Exception as exc:  # noqa: BLE001
-            try:
+        except Exception as exc:
+            with contextlib.suppress(Exception):
                 frame("error", {"ok": False, "error": f"{type(exc).__name__}: {exc}"})
-            except Exception:  # noqa: BLE001
-                pass
         finally:
             # 收尾帧 + 关闭连接：客户端读到 done 或 EOF 才会停止等待
-            try:
+            with contextlib.suppress(Exception):
                 frame("done", {"ok": True})
-            except Exception:  # noqa: BLE001
-                pass
             self.close_connection = True
+
+    # ---------------- 中间件：请求 ID / 限流 / 指标 ----------------
+
+    def _client_ip(self) -> str:
+        forwarded = (self.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+        return forwarded or self.client_address[0]
+
+    def _dispatch(self, method: str, route) -> None:
+        """所有请求的统一入口：分配 ID、限流、计时、记指标、写日志。
+
+        横切逻辑集中在这一处——加新接口时不会漏掉限流或埋点。
+        """
+        self.request_id = new_request_id()
+        self._last_status = 200
+        started = time.perf_counter()
+        with Handler._inflight_lock:
+            Handler._inflight += 1
+        path = urlparse(self.path).path
+        route_label = path if path.startswith("/api/") else "_static"
+
+        # 探针和指标采集不限流：它们是高频且可信的
+        if path not in ("/health", "/ready", "/metrics"):
+            allowed, retry_after = LIMITER.allow(self._client_ip())
+            if not allowed:
+                METRICS.inc("rate_limited")
+                self._json(
+                    {
+                        "ok": False,
+                        "error": "请求太频繁，稍后再试",
+                        "code": "rate_limited",
+                    },
+                    429,
+                )
+                self._record(method, route_label, 429, started, retry_after=retry_after)
+                return
+
+        try:
+            route()
+        except BrokenPipeError:
+            self._last_status = 499  # 客户端主动断开
+        except Exception:
+            log_event(
+                "error",
+                "unhandled_exception",
+                request_id=self.request_id,
+                path=path,
+                exc=repr(sys.exc_info()[1]),
+            )
+            self._json({"ok": False, "error": "服务内部错误", "code": "internal_error"}, 500)
+        finally:
+            with Handler._inflight_lock:
+                Handler._inflight -= 1
+            self._record(method, route_label, self._last_status, started)
+
+    def _record(
+        self, method: str, route: str, status: int, started: float, retry_after: float = 0.0
+    ) -> None:
+        elapsed = time.perf_counter() - started
+        METRICS.observe_request(method, route, status, elapsed)
+        if log_enabled():
+            log_event(
+                "info",
+                "http_request",
+                request_id=self.request_id,
+                method=method,
+                route=route,
+                status=status,
+                ms=round(elapsed * 1000, 1),
+                retry_after=round(retry_after, 2) or None,
+            )
+
+    def do_GET(self) -> None:
+        self._dispatch("GET", self._route_get)
+
+    def do_POST(self) -> None:
+        self._dispatch("POST", self._route_post)
 
     # ---------------- 路由 ----------------
 
-    def do_GET(self) -> None:  # noqa: N802
+    def _route_get(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path
         query = parse_qs(parsed.query)
@@ -159,15 +304,22 @@ class Handler(BaseHTTPRequestHandler):
                 if not name:
                     return self._error("缺少 name 参数")
                 return self._json(pipeline().report(name))
+            if path == "/health":
+                return self._json({"ok": True, "status": "alive"})
+            if path == "/ready":
+                return self._json(_readiness())
+            if path == "/metrics":
+                body = METRICS.render().encode("utf-8")
+                return self._send(200, body, "text/plain; version=0.0.4; charset=utf-8")
             if path.startswith("/api/"):
                 return self._error("未知接口", 404)
             return self._static(path)
         except FileNotFoundError:
             self._error("找不到该报告", 404)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self._error(f"{type(exc).__name__}: {exc}", 500)
 
-    def do_POST(self) -> None:  # noqa: N802
+    def _route_post(self) -> None:
         parsed = urlparse(self.path)
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length) if length else b"{}"
@@ -193,6 +345,7 @@ class Handler(BaseHTTPRequestHandler):
                             "ok": False,
                             "error": "还没有配置模型 API Key：点右上角「API」填入，或在 .env 里设置 DEEPSEEK_API_KEY",
                             "need_api_key": True,
+                            "code": "bad_request",
                         },
                         400,
                     )
@@ -225,10 +378,8 @@ class Handler(BaseHTTPRequestHandler):
                     return self._error("内容不能为空")
                 if len(text) > 4_000_000:
                     return self._error("文本太大，请控制在 4MB 以内")
-                result = pipeline().import_preview(text, payload.get("options") or {})
-                # 解析失败是"请求内容有问题"，不是成功响应；统一用 400，
-                # 免得前端和服务端对同一类错误有两种理解。
-                return self._json(result, 200 if result.get("ok") is not False else 400)
+                # 解析失败是"请求内容有问题"，不是成功响应；统一走 _json_result
+                return self._json_result(pipeline().import_preview(text, payload.get("options") or {}))
             if parsed.path == "/api/session/clear":
                 sid = str(payload.get("session_id") or "").strip()
                 cleared = pipeline().sessions.clear(sid or None)
@@ -246,12 +397,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self._error("内容不能为空")
                 if not columns:
                     return self._error("缺少列定义")
-                result = pipeline().import_commit(
-                    text, name, columns, payload.get("options") or {}
+                return self._json_result(
+                    pipeline().import_commit(text, name, columns, payload.get("options") or {})
                 )
-                return self._json(result, 200 if result.get("ok") is not False else 400)
             return self._error("未知接口", 404)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             self._error(f"{type(exc).__name__}: {exc}", 500)
 
     # ---------------- 静态文件 ----------------
@@ -297,12 +447,33 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[web] askdata 已启动: http://{args.host}:{args.port}  模式：{mode}", flush=True)
     if _WRITABLE:
         print("[web] 注意：可写模式会独占数据库文件，此时 CLI 无法同时打开（用 --read-only 可共存）", flush=True)
+    # 优雅停机：收到 SIGTERM/SIGINT 后先停止接收新连接，再等在途请求做完。
+    # 不这么做的话，发版时正在跑的那次问数会被直接掐断——用户看到没头没尾的错误，
+    # 日志里也查不到。
+    stopping = threading.Event()
+
+    def _graceful(signum: int, _frame) -> None:
+        if stopping.is_set():
+            return
+        stopping.set()
+        print(f"[web] 收到信号 {signum}，开始优雅停机 ...", flush=True)
+        # shutdown() 必须在别的线程里调，否则会和服务循环互相等待
+        threading.Thread(target=server.shutdown, daemon=True).start()
+
+    for sig_name in ("SIGTERM", "SIGINT", "SIGBREAK"):
+        sig = getattr(signal, sig_name, None)
+        if sig is not None:
+            with contextlib.suppress(ValueError, OSError):
+                signal.signal(sig, _graceful)
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+        drained = Handler.wait_inflight(timeout=8.0)
+        print(f"[web] 已停止，在途请求 {drained} 个已完成", flush=True)
     return 0
 
 
