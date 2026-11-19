@@ -252,7 +252,7 @@ def render_markdown(
     add("")
     add("| 指标 | 值 | 说明 |")
     add("|------|----|------|")
-    add(f"| 追问率 | {asked / total:.0%} | 该反问的题里，实际反问了的比例 |")
+    add(f"| 追问率 | {asked / (total or 1):.0%} | 该反问的题里，实际反问了的比例 |")
     add(f"| 问到点上 | {good / total:.0%} | 反问覆盖了全部缺失点 |")
     add(f"| 只问了一部分 | {partial / total:.0%} | 覆盖了部分缺失点 |")
     add(f"| 问了但没问对 | {irrelevant / total:.0%} | 反问了，但一个缺失点都没覆盖 |")
@@ -381,6 +381,12 @@ class ClosedLoopStrategy:
         )
         if second is None:
             return None, decision
+        # 模板要求"只输出 SQL 代码块"，但模型经常不听话、继续回 JSON。
+        # 先试 JSON（里面有 sql 字段就取它），再退回抠代码块——
+        # 否则 extract_sql 会把 {"sql": "SELECT ..."} 的尾巴一起切进 SQL 里。
+        parsed = parse_decision(second.content)
+        if parsed.sql:
+            return parsed.sql, decision
         return extract_sql(second.content), decision
 
 
@@ -462,10 +468,18 @@ def render_closed_markdown(results: list[ClosedResult], model: str) -> str:
     add("")
     add("| 路线 | 正确 | EX | 说明 |")
     add("|------|------|----|------|")
-    add(f"| 不问，直接写 SQL | {base_ok}/{total} | {base_ok / total:.0%} | 模型只能自己猜时间/指标/口径 |")
-    add(f"| 先反问一轮再写 SQL | {closed_ok}/{total} | {closed_ok / total:.0%} | 用户补充信息后再出 SQL |")
+    # total 为 0 时不能直接除——实验被中断时 results 可能是空的
+    safe_total = total or 1
+    add(
+        f"| 不问，直接写 SQL | {base_ok}/{total} | {base_ok / safe_total:.0%} "
+        "| 模型只能自己猜时间/指标/口径 |"
+    )
+    add(
+        f"| 先反问一轮再写 SQL | {closed_ok}/{total} | {closed_ok / safe_total:.0%} "
+        "| 用户补充信息后再出 SQL |"
+    )
     add("")
-    add(f"- 追问率：{asked / total:.0%}")
+    add(f"- 追问率：{asked / safe_total:.0%}")
     add(f"- 被澄清救回来：{fixed} 题")
     add(f"- 反而改坏：{broken} 题")
     add("")

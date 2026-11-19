@@ -154,5 +154,86 @@ class CliSmokeTest(unittest.TestCase):
         self.assertNotEqual(ctx.exception.code, 0)
 
 
+class ReportBranchesTest(unittest.TestCase):
+    """render_markdown 的分支：失败明细、按难度/标签汇总、额外字段。
+
+    这些分支只在"有失败"或"有额外统计"时才走到，之前没测到——
+    而失败明细恰恰是报告里最该被看到的部分。
+    """
+
+    def _mixed_results(self):
+        from askdata.db import QueryResult
+        from askdata.models import Question
+        from askdata.runner import QuestionResult
+        from askdata.scoring import CORRECT, EMPTY_RESULT, NO_SQL, SQL_ERROR, Outcome
+
+        def make(qid: str, status: str, difficulty: str = "medium", tag: str = "join"):
+            return QuestionResult(
+                question=Question(
+                    id=qid, difficulty=difficulty, tags=(tag,), question=f"问题{qid}",
+                    gold_sql="SELECT 1",
+                ),
+                generated_sql="SELECT 1",
+                outcome=Outcome(status=status, gold_row_count=1, pred_row_count=1),
+                gold=QueryResult(columns=["c"], rows=[(1,)]),
+                pred=QueryResult(columns=["c"], rows=[(1,)]),
+            )
+
+        return [
+            make("q1", CORRECT),
+            make("q2", SQL_ERROR, difficulty="hard", tag="time"),
+            make("q3", EMPTY_RESULT, difficulty="hard", tag="time"),
+            make("q4", NO_SQL, difficulty="easy", tag="agg"),
+            make("q5", "wrong_value", difficulty="easy", tag="agg"),
+        ]
+
+    def test_failures_are_listed(self) -> None:
+        from askdata.report import render_markdown
+        from askdata.runner import EvalResult
+
+        result = EvalResult(
+            strategy_name="llm", dataset_version="v2", started_at="t", results=self._mixed_results()
+        )
+        text = render_markdown(result)
+        # 失败题的题号应该出现在明细里
+        for qid in ("q2", "q3", "q4", "q5"):
+            self.assertIn(qid.replace("q", ""), text)
+
+    def test_by_difficulty_section(self) -> None:
+        from askdata.report import render_markdown
+        from askdata.runner import EvalResult
+
+        result = EvalResult(
+            strategy_name="llm", dataset_version="v2", started_at="t", results=self._mixed_results()
+        )
+        text = render_markdown(result)
+        self.assertIn("hard", text)
+        self.assertIn("easy", text)
+
+    def test_extra_fields_rendered(self) -> None:
+        from askdata.report import render_markdown
+        from askdata.runner import EvalResult
+
+        result = EvalResult(
+            strategy_name="llm", dataset_version="v2", started_at="t",
+            results=self._mixed_results(), extra={"prompt_tokens": 1234, "api_errors": 2},
+        )
+        text = render_markdown(result)
+        self.assertIn("prompt tokens", text)
+
+    def test_to_dict_has_failure_detail(self) -> None:
+        from askdata.report import to_dict
+        from askdata.runner import EvalResult
+
+        result = EvalResult(
+            strategy_name="llm", dataset_version="v2", started_at="t", results=self._mixed_results()
+        )
+        payload = to_dict(result)
+        self.assertIn("results", payload)
+        self.assertEqual(len(payload["results"]), 5)
+        statuses = {r["status"] for r in payload["results"]}
+        self.assertIn("sql_error", statuses)
+
+
 if __name__ == "__main__":
     unittest.main()

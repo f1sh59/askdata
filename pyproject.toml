@@ -93,6 +93,6 @@ omit = ["askdata/strategies/*", "*/__init__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-# 门槛是防倒退的棘轮，不是 KPI：当前 81.6%，再往上要补
-# closed-loop 的对照实验和 strategies 的剩余分支。
-fail_under = 81
+# 门槛是防倒退的棘轮，不是 KPI：当前 85.5%，再往上要补
+# CLI 里 clarify/closed 两个命令的参数解析和 service 的导入分支。
+fail_under = 85
