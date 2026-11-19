@@ -75,6 +75,19 @@ class SpecShapeTest(unittest.TestCase):
         json.loads(text)
 
 
+    def test_passes_official_validator(self) -> None:
+        """自己写得"看起来对"不算数，交给官方校验器。
+
+        没装校验器就跳过——它是开发依赖，不是运行时依赖。
+        """
+        try:
+            from openapi_spec_validator import validate
+        except ImportError:
+            self.skipTest("未安装 openapi-spec-validator")
+
+        validate(self.spec)  # 不抛异常即通过
+
+
 class DriftGuardTest(unittest.TestCase):
     """清单与服务端源码必须一致。"""
 
