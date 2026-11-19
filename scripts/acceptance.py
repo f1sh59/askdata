@@ -332,6 +332,21 @@ def check_observability(base: str) -> None:
             f"{status} {payload.get('code')}",
         )
 
+        # OpenAPI 文档：能被标准工具消费
+        status, raw, _ = get(base, "/api/openapi.json")
+        spec = json.loads(raw)
+        record(
+            "文档 · OpenAPI 可读且含路径",
+            status == 200
+            and str(spec.get("openapi", "")).startswith("3.")
+            and len(spec.get("paths", {})) > 5,
+            f"paths={len(spec.get('paths', {}))}",
+        )
+
+        status, raw, _ = get(base, "/docs")
+        html = raw if isinstance(raw, str) else raw.decode("utf-8", "replace")
+        record("文档 · /docs 页面可打开", status == 200 and "askdata API" in html, f"{status}")
+
         try:
             status, raw = post(base, "/api/ask", {"question": "  "})
             payload = json.loads(raw if isinstance(raw, str) else raw.decode("utf-8"))

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>askdata · API 文档</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/docs.css" />
+  </head>
+  <body class="docs-body">
+    <aside class="docs-rail">
+      <div class="docs-brand">
+        <a href="/">← 回应用</a>
+        <h1>askdata API</h1>
+        <p class="dim small" id="docs-version">OpenAPI —</p>
+      </div>
+      <nav id="docs-nav" class="docs-nav"></nav>
+      <p class="docs-rail-foot dim small">
+        所有接口都支持 <code>X-Request-Id</code>；设置 <code>ASKDATA_TOKEN</code>
+        后需带 <code>Authorization: Bearer &lt;token&gt;</code>。
+      </p>
+    </aside>
+
+    <main class="docs-main">
+      <header class="docs-head">
+        <h2 id="docs-title">接口总览</h2>
+        <p class="dim small" id="docs-desc">从 /api/openapi.json 实时渲染——文档和代码不会脱节。</p>
+        <div class="docs-actions">
+          <a class="btn btn-ghost" href="/api/openapi.json" target="_blank" rel="noopener">原始 JSON ↗</a>
+        </div>
+      </header>
+      <div id="docs-content" class="docs-content">
+        <p class="dim">正在加载接口清单…</p>
+      </div>
+    </main>
+
+    <script src="/docs.js"></script>
+  </body>
+</html>

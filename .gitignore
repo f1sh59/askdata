@@ -32,6 +32,7 @@ docs/shots/*
 !docs/shots/ask-dark.png
 !docs/shots/key-panel.png
 !docs/shots/settings-light.png
+!docs/shots/api-docs.png
 # 运行产物：日志、PID、临时诊断文件
 /*.log
 /*.err

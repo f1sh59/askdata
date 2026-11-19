@@ -91,6 +91,24 @@ python -m askdata.server --port 8777
 > 都没有时接口返回 `400` 且带 `need_api_key: true`，界面会自动弹出配置栏，
 > 而不是报一个看不懂的 500。
 
+## 接口文档
+
+服务起来后访问 **`/docs`**，或者直接拿 `/api/openapi.json` 喂给任何支持 OpenAPI 3.1 的工具。
+
+![API 文档](docs/shots/api-docs.png)
+
+文档不是手写的，而是从 `askdata/api_spec.py` 里的接口清单生成——
+**同一份清单也被测试用来防止漂移**：
+
+```python
+# tests/test_api_spec.py
+test_every_endpoint_exists_in_server   # 清单里有的，源码里必须真有这个路径
+test_server_routes_are_documented      # 源码里有的，清单里必须登记
+test_all_refs_resolve                  # 所有 $ref 都能解析，不会渲染成 {"$ref": ...}
+```
+
+两条反向检查一起用，才拦得住"加了接口忘了写文档"和"文档写了接口没做"。
+
 ## 工程规范与可观测性
 
 一个人做项目最容易糊弄自己的地方是"能跑就行"。这一节是把它拉到能被别人接手的水准。

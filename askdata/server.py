@@ -20,6 +20,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from . import config
+from .api_spec import build_openapi
 from .auth import authorized, configured_api_key
 from .observability import METRICS, log_enabled, log_event, new_request_id
 from .ratelimit import RateLimiter
@@ -308,6 +309,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json({"ok": True, "status": "alive"})
             if path == "/ready":
                 return self._json(_readiness())
+            if path == "/api/openapi.json":
+                return self._json(build_openapi())
             if path == "/metrics":
                 body = METRICS.render().encode("utf-8")
                 return self._send(200, body, "text/plain; version=0.0.4; charset=utf-8")
@@ -409,6 +412,8 @@ class Handler(BaseHTTPRequestHandler):
     def _static(self, path: str) -> None:
         if path in ("", "/"):
             path = "/index.html"
+        elif path in ("/docs", "/docs/"):
+            path = "/docs.html"
         target = (WEB_DIR / path.lstrip("/")).resolve()
         if not str(target).startswith(str(WEB_DIR.resolve())) or not target.is_file():
             return self._error("not found", 404)
