@@ -1,6 +1,6 @@
 # 本机开发 / CI / Docker 三套用法
 
-.PHONY: help install install-dev db test test-cov lint typecheck check validate attack serve accept ci docker-build docker-up clean
+.PHONY: help install install-dev db test test-cov lint typecheck check validate attack serve accept ci load docker-build docker-up clean
 
 PY := python
 
@@ -18,6 +18,7 @@ help:
 	@echo "make serve         本地起服务（http://127.0.0.1:8777）"
 	@echo "make accept        接口验收（跳过调模型的部分）"
 	@echo "make ci            本地跑一遍 CI 的全部检查"
+	@echo "make load          压测并生成 reports/perf_*.md（需先关限流）"
 	@echo "make docker-up     docker compose 一键启动"
 
 install:
@@ -69,6 +70,10 @@ ci: lint typecheck test-cov db validate attack
 	$(PY) scripts/fetch_snapshots.py http://127.0.0.1:8777; \
 	node scripts/frontend_audit.js; \
 	kill $$pid || true
+
+load:
+	@echo "压测需要关闭限流：ASKDATA_RATE_LIMIT=0 make serve"
+	$(PY) scripts/load_test.py --levels 1,4,8,16,32 --duration 6
 
 docker-build:
 	docker build -t askdata:latest .
