@@ -92,6 +92,6 @@ omit = ["askdata/strategies/*", "*/__init__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-# 门槛是防倒退的棘轮，不是 KPI：当前 58%，上调到 70% 需要给 service 的
+# 门槛是防倒退的棘轮，不是 KPI：当前 59%，上调到 70% 需要给 service 的
 # 问数主链路补 LLM 桩测试，那是下一步。写成虚高门槛只会逼出应试式测试。
-fail_under = 58
+fail_under = 59

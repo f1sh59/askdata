@@ -109,6 +109,28 @@ test_all_refs_resolve                  # 所有 $ref 都能解析，不会渲染
 
 两条反向检查一起用，才拦得住"加了接口忘了写文档"和"文档写了接口没做"。
 
+## 分层与依赖规则
+
+目录贴在下面，但真正管住架构的不是目录，是 **`tests/test_architecture.py`**——
+它解析每个文件的 import，检查依赖方向：
+
+```
+HTTP 层    server.py                    可依赖领域 / 基础设施 / 工具
+领域层     service · verify · clarify · runner · scoring …
+          依赖基础设施和工具，**不许** import server
+基础设施   db · llm · guard · imports · schema
+          纯的：不依赖领域，不碰 HTTP
+工具层     observability · ratelimit · api_spec · stats · config
+          谁都能用，自己不依赖业务
+```
+
+违反规则测试直接红。写这个测试的时候立刻抓到一处：
+
+> `runner.py` 被当成"工具层"，实际它 import 了 `scoring`——
+> 它是指挥评测的业务编排，属于领域层。目录看起来没错，依赖方向错了。
+
+**这就是 fitness function 的价值**：目录可以摆得好看，依赖方向骗不了人。
+
 ## 工程规范与可观测性
 
 一个人做项目最容易糊弄自己的地方是"能跑就行"。这一节是把它拉到能被别人接手的水准。
