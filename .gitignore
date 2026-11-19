@@ -33,6 +33,8 @@ docs/shots/*
 !docs/shots/key-panel.png
 !docs/shots/settings-light.png
 !docs/shots/api-docs.png
+!docs/shots/mobile.png
+!docs/shots/mobile-360.png
 # 运行产物：日志、PID、临时诊断文件
 /*.log
 /*.err

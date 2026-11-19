@@ -165,6 +165,28 @@ CSP 里 `script-src` 限制为 `'self'`（外部脚本注入进不来），
 请求体超限时**先把数据丢弃式读掉再回 413**：
 直接回 413 就关连接的话，客户端还在往回写，会拿到「连接被重置」而不是错误码。
 
+## 响应式
+
+窄屏不是"把桌面版缩小"：导航变成可横滑的一行（右边缘渐隐提示），
+面板单列铺满，发送键整行，表格在容器内横滑而不是把页面撑宽。
+
+![移动端](docs/shots/mobile.png)
+
+用 puppeteer 直连 Edge，在**真实 390 / 360 / 768 视口**下测量：
+
+```
+iPhone 12/13/14  390px  视口 390  scrollWidth 390  无横向溢出
+安卓常见宽度     360px  视口 360  scrollWidth 360  无横向溢出
+iPad 竖屏        768px  视口 768  scrollWidth 768  无横向溢出
+```
+
+判定标准是 `scrollWidth == clientWidth`——不靠肉眼。
+
+> **踩过的坑**：Windows 上 `msedge --headless --window-size=390,844` 会被系统
+> 最小窗口宽度夹到约 496 CSS px，截出来的图只有 390 宽，看起来像"右侧溢出"。
+> 实际是截图工具把画面裁了，改了半天的 CSS 其实是好的。
+> 现在用 `node scripts/shoot.js`（puppeteer-core）直接设视口，不再猜。
+
 ## 性能
 
 `scripts/load_test.py` 打 `/api/check`（SQL 安全闸，不调模型），量的是**服务端自身**的开销。

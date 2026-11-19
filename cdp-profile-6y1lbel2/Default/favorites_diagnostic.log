@@ -1,0 +1,23 @@
+2026-11-19 06:49:40.013: [INFO] CurrentProfilePath: C:\Users\fishdick\Desktop\xm\askdata\cdp-profile-6y1lbel2\Default
+2026-11-19 06:49:40.013: [INFO] Profiles total count: 1
+2026-11-19 06:49:40.013: [INFO] Profile: name=用户配置 1 path=C:\Users\fishdick\Desktop\xm\askdata\cdp-profile-6y1lbel2\Default lastActive=null
+2026-11-19 06:49:40.013: [INFO] LastUsedProfileDir: C:\Users\fishdick\Desktop\xm\askdata\cdp-profile-6y1lbel2\Default
+2026-11-19 06:49:40.013: [INFO] VisibilityChanged: 0
+2026-11-19 06:49:40.051: [INFO] OnDoneLoading sync enabled: 0
+2026-11-19 06:49:40.051: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-11-19 06:49:40.051: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-11-19 06:49:40.051: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-11-19 06:49:40.098: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-11-19 06:49:40.623: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 0
+2026-11-19 06:49:40.625: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:40.626: [INFO] Primary account changed.
+2026-11-19 06:49:40.626: [INFO] OnPrimaryAccountChanged PrimaryAccountChangeEvent::Type::kSet
+2026-11-19 06:49:40.630: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:40.649: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.201: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.202: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.202: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.207: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.208: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.208: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 3
+2026-11-19 06:49:41.209: [INFO] RecordSyncInitDuration has_sync_been_enabled: 0 state: 4

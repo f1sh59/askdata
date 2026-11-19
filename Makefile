@@ -1,6 +1,6 @@
 # 本机开发 / CI / Docker 三套用法
 
-.PHONY: help install install-dev db test test-cov lint typecheck check pr validate attack serve accept ci load docker-build docker-up clean
+.PHONY: help install install-dev db test test-cov lint typecheck check pr validate attack serve accept ci load shots docker-build docker-up clean
 
 PY := python
 
@@ -74,6 +74,10 @@ ci: lint typecheck test-cov db validate attack
 	$(PY) scripts/fetch_snapshots.py http://127.0.0.1:8777; \
 	node scripts/frontend_audit.js; \
 	kill $$pid || true
+
+shots:
+	@echo "需要先在 .tmp/shots 里 npm install puppeteer-core"
+	node scripts/shoot.js http://127.0.0.1:8777/
 
 load:
 	@echo "压测需要关闭限流：ASKDATA_RATE_LIMIT=0 make serve"
