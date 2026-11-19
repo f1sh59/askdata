@@ -300,7 +300,9 @@ def cmd_multiturn(args: argparse.Namespace) -> int:
     if args.limit:
         pairs = pairs[: args.limit]
 
-    pipeline = Pipeline()
+    # 必须传 args.db：不传就会打开默认库，和 --db 参数对不上，
+    # 而且默认库常被 web 服务占着，会直接报「无法打开文件」
+    pipeline = Pipeline(db_path=args.db)
     try:
         report = run_multiturn(
             pipeline,

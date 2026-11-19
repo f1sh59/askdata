@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from typing import ClassVar
 
 from askdata.clarify import (
     ClarifyDecision,
@@ -180,6 +181,104 @@ class ClosedLoopTest(unittest.TestCase):
         self.assertEqual([r.closed_status for r in results], ["correct", "value_mismatch"])
         self.assertEqual([r.baseline_status for r in results], ["value_mismatch", "value_mismatch"])
         self.assertEqual(sum(1 for r in results if r.fixed), 1)
+
+class ClarifyStrategyTest(unittest.TestCase):
+    """策略层：把"模型怎么回"变成"判定是什么"。
+
+    原文件测的是判定函数本身，这里补上游——模型回复 → parse → status 的整条链路。
+    """
+
+    def test_uses_stub_reply(self) -> None:
+        from askdata.clarify import ClarifyStrategy
+        from askdata.llm import LLMResponse
+
+        class Stub:
+            usage: ClassVar[dict] = {}
+
+            def complete(self, prompt):
+                return LLMResponse('{"need_clarification": true, "question": "哪一年？"}')
+
+        strategy = ClarifyStrategy(Stub(), schema_provider=lambda _q: "schema")
+        decision = strategy.decide("销售额是多少")
+        self.assertTrue(decision.need_clarification)
+        self.assertEqual(decision.question, "哪一年？")
+
+    def test_llm_failure_is_reported_not_raised(self) -> None:
+        from askdata.clarify import ClarifyStrategy
+
+        class Boom:
+            usage: ClassVar[dict] = {}
+
+            def complete(self, prompt):
+                return None
+
+        strategy = ClarifyStrategy(Boom(), schema_provider=lambda _q: "schema")
+        decision = strategy.decide("销售额是多少")
+        self.assertFalse(decision.need_clarification)
+        self.assertIn("调用失败", decision.parse_error or "")
+
+
+class StatusMatrixTest(unittest.TestCase):
+    """一次跑完五种判定，钉住"追问率怎么算"这件事。"""
+
+    def test_five_statuses(self) -> None:
+        from askdata.llm import LLMResponse
+
+        class Stub:
+            usage: ClassVar[dict] = {}
+
+            def __init__(self, replies: list[str]) -> None:
+                self.replies = list(replies)
+
+            def complete(self, prompt):
+                return LLMResponse(self.replies.pop(0))
+
+        def item(*slots):
+            return VagueQuestion(
+                id="v", question="销售额是多少", why="缺条件",
+                slots=[Slot(name, keywords) for name, keywords in slots],
+            )
+
+        time_slot = ("年份", ("年",))
+        channel_slot = ("渠道", ("渠道",))
+        items = [item(time_slot, channel_slot), item(time_slot, channel_slot),
+                 item(time_slot), item(), item(time_slot)]
+        replies = [
+            '{"need_clarification": true, "question": "哪一年、哪个渠道？"}',
+            '{"need_clarification": true, "question": "哪个渠道？"}',
+            '{"need_clarification": true, "question": "能再具体点吗？"}',
+            '{"need_clarification": true, "question": "补充一下？"}',
+            '{"need_clarification": false, "sql": "SELECT 1"}',
+        ]
+        from askdata.clarify import ClarifyStrategy
+
+        strategy = ClarifyStrategy(Stub(replies), schema_provider=lambda _q: "s")
+        statuses = [r.status for r in evaluate_vague(strategy, items)]
+        self.assertEqual(statuses, ["good", "partial", "irrelevant", "asked", "guessed"])
+
+
+class LoadVagueTest(unittest.TestCase):
+    def test_loads_fixture_file(self) -> None:
+        import json as _json
+        import tempfile
+        from pathlib import Path as _Path
+
+        from askdata.clarify import load_vague
+
+        payload = {
+            "version": "v",
+            "questions": [
+                {"id": "v1", "question": "销售额是多少", "why": "缺时间",
+                 "slots": [{"name": "时间", "keywords": ["年", "月"]}]}
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            path = _Path(tmp) / "vague.json"
+            path.write_text(_json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+            items = load_vague(path)
+
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0].slots[0].name, "时间")
 
 
 if __name__ == "__main__":

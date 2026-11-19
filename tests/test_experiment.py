@@ -83,6 +83,41 @@ class BootstrapTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             paired_bootstrap([1.0], [1.0, 0.0])
 
+class RenderMarkdownTest(unittest.TestCase):
+    """报告渲染：均值、极值、耗时都要出现在 md 里。
+
+    原文件测的是统计口径，这里补"渲染出来对不对"——
+    那条 90.0% ± 2.0 最终是长在 markdown 里的。
+    """
+
+    def test_contains_mean_and_table(self) -> None:
+        from askdata.experiment import render_markdown
+
+        exp = Experiment(
+            strategy_name="llm",
+            dataset_version="v1",
+            runs=[make_run({"q1": CORRECT}), make_run({"q1": "wrong_value"})],
+        )
+        text = render_markdown(exp)
+        self.assertIn("llm", text)
+        self.assertIn("|", text)
+
+    def test_empty_experiment_does_not_crash(self) -> None:
+        from askdata.experiment import render_markdown
+
+        exp = Experiment(strategy_name="llm", dataset_version="v1")
+        self.assertIsInstance(render_markdown(exp), str)
+
+    def test_extra_fields_rendered(self) -> None:
+        from askdata.experiment import render_markdown
+
+        run = make_run({"q1": CORRECT})
+        run.extra = {"prompt_tokens": 1000, "latency_ms": 2500}
+        text = render_markdown(
+            Experiment(strategy_name="llm", dataset_version="v1", runs=[run])
+        )
+        self.assertIn("2.5s", text)
+
 
 if __name__ == "__main__":
     unittest.main()

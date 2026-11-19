@@ -121,7 +121,9 @@ def render_markdown(experiment: Experiment) -> str:
     add("# askdata 重复运行报告")
     add("")
     add(f"- **策略**：`{experiment.strategy_name}`")
-    add(f"- **数据集**：{experiment.dataset_version}（{experiment.runs[0].total} 题）")
+    # 没有 run 的时候（比如实验被中断）不能直接取 runs[0]
+    n_questions = experiment.runs[0].total if experiment.runs else 0
+    add(f"- **数据集**：{experiment.dataset_version}（{n_questions} 题）")
     add(f"- **运行次数**：{experiment.n_runs}（每次都是独立采样，未使用缓存）")
     add("")
     add("## 1. 总体")

@@ -379,6 +379,44 @@ class ServerMainTest(unittest.TestCase):
             main(["--help"])
         self.assertEqual(ctx.exception.code, 0)
 
+class ServerMainLifecycleTest(unittest.TestCase):
+    """main() 的启动与停机流程。
+
+    main() 内部用 `class Server(ThreadingHTTPServer)` 定义了本地子类，
+    所以 patch 模块级的名字拦不住。改成 patch 基类的 serve_forever：
+    真起一个服务（端口 0），让它立刻抛 KeyboardInterrupt，
+    这样启动、注册信号、优雅停机、收尾这几段都会真的执行。
+    """
+
+    def _run_main(self, argv: list[str]):
+        from unittest.mock import patch
+
+        import askdata.server as server_mod
+
+        with patch.object(server_mod, "pipeline"), patch(
+            "socketserver.BaseServer.serve_forever", side_effect=KeyboardInterrupt
+        ), patch.object(server_mod.Handler, "wait_inflight", return_value=0) as drained:
+            code = server_mod.main(argv)
+        return code, drained
+
+    def test_exits_cleanly_and_drains_requests(self) -> None:
+        code, drained = self._run_main(["--port", "0", "--host", "127.0.0.1"])
+        self.assertEqual(code, 0)
+        # 停机时要等在途请求做完，而不是直接砍
+        self.assertTrue(drained.called)
+
+    def test_read_only_flag_is_applied(self) -> None:
+        import askdata.server as server_mod
+
+        self._run_main(["--port", "0", "--read-only"])
+        self.assertFalse(server_mod._WRITABLE)
+
+    def test_writable_by_default(self) -> None:
+        import askdata.server as server_mod
+
+        self._run_main(["--port", "0"])
+        self.assertTrue(server_mod._WRITABLE)
+
 
 if __name__ == "__main__":
     unittest.main()
