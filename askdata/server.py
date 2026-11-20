@@ -12,6 +12,7 @@ import argparse
 import contextlib
 import json
 import mimetypes
+import os
 import signal
 import sys
 import threading
@@ -21,7 +22,14 @@ from urllib.parse import parse_qs, urlparse
 
 from . import config
 from .api_spec import build_openapi
-from .auth import authorized, configured_api_key
+from .audit import AuditLog
+from .auth import (
+    auth_mode,
+    configured_api_key,
+    current_user,
+    is_admin,
+    policy_for,
+)
 from .observability import METRICS, log_enabled, log_event, new_request_id
 from .ratelimit import RateLimiter
 from .service import Pipeline
@@ -32,6 +40,8 @@ _PIPELINE: Pipeline | None = None
 _PIPELINE_LOCK = threading.Lock()
 _WRITABLE = True
 LIMITER = RateLimiter.from_env()
+# 审计默认开启；设 ASKDATA_AUDIT=0 关掉（本地调试不想刷文件时用）
+AUDIT = AuditLog(config.AUDIT_PATH, enabled=os.environ.get("ASKDATA_AUDIT", "1") != "0")
 
 # 安全响应头：不依赖反向代理，应用自己带。
 # CSP 允许 inline style —— 前端是零构建的单文件，没有 nonce 机制；
@@ -222,6 +232,24 @@ class Handler(BaseHTTPRequestHandler):
         forwarded = (self.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
         return forwarded or self.client_address[0]
 
+    def _auth(self):
+        """解析当前用户。返回 (user, denied)。
+
+        denied=True 表示已经回了 401，调用方直接 return。
+        open 模式下 user 是 None，但不算失败。
+        """
+        user = current_user(self.headers.get("Authorization"))
+        if user is None and auth_mode() != "open":
+            self._json(
+                {"ok": False, "error": "未授权：需要 Bearer token", "auth_required": True}, 401
+            )
+            return None, True
+        self._user = user
+        return user, False
+
+    def _user_name(self) -> str:
+        return getattr(getattr(self, "_user", None), "name", "anonymous")
+
     def _dispatch(self, method: str, route) -> None:
         """所有请求的统一入口：分配 ID、限流、计时、记指标、写日志。
 
@@ -300,10 +328,38 @@ class Handler(BaseHTTPRequestHandler):
         query = parse_qs(parsed.query)
 
         try:
-            # 鉴权必须放在所有 /api/ 分支之前，否则前面几个接口会绕过它
-            if path.startswith("/api/") and not authorized(self.headers.get("Authorization")):
+            # 登录状态接口必须免鉴权：客户端要靠它判断"要不要让用户填 token"
+            if path == "/api/auth/me":
+                from .auth import store as _user_store
+
+                me = current_user(self.headers.get("Authorization"))
                 return self._json(
-                    {"ok": False, "error": "未授权：需要 Bearer token", "auth_required": True}, 401
+                    {
+                        "ok": True,
+                        "mode": auth_mode(),
+                        "user": me.as_public() if me else None,
+                        "users": len(_user_store()),
+                    }
+                )
+            # 鉴权必须放在所有其它 /api/ 分支之前，否则前面的接口会绕过它
+            user = None
+            if path.startswith("/api/"):
+                user, denied = self._auth()
+                if denied:
+                    return None
+            if path == "/api/users":
+                if not is_admin(user):
+                    return self._json({"ok": False, "error": "需要 admin 权限", "code": "forbidden"}, 403)
+                from .auth import store as _user_store
+
+                return self._json({"ok": True, "users": _user_store().list()})
+            if path == "/api/audit":
+                if not is_admin(user):
+                    return self._json({"ok": False, "error": "需要 admin 权限", "code": "forbidden"}, 403)
+                limit = int((query.get("limit") or ["50"])[0])
+                who = (query.get("user") or [""])[0]
+                return self._json(
+                    {"ok": True, **AUDIT.stats(), "entries": AUDIT.recent(limit=limit, user=who)}
                 )
             if path == "/api/overview":
                 return self._json(pipeline().overview())
@@ -363,10 +419,38 @@ class Handler(BaseHTTPRequestHandler):
             return self._error("请求体不是合法 JSON")
 
         try:
-            if parsed.path.startswith("/api/") and not authorized(self.headers.get("Authorization")):
-                return self._json(
-                    {"ok": False, "error": "未授权：需要 Bearer token", "auth_required": True}, 401
-                )
+            user = None
+            if parsed.path.startswith("/api/"):
+                user, denied = self._auth()
+                if denied:
+                    return None
+            if parsed.path == "/api/users":
+                if not is_admin(user):
+                    return self._json({"ok": False, "error": "需要 admin 权限", "code": "forbidden"}, 403)
+                from .auth import store as _user_store
+
+                try:
+                    created, token = _user_store().create(
+                        name=str(payload.get("name") or ""),
+                        role=str(payload.get("role") or "viewer"),
+                        channels=tuple(payload.get("channels") or ()),
+                    )
+                except ValueError as exc:
+                    return self._error(str(exc))
+                # 明文 token 只在这里返回一次，之后再也查不到
+                AUDIT.record(user=self._user_name(), action="user.create", detail=created.name,
+                             request_id=self.request_id)
+                return self._json({"ok": True, "user": created.as_public(), "token": token})
+            if parsed.path == "/api/users/delete":
+                if not is_admin(user):
+                    return self._json({"ok": False, "error": "需要 admin 权限", "code": "forbidden"}, 403)
+                from .auth import store as _user_store
+
+                target = str(payload.get("id") or "")
+                removed = _user_store().delete(target)
+                AUDIT.record(user=self._user_name(), action="user.delete", detail=target,
+                             request_id=self.request_id)
+                return self._json_result({"ok": removed, "error": "" if removed else "用户不存在"})
             if parsed.path == "/api/ask/stream":
                 return self._stream_ask(payload)
             if parsed.path == "/api/ask":
@@ -388,17 +472,29 @@ class Handler(BaseHTTPRequestHandler):
                     history = []
                 # 只保留最近 3 轮，避免 prompt 无限膨胀
                 history = [h for h in history if isinstance(h, dict)][-3:]
-                return self._json(
-                    pipeline().ask(
-                        question,
-                        top_k=int(payload.get("top_k") or 8),
-                        clarification=payload.get("clarification"),
-                        answer=payload.get("answer"),
-                        history=history or None,
-                        session_id=str(payload.get("session_id") or "") or None,
-                        api_key=self._request_api_key(),
-                    )
+                started = time.perf_counter()
+                result = pipeline().ask(
+                    question,
+                    top_k=int(payload.get("top_k") or 8),
+                    clarification=payload.get("clarification"),
+                    answer=payload.get("answer"),
+                    history=history or None,
+                    session_id=str(payload.get("session_id") or "") or None,
+                    api_key=self._request_api_key(),
+                    # 按用户限定可见渠道；没配渠道就不限制
+                    policy=policy_for(user),
                 )
+                AUDIT.record(
+                    user=self._user_name(),
+                    action="ask",
+                    question=question,
+                    sql=str(result.get("rewritten_sql") or result.get("sql") or ""),
+                    ok=bool(result.get("ok")),
+                    row_count=int(result.get("row_count") or 0),
+                    elapsed_ms=(time.perf_counter() - started) * 1000,
+                    request_id=self.request_id,
+                )
+                return self._json(result)
             if parsed.path == "/api/check":
                 sql = str(payload.get("sql") or "").strip()
                 if not sql:

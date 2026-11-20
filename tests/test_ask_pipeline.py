@@ -54,10 +54,14 @@ class AskPipelineTest(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.db = Path(self._tmp.name) / "ask.duckdb"
         build_db(self.db)
-        self.pipe = Pipeline(db_path=self.db, writable=True)
+        self.pipe = Pipeline(db_path=self.db, writable=True,
+                                 sessions_path=Path(self._tmp.name) / "sessions.db")
         self.stub: StubLLM | None = None
 
     def tearDown(self) -> None:
+        # 会话库是 SQLite，连接不关的话 Windows 上删不掉临时目录
+        self.pipe.sessions.close()
+        self.pipe.sandbox.close()
         self._tmp.cleanup()
 
     def use(self, *replies: str) -> StubLLM:

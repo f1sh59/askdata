@@ -49,6 +49,19 @@ ENDPOINTS: tuple[Endpoint, ...] = (
     Endpoint("GET", "/ready", "就绪探针（含数据库连通性）", "运维", response="ReadyResponse"),
     Endpoint("GET", "/metrics", "Prometheus 指标", "运维", response="MetricsText"),
     Endpoint("GET", "/api/openapi.json", "本文件的机器可读版本", "运维", response="OpenApiDocument"),
+    # ---- 身份与审计 ----
+    Endpoint("GET", "/api/auth/me", "当前身份（模式 / 用户 / 用户数）", "身份",
+             response="WhoAmIResponse", auth=True),
+    Endpoint("GET", "/api/users", "用户列表（仅 admin）", "身份",
+             response="UserListResponse", auth=True),
+    Endpoint("POST", "/api/users", "新建用户，返回只出现一次的明文 token（仅 admin）", "身份",
+             request="CreateUserRequest", response="CreateUserResponse", auth=True,
+             notes="token 只在响应里返回一次，服务端只存 sha256。"),
+    Endpoint("POST", "/api/users/delete", "删除用户并吊销其 token（仅 admin）", "身份",
+             request="DeleteUserRequest", response="GenericOk", auth=True),
+    Endpoint("GET", "/api/audit", "审计日志（仅 admin），支持 ?limit= 与 ?user=", "身份",
+             response="AuditListResponse", auth=True),
+
     # ---- 问数 ----
     Endpoint(
         "POST",
@@ -331,6 +344,88 @@ SCHEMAS: dict[str, dict[str, Any]] = {
     },
     "MetricsText": {"type": "string", "description": "Prometheus 文本格式"},
     "OpenApiDocument": {"type": "object", "description": "OpenAPI 3.1 文档"},
+
+    "UserPublic": {
+        "type": "object",
+        "properties": {
+            "id": {"type": "string", "description": "u_ 开头"},
+            "name": {"type": "string"},
+            "role": {"type": "string", "enum": ["admin", "viewer"]},
+            "channels": {"type": "array", "items": {"type": "string"}},
+            "created_at": {"type": "string"},
+            "disabled": {"type": "boolean"},
+        },
+        "required": ["id", "name", "role", "channels"],
+    },
+    "WhoAmIResponse": {
+        "type": "object",
+        "properties": {
+            "ok": {"type": "boolean"},
+            "mode": {"type": "string", "enum": ["open", "shared", "users"]},
+            "user": {"anyOf": [{"$ref": "#/components/schemas/UserPublic"}, {"type": "null"}]},
+            "users": {"type": "integer"},
+        },
+        "required": ["ok", "mode", "users"],
+    },
+    "UserListResponse": {
+        "type": "object",
+        "properties": {
+            "ok": {"type": "boolean"},
+            "users": {"type": "array", "items": {"$ref": "#/components/schemas/UserPublic"}},
+        },
+        "required": ["ok", "users"],
+    },
+    "CreateUserRequest": {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "role": {"type": "string", "enum": ["admin", "viewer"]},
+            "channels": {"type": "array", "items": {"type": "string"},
+                         "description": "这个人能看到的渠道名；空数组表示不限制"},
+        },
+        "required": ["name"],
+    },
+    "CreateUserResponse": {
+        "type": "object",
+        "properties": {
+            "ok": {"type": "boolean"},
+            "user": {"$ref": "#/components/schemas/UserPublic"},
+            "token": {"type": "string", "description": "只返回这一次，之后查不到"},
+        },
+        "required": ["ok", "user", "token"],
+    },
+    "DeleteUserRequest": {
+        "type": "object",
+        "properties": {"id": {"type": "string"}},
+        "required": ["id"],
+    },
+    "AuditEntry": {
+        "type": "object",
+        "properties": {
+            "ts": {"type": "string"},
+            "epoch": {"type": "number"},
+            "user": {"type": "string"},
+            "action": {"type": "string"},
+            "question": {"type": "string"},
+            "sql": {"type": "string"},
+            "ok": {"type": "boolean"},
+            "rows": {"type": "integer"},
+            "ms": {"type": "number"},
+            "request_id": {"type": "string"},
+        },
+        "required": ["ts", "user", "action", "ok"],
+    },
+    "AuditListResponse": {
+        "type": "object",
+        "properties": {
+            "ok": {"type": "boolean"},
+            "entries": {"type": "array", "items": {"$ref": "#/components/schemas/AuditEntry"}},
+            "total_read": {"type": "integer"},
+            "enabled": {"type": "boolean"},
+        },
+        "required": ["ok", "entries"],
+    },
+
 }
 
 
@@ -379,7 +474,7 @@ def build_openapi(*, server_url: str = "/") -> dict[str, Any]:
         "openapi": "3.1.0",
         "info": {
             "title": "askdata API",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "description": (
                 "中文问数 Agent 的 HTTP 接口。所有 /api/* 在设置 ASKDATA_TOKEN 后需要 "
                 "Authorization: Bearer <token>；/health、/ready、/metrics 不限流。"

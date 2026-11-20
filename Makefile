@@ -1,6 +1,6 @@
 # 本机开发 / CI / Docker 三套用法
 
-.PHONY: help install install-dev db test test-cov lint typecheck check pr validate attack serve accept ci load shots docker-build docker-up clean
+.PHONY: help install install-dev db test test-cov lint typecheck check pr validate attack serve accept ci load shots docker-build docker-up docker-e2e clean
 
 PY := python
 
@@ -85,6 +85,10 @@ load:
 
 docker-build:
 	docker build -t askdata:latest .
+
+docker-e2e:
+	@echo "容器端到端：清卷起容器 → 功能断言 → 重启 → 持久化断言 → 清理"
+	pwsh -NoProfile -File scripts/container_e2e.ps1
 
 docker-up:
 	docker compose up -d --build

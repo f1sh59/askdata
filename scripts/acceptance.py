@@ -332,6 +332,24 @@ def check_observability(base: str) -> None:
             f"{status} {payload.get('code')}",
         )
 
+        # 身份接口：免鉴权也能问"我是谁"，前端靠它决定要不要弹令牌框
+        status, raw, _ = get(base, "/api/auth/me")
+        who = json.loads(raw)
+        record(
+            "身份 · /api/auth/me 免鉴权可读",
+            status == 200 and who.get("mode") in ("open", "shared", "users"),
+            f"mode={who.get('mode')} users={who.get('users')}",
+        )
+
+        # 会话库要落盘，否则重启就丢
+        status, raw, _ = get(base, "/api/session/stats")
+        session_stats = json.loads(raw)
+        record(
+            "会话 · 已启用持久化",
+            session_stats.get("persistent") is True,
+            f"persistent={session_stats.get('persistent')}",
+        )
+
         # OpenAPI 文档：能被标准工具消费
         status, raw, _ = get(base, "/api/openapi.json")
         spec = json.loads(raw)

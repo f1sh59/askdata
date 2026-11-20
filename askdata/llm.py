@@ -42,7 +42,7 @@ class LLMResponse:
 
 
 class ResponseCache:
-    def __init__(self, path: Path = config.ROOT / ".cache" / "llm_responses.json") -> None:
+    def __init__(self, path: Path = config.CACHE_DIR / "llm_responses.json") -> None:
         self._path = path
         self._data: dict[str, dict] = {}
         if path.exists():

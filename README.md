@@ -148,6 +148,33 @@ make pr     # = CI 的 quick
 make ci     # = CI 的 full
 ```
 
+## 身份与审计
+
+三种模式按配置自动选择，向后兼容：
+
+| 模式 | 触发条件 | 行为 |
+|---|---|---|
+| `open` | 什么都没配 | 不鉴权（内网演示） |
+| `shared` | 只配 `ASKDATA_TOKEN` | 所有人共用 admin（旧部署不变） |
+| `users` | 有用户表 | 每个 token 对应一个人，权限按人算 |
+
+```bash
+# 建第一个管理员（open 模式下免鉴权）
+curl -X POST localhost:8777/api/users \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"张三","role":"admin"}'
+# → {"ok":true,"user":{...},"token":"ad_xxxx"}   token 只返回这一次
+```
+
+- **令牌只存 sha256**，落盘文件里没有明文；创建响应是唯一一次能拿到明文的机会
+- **角色**：`admin` 能管用户和看审计，`viewer` 只能用问数
+- **按人限渠道**：建用户时给 `channels: ["抖音","快手"]`，他的查询会自动套上
+  `channel_id IN (SELECT ... FROM channels WHERE channel_name IN (...))`
+- **审计**：谁、什么时候、问了什么、跑出什么 SQL、几行、多久，一行一个 JSON
+  落在 `data/audit.jsonl`，`GET /api/audit` 可查（仅 admin）
+
+会话也从内存挪到了 `data/sessions.db`（SQLite）：**重启服务/容器后没超时的上下文还在**。
+
 ## 安全
 
 四道 SQL 闸门之外，服务层还有三条：
@@ -234,10 +261,10 @@ docker build --build-arg PIP_INDEX_URL=https://mirrors.huaweicloud.com/repositor
 | **非 root 运行**（uid 10001） | 容器被攻破时拿不到 root，也改不了 `/app` 里的代码 |
 | 健康检查打 `/ready` 而不是 `/health` | 后者只看进程活着；前者会真的查一次库，避免"容器在、查询全挂"还接流量 |
 
-> **验证状态**：这台机器上 Docker 容器网络被限制（容器里连 pypi 都 SSL EOF），
-> 本地只有 Windows 版 wheel，Linux 镜像装依赖这步没法离线跑通。
-> `FROM` 解析和构建阶段语法已验证（能走到 pip 那一步），
-> 完整的 `docker compose up --build` 需要在有外网的环境跑一次。
+> **验证状态**：已完整验证。`scripts/container_e2e.ps1` 会清卷起容器、
+> 跑 12 项功能断言、重启容器、再跑 4 项持久化断言，全绿。
+> 镜像 280MB，非 root（uid 10001），**镜像里没有 pip**。
+> 构建时如果直连 pypi 被掐，用 `--build-arg PIP_INDEX_URL=<国内镜像>`。
 
 ## 工程规范与可观测性
 

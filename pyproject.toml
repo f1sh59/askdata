@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "askdata"
-version = "1.0.0"
+version = "1.1.0"
 description = "中文问数 Agent：把自然语言问题变成可执行的 SQL，并给出可复现的准确率"
 readme = "README.md"
 requires-python = ">=3.12"

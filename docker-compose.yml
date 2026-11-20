@@ -1,7 +1,7 @@
 services:
   askdata:
     build: .
-    image: askdata:latest
+    image: askdata:1.1.0
     container_name: askdata
     ports:
       - "8777:8777"

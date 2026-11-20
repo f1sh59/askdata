@@ -15,6 +15,11 @@ from __future__ import annotations
 
 import os
 import secrets
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .guard import RowPolicy
+    from .users import User
 
 
 def expected_token() -> str | None:
@@ -55,3 +60,79 @@ def configured_api_key() -> str | None:
     """服务端是否已经配好模型密钥（.env 或环境变量）。"""
     key = (os.environ.get("DEEPSEEK_API_KEY") or "").strip()
     return key or None
+
+
+# ---------------- 用户体系 ----------------
+#
+# 三种模式，按配置自动选择：
+#   users  —— 建了用户表：每个 token 对应一个人，权限按人算
+#   shared —— 只配了 ASKDATA_TOKEN：所有人共用 admin（兼容旧部署）
+#   open   —— 什么都没配：不鉴权（内网演示）
+
+_STORE = None
+
+
+def store():
+    """用户表单例。测试里用 reset_store() 换掉。"""
+    global _STORE
+    if _STORE is None:
+        from . import config
+        from .users import UserStore
+
+        _STORE = UserStore(config.USERS_PATH)
+    return _STORE
+
+
+def reset_store() -> None:
+    global _STORE
+    _STORE = None
+
+
+def auth_mode() -> str:
+    if len(store()):
+        return "users"
+    if expected_token():
+        return "shared"
+    return "open"
+
+
+def _shared_admin():
+    from .users import User
+
+    return User(id="u_shared", name="shared-token", token_hash="", role="admin")
+
+
+def current_user(header_value: str | None) -> User | None:
+    """把请求头解析成用户。解析不出来就是 None（由调用方决定 401）。"""
+    token = bearer_of(header_value)
+    user = store().authenticate(token)
+    if user is not None:
+        return user
+    # 旧部署兼容：共享 token 视为 admin
+    expected = expected_token()
+    if expected and token:
+        import secrets as _secrets
+
+        if _secrets.compare_digest(token.encode("utf-8"), expected.encode("utf-8")):
+            return _shared_admin()
+    return None
+
+
+def policy_for(user: User | None) -> RowPolicy | None:
+    """按用户的可见渠道生成行级权限。空渠道 = 不限制。"""
+    if user is None or not getattr(user, "channels", ()):
+        return None
+    from .guard import RowPolicy
+
+    quoted = ", ".join(f"'{c}'" for c in user.channels)
+    # 维表叫 channels（复数），字段是 channel_name
+    return RowPolicy(
+        {"orders": f"channel_id IN (SELECT channel_id FROM channels WHERE channel_name IN ({quoted}))"}
+    )
+
+
+def is_admin(user: User | None) -> bool:
+    """open 模式下没有用户，但也不能把接口全锁死——按 admin 处理。"""
+    if user is None:
+        return auth_mode() == "open"
+    return bool(getattr(user, "is_admin", False))

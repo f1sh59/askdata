@@ -50,7 +50,8 @@ class ServerIntegrationTest(unittest.TestCase):
         cls.db_path = Path(cls._tmp.name) / "test.duckdb"
         _build_empty_db(cls.db_path)
 
-        cls.pipeline = Pipeline(db_path=cls.db_path, writable=True)
+        cls.pipeline = Pipeline(db_path=cls.db_path, writable=True,
+                                       sessions_path=Path(cls._tmp.name) / "sessions.db")
         cls._original_pipeline = server_mod.pipeline
         server_mod.pipeline = lambda: cls.pipeline  # 替换单例
 
@@ -74,6 +75,8 @@ class ServerIntegrationTest(unittest.TestCase):
         cls.server.server_close()
         server_mod.pipeline = cls._original_pipeline
         server_mod.LIMITER.enabled = cls._original_limit
+        cls.pipeline.sessions.close()
+        cls.pipeline.sandbox.close()
         cls._tmp.cleanup()
 
     # ---- 工具 ----
@@ -88,12 +91,12 @@ class ServerIntegrationTest(unittest.TestCase):
         except urllib.error.HTTPError as exc:
             return exc.code, exc.read().decode("utf-8", "replace"), dict(exc.headers)
 
-    def _post(self, path: str, payload: dict):
+    def _post(self, path: str, payload: dict, headers: dict | None = None):
         req = urllib.request.Request(
             f"http://127.0.0.1:{self.port}{path}",
             data=json.dumps(payload).encode(),
             method="POST",
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", **(headers or {})},
         )
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
@@ -397,6 +400,103 @@ class ServerIntegrationTest(unittest.TestCase):
             self.assertEqual(exc.code, 413)
             body = json.loads(exc.read().decode("utf-8"))
             self.assertEqual(body["code"], "payload_too_large")
+
+
+    # ---- 身份与审计 ----
+
+    def test_whoami(self) -> None:
+        """open 模式下也要能问"我是谁"，前端靠它显示状态。"""
+        status, raw, _ = self._get("/api/auth/me")
+        payload = json.loads(raw)
+        self.assertEqual(status, 200)
+        self.assertIn(payload["mode"], ("open", "shared", "users"))
+        self.assertIn("users", payload)
+
+    def test_user_lifecycle(self) -> None:
+        from askdata import auth, config
+        from askdata.users import UserStore
+
+        original_path = config.USERS_PATH
+        config.USERS_PATH = Path(self._tmp.name) / "users-lifecycle.json"
+        auth.reset_store()
+        try:
+            status, payload = self._post("/api/users", {"name": "张三", "role": "admin"})
+            self.assertEqual(status, 200, payload)
+            self.assertTrue(payload["token"].startswith("ad_"))
+            self.assertEqual(payload["user"]["name"], "张三")
+
+            # 新建的用户能用这个 token 鉴权
+            user_id = payload["user"]["id"]
+            self.assertIsNotNone(UserStore(config.USERS_PATH).get(user_id))
+
+            auth_header = {"Authorization": f"Bearer {payload['token']}"}
+            status, raw, _ = self._get("/api/users", headers=auth_header)
+            self.assertEqual(status, 200)
+            self.assertEqual(len(json.loads(raw)["users"]), 1)
+
+            status, deleted = self._post("/api/users/delete", {"id": user_id}, headers=auth_header)
+            self.assertTrue(deleted["ok"])
+            status, raw, _ = self._get("/api/users", headers=auth_header)
+            self.assertEqual(len(json.loads(raw)["users"]), 0)
+        finally:
+            config.USERS_PATH = original_path
+            auth.reset_store()
+
+    def test_user_creation_rejects_empty_name(self) -> None:
+        from askdata import auth, config
+
+        original_path = config.USERS_PATH
+        config.USERS_PATH = Path(self._tmp.name) / "users-reject.json"
+        auth.reset_store()
+        try:
+            status, _ = self._post("/api/users", {"name": "   "})
+            self.assertEqual(status, 400)
+        finally:
+            config.USERS_PATH = original_path
+            auth.reset_store()
+
+    def test_audit_endpoint(self) -> None:
+        from askdata import auth, config
+        from askdata.audit import AuditLog
+
+        original = server_mod.AUDIT
+        original_users = config.USERS_PATH
+        config.USERS_PATH = Path(self._tmp.name) / "users-audit.json"
+        auth.reset_store()
+        server_mod.AUDIT = AuditLog(Path(self._tmp.name) / "audit-test.jsonl")
+        try:
+            server_mod.AUDIT.record(user="测试", action="ask", question="有多少订单", row_count=1)
+            status, raw, _ = self._get("/api/audit?limit=10")
+            payload = json.loads(raw)
+            self.assertEqual(status, 200)
+            self.assertGreaterEqual(len(payload["entries"]), 1)
+            self.assertEqual(payload["entries"][0]["user"], "测试")
+        finally:
+            server_mod.AUDIT = original
+            config.USERS_PATH = original_users
+            auth.reset_store()
+
+    def test_viewer_cannot_manage_users(self) -> None:
+        """非 admin 调管理接口要 403，而不是默默成功。"""
+        from askdata import auth, config
+
+        original_path = config.USERS_PATH
+        config.USERS_PATH = Path(self._tmp.name) / "users-perm.json"
+        auth.reset_store()
+        try:
+            _, token = auth.store().create("只读用户", role="viewer")
+            req = urllib.request.Request(
+                f"http://127.0.0.1:{self.port}/api/users",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    self.fail(f"应当 403，实际 {resp.status}")
+            except urllib.error.HTTPError as exc:
+                self.assertEqual(exc.code, 403)
+        finally:
+            config.USERS_PATH = original_path
+            auth.reset_store()
 
 
 class ServerMainTest(unittest.TestCase):

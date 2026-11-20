@@ -11,6 +11,8 @@ set -e
 DB_PATH="${ASKDATA_DB:-/app/data/askdata.duckdb}"
 
 mkdir -p "$(dirname "$DB_PATH")"
+# 缓存也放在卷里：/app 属于 root，非 root 用户只能写 data/
+mkdir -p "${ASKDATA_CACHE:-/app/data/.cache}"
 
 if [ ! -f "$DB_PATH" ]; then
     echo "[entrypoint] 数据库不存在，开始生成：$DB_PATH"

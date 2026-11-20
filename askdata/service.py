@@ -40,11 +40,17 @@ class Stage:
 class Pipeline:
     """全局只建一次：schema 内省 + 召回索引 + 数据库连接。"""
 
-    def __init__(self, db_path: Path = config.DB_PATH, writable: bool = False) -> None:
+    def __init__(
+        self,
+        db_path: Path = config.DB_PATH,
+        writable: bool = False,
+        sessions_path: Path | None = None,
+    ) -> None:
         self._lock = threading.Lock()
         self.writable = writable
         self.sandbox = Sandbox(db_path, timeout_s=8.0, read_only=not writable)
-        self.sessions = SessionStore()
+        # 会话落盘：重启服务后没超时的上下文还在
+        self.sessions = SessionStore(path=sessions_path or config.SESSIONS_PATH)
         self._revenue_cache: float | None = None
         self._policy_flag: bool | None = None
         self.tables = schema.introspect(self.sandbox)
@@ -310,6 +316,7 @@ class Pipeline:
         session_id: str | None = None,
         on_stage: Callable[[dict], None] | None = None,
         api_key: str | None = None,
+        policy: RowPolicy | None = None,
     ) -> dict:
         stages: list[Stage] = []
         started = time.perf_counter()
@@ -430,7 +437,9 @@ class Pipeline:
         t0 = time.perf_counter()
         # 行级权限是构造时传给 SqlGuard 的，不是 check() 的参数
         force_policy = self._policy_default()
-        row_policy = (
+        # 调用方可以按用户传策略（不同人看到不同渠道）；
+        # 没传就退回环境变量开关的默认策略。
+        row_policy = policy or (
             RowPolicy({"orders": "channel_id IN (1, 2)", "users": "province IS NOT NULL"})
             if force_policy
             else None

@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "u_862fcd7a",
+      "name": "只读用户",
+      "token_hash": "ed3ba38a9ab4826bc5978564bc94f5189e0e85aac33dba19b305d5fceb083c5f",
+      "role": "viewer",
+      "channels": [],
+      "created_at": 1795134187.8571453,
+      "disabled": false
+    }
+  ]
+}
