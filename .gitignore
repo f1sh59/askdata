@@ -64,3 +64,6 @@ data/sessions.db
 data/sessions.db-journal
 data/audit.jsonl
 data/.cache/
+
+# 打包产物
+dist/
