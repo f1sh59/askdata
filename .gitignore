@@ -57,3 +57,10 @@ htmlcov/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# 运行时产物：用户表、会话库、审计日志都在 data/ 下，不进仓库
+data/users.json
+data/sessions.db
+data/sessions.db-journal
+data/audit.jsonl
+data/.cache/
